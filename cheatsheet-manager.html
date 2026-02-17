@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Controller Mapping Cheatsheet Manager</title>
+<style>
+  :root {
+    --bg-primary: #16161e;
+    --bg-secondary: #1a1a2e;
+    --bg-tertiary: #1e1e2e;
+    --bg-input: #12121f;
+    --border: #2a2a3a;
+    --border-light: #3a3a4a;
+    --text-primary: #e0e0e0;
+    --text-secondary: #888;
+    --text-muted: #555;
+    --accent-blue: #60a5fa;
+    --accent-purple: #b0b8ff;
+    --accent-yellow: #f59e0b;
+    --accent-green: #34d399;
+    --accent-violet: #c084fc;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', 'メイリオ', sans-serif;
+    background: var(--bg-primary); color: var(--text-primary);
+    font-size: 13px; line-height: 1.4;
+  }
+  button { font-family: inherit; }
+
+  /* ── Header ── */
+  #header {
+    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+    padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+    position: sticky; top: 0; z-index: 100; flex-wrap: wrap;
+  }
+  #header .app-title { font-size: 15px; font-weight: 700; color: var(--accent-purple); margin-right: 4px; }
+  #header .filename {
+    background: var(--bg-input); border: 1px solid #333; border-radius: 4px;
+    padding: 4px 10px; font-size: 12px; color: #78f0c0; font-weight: 600;
+  }
+  #header .filename[id="filenameDisplay"]:hover {
+    border-color: #5a5aff; cursor: pointer;
+  }
+  #header .filename[id="filenameDisplay"]::after {
+    content: " ✏️"; font-size: 10px; opacity: 0; transition: opacity 0.15s;
+  }
+  #header .filename[id="filenameDisplay"]:hover::after { opacity: 1; }
+  .toolbar-spacer { flex: 1; }
+  .toolbar-sep { width: 1px; height: 20px; background: #333; }
+  .toolbar-btn {
+    background: transparent; color: var(--text-primary); border: 1px solid #333;
+    border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  .toolbar-btn:hover { background: #2a2a3a; }
+  .toolbar-btn:disabled { opacity: 0.4; cursor: default; }
+  .toolbar-btn.accent { background: #2563eb; border: none; }
+  .toolbar-btn.accent:hover { background: #1d4ed8; }
+  .toolbar-btn.accent2 { background: #7c3aed; border: none; }
+  .toolbar-btn.accent2:hover { background: #6d28d9; }
+
+  /* ── Column Headers ── */
+  #col-headers {
+    display: flex; align-items: center; padding: 4px 8px;
+    background: #1a1a28; border-bottom: 1px solid var(--border);
+    font-size: 10px; color: #666; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.5px; position: sticky; top: 44px; z-index: 99;
+  }
+  #col-headers .col-type { width: 80px; flex-shrink: 0; margin-right: 6px; padding-left: 8px; }
+  #col-headers .col-name { flex: 1; }
+  #col-headers .col-mapping { width: 240px; flex-shrink: 0; }
+  #col-headers .col-parent { width: 110px; flex-shrink: 0; margin-left: 6px; }
+
+  /* ── Item Rows ── */
+  #item-list { padding: 2px 0; padding-bottom: 60px; }
+  .item-row {
+    display: flex; align-items: center; padding: 3px 8px;
+    border-left: 2px solid transparent; border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.1s; cursor: default;
+  }
+  .item-row:hover { background: rgba(255,255,255,0.03); }
+  .item-row.selected { background: rgba(96,165,250,0.12); border-left-color: var(--accent-blue); }
+  .drag-handle {
+    width: 18px; flex-shrink: 0; cursor: grab; color: #444;
+    font-size: 14px; text-align: center; user-select: none;
+    line-height: 24px; margin-right: 2px; border-radius: 3px;
+  }
+  .drag-handle:hover { color: #888; background: rgba(255,255,255,0.06); }
+  .drag-handle:active { cursor: grabbing; }
+  .item-row.drop-child {
+    background: rgba(96,165,250,0.15) !important;
+    outline: 1px dashed #60a5fa;
+    outline-offset: -1px;
+  }
+  .item-row .col-type { width: 80px; flex-shrink: 0; margin-right: 6px; }
+  .item-row .col-name { flex: 1; min-width: 0; margin-right: 8px; }
+  .item-row .col-mapping { width: 240px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
+  .item-row .col-parent { width: 110px; flex-shrink: 0; margin-left: 6px; }
+
+  .type-select {
+    background: transparent; color: var(--accent-blue); border: 1px solid var(--border-light);
+    border-radius: 4px; padding: 2px 4px; font-size: 11px; font-weight: 600;
+    cursor: pointer; outline: none; width: 100%;
+  }
+  .type-select option { background: #252536; }
+
+  .name-input {
+    background: transparent; color: var(--text-primary); border: none; outline: none;
+    width: 100%; font-size: 12px; padding: 2px 4px;
+    border-bottom: 1px solid transparent;
+  }
+  .name-input:focus { border-bottom: 1px solid #5a5aff; }
+  .name-input.is-category { color: var(--accent-yellow); font-size: 13px; font-weight: 700; }
+
+  .collapse-toggle {
+    display: inline-block; width: 16px; text-align: center; cursor: pointer;
+    color: #888; font-size: 10px; margin-right: 2px; user-select: none;
+    border-radius: 3px; line-height: 18px; vertical-align: middle;
+    transition: color 0.15s;
+  }
+  .collapse-toggle:hover { color: #ddd; background: rgba(255,255,255,0.08); }
+
+  .parent-select {
+    background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px; font-size: 10px; width: 100%; outline: none; cursor: pointer;
+  }
+  .parent-select option { background: #252536; }
+
+  /* Mapping display */
+  .mapping-box {
+    flex: 1; background: var(--bg-input); border-radius: 4px; border: 1px solid var(--border);
+    min-height: 28px; display: flex; align-items: center; padding: 2px 4px;
+    cursor: text; min-width: 0; overflow: hidden;
+  }
+  .mapping-box.empty { color: #666; font-size: 11px; font-style: italic; }
+  .mapping-edit-input {
+    background: var(--bg-input); color: var(--text-primary); border: 1px solid #5a5aff;
+    border-radius: 4px; padding: 2px 6px; font-size: 12px; font-family: monospace;
+    width: 100%; outline: none;
+  }
+  .gamepad-btn {
+    background: #2a2a3a; border: 1px solid var(--border-light); border-radius: 4px;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; font-size: 14px; padding: 0; color: #aaa;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .gamepad-btn:hover { background: #3a3a5a; border-color: #6a6aff; }
+
+  /* Button badges */
+  .btn-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 1px 5px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    margin-right: 1px; min-width: 20px; line-height: 18px; font-family: monospace;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15);
+  }
+  .btn-plus { color: #888; margin: 0 2px; font-size: 10px; }
+
+  /* Decorative rows */
+  .deco-line { flex: 1; height: 1px; background: #555; }
+  .deco-pagebreak { flex: 1; height: 0; border-top: 2px dashed var(--accent-violet); position: relative; }
+  .deco-pagebreak span {
+    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-primary); padding: 0 6px; color: var(--accent-violet); font-size: 10px;
+  }
+  .deco-colbreak { flex: 1; height: 0; border-top: 2px dotted var(--accent-green); position: relative; }
+  .deco-colbreak span {
+    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    background: var(--bg-primary); padding: 0 6px; color: var(--accent-green); font-size: 10px;
+  }
+
+  /* Add buttons */
+  #add-bar {
+    display: flex; align-items: center; justify-content: center;
+    padding: 8px; border-top: 1px solid var(--border); gap: 8px;
+  }
+  .add-btn {
+    background: transparent; border: 1px dashed; border-radius: 6px;
+    padding: 4px 12px; font-size: 11px; cursor: pointer; font-weight: 600; opacity: 0.7;
+  }
+  .add-btn:hover { opacity: 1; }
+
+  /* ── Context Menu ── */
+  #ctx-menu {
+    display: none; position: fixed; background: #252536; border: 1px solid #444;
+    border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 2000; padding: 4px 0; min-width: 180px;
+  }
+  #ctx-menu.show { display: block; }
+  #ctx-menu .ctx-item {
+    padding: 6px 14px; cursor: pointer; color: #ddd; font-size: 13px;
+  }
+  #ctx-menu .ctx-item:hover { background: #333; }
+  #ctx-menu .ctx-item.disabled { color: #555; opacity: 0.5; cursor: default; }
+  #ctx-menu .ctx-sep { border-top: 1px solid #3a3a4a; margin: 4px 0; }
+
+  /* ── Modals ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    align-items: center; justify-content: center; z-index: 1000;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal-box {
+    background: var(--bg-tertiary); border: 1px solid #444; border-radius: 12px;
+    padding: 24px; color: var(--text-primary); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--accent-purple); }
+  .modal-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+  .modal-btn {
+    border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px;
+    font-weight: 600; cursor: pointer; color: #fff;
+  }
+
+  /* ── Status Bar ── */
+  #status-bar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg-secondary); border-top: 1px solid var(--border);
+    padding: 4px 16px; font-size: 11px; display: flex; align-items: center; gap: 8px;
+    color: #666; z-index: 100;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  }
+  .kbd-hint {
+    display: inline-block; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 3px; padding: 0 4px; font-size: 10px; font-family: inherit;
+    margin-left: 4px; line-height: 16px; vertical-align: middle; opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <span class="app-title">🎮 Mapping Manager</span>
+  <span class="filename" id="filenameDisplay" title="クリックしてファイル名を変更" onclick="startFileNameEdit()" style="cursor:pointer">new_mapping.csv</span>
+  <input type="text" id="filenameEdit" class="filename" style="display:none;cursor:text;outline:1px solid #5a5aff;width:220px"
+    onblur="finishFileNameEdit()" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value=fileName;this.blur();}">
+  <span class="toolbar-spacer"></span>
+  <button class="toolbar-btn" onclick="handleNew()">📄 新規</button>
+  <button class="toolbar-btn" onclick="openCSV()">📂 CSV読込</button>
+  <button class="toolbar-btn accent" onclick="saveCSV()">💾 CSV保存</button>
+  <span class="toolbar-sep"></span>
+  <button class="toolbar-btn accent2" onclick="showExportModal()">📄 チートシート出力</button>
+  <span class="toolbar-sep"></span>
+  <button class="toolbar-btn" id="undoBtn" onclick="undo()" disabled>↩ 元に戻す</button>
+  <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleOpenCSV(event)">
+</div>
+
+<!-- Column Headers -->
+<div id="col-headers">
+  <div class="col-type" style="padding-left:28px">種別</div>
+  <div class="col-name">名前</div>
+  <div class="col-mapping">マッピング</div>
+  <div class="col-parent" style="margin-left:6px">親</div>
+</div>
+
+<!-- Item List -->
+<div id="item-list"></div>
+
+<!-- Add Buttons -->
+<div id="add-bar">
+  <button class="add-btn" style="color:#60a5fa;border-color:#60a5fa" onclick="addItem('mapping')">+ マッピング</button>
+  <button class="add-btn" style="color:#f59e0b;border-color:#f59e0b" onclick="addItem('category')">+ カテゴリ</button>
+  <button class="add-btn" style="color:#888;border-color:#888" onclick="addItem('separator')">+ セパレーター</button>
+  <button class="add-btn" style="color:#c084fc;border-color:#c084fc" onclick="addItem('pagebreak')">+ 改ページ</button>
+  <button class="add-btn" style="color:#34d399;border-color:#34d399" onclick="addItem('colbreak')">+ 改カラム</button>
+</div>
+
+<!-- Context Menu -->
+<div id="ctx-menu"></div>
+
+<!-- Gamepad Input Modal -->
+<div class="modal-overlay" id="gamepadModal">
+  <div class="modal-box" style="min-width:420px;max-width:500px">
+    <div class="modal-title">🎮 コントローラ入力待機中</div>
+    <div id="gamepadItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div style="font-size:11px;color:#666;margin-bottom:4px">現在のマッピング:</div>
+    <div id="gamepadCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:12px">
+      <span style="color:#555;font-size:12px">なし</span>
+    </div>
+    <div class="modal-subtitle">コントローラーのボタンを押してください。同時押しに対応しています。</div>
+    <div style="font-size:11px;color:#666;margin-bottom:4px">新しい入力:</div>
+    <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
+      <span style="color:#555;font-size:13px">入力なし</span>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+      <button class="modal-btn" style="background:#555" onclick="gamepadCancel()">キャンセル <kbd class="kbd-hint">Esc</kbd></button>
+      <button class="modal-btn" style="background:#6b7280" onclick="gamepadSkipNext()">次へ <kbd class="kbd-hint">Tab</kbd></button>
+      <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()">適用 <kbd class="kbd-hint">Enter</kbd></button>
+      <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()">適用して次へ <kbd class="kbd-hint">Space</kbd></button>
+    </div>
+  </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal-box" style="width:620px;max-height:80vh;display:flex;flex-direction:column">
+    <div class="modal-title">📄 チートシート出力</div>
+    <div style="display:flex;gap:16px;margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+        カラム数:
+        <select id="exportCols" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+          <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
+        </select>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+        フォントサイズ:
+        <input type="number" id="exportFontSize" value="7" min="4" max="20" step="0.5"
+          style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px;width:60px"> pt
+      </label>
+    </div>
+    <div id="exportFilenameHint" style="font-size:11px;color:#888;margin-bottom:8px"></div>
+    <div style="flex:1;overflow:auto;background:#fff;border-radius:6px;margin-bottom:16px;min-height:200px">
+      <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="modal-btn" style="background:#555" onclick="closeExportModal()">閉じる</button>
+      <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()">💾 HTMLを保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div id="status-bar">
+  <span class="status-dot" id="gpDot" style="background:#555"></span>
+  <span id="gpStatus">コントローラー未接続</span>
+  <span class="toolbar-spacer"></span>
+  <span>Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA MODEL
+// ═══════════════════════════════════════════════════════════════════════════
+
+let nextId = 1;
+let items = [];
+let fileName = "new_mapping.csv";
+let selectedId = null;
+let clipboard = null;
+let clipboardCut = false;
+let clipboardCutRootId = null;
+let undoStack = [];
+let collapsedIds = new Set();
+let gamepadTargetId = null;
+let gamepadPressedButtons = [];
+let gamepadIsIdle = true;
+let gamepadPrevPressed = new Set();
+let gamepadRAF = null;
+
+const BUTTON_STYLES = {
+  A: { bg:"#107C10", text:"#fff", label:"A" },
+  B: { bg:"#E81123", text:"#fff", label:"B" },
+  X: { bg:"#0078D7", text:"#fff", label:"X" },
+  Y: { bg:"#FFC300", text:"#1a1a1a", label:"Y" },
+  LB: { bg:"#555", text:"#fff", label:"LB" },
+  RB: { bg:"#555", text:"#fff", label:"RB" },
+  LT: { bg:"#666", text:"#fff", label:"LT" },
+  RT: { bg:"#666", text:"#fff", label:"RT" },
+  LS: { bg:"#C23B22", text:"#fff", label:"LS" },
+  RS: { bg:"#2E8B57", text:"#fff", label:"RS" },
+  "LS:X": { bg:"#C23B22", text:"#fff", label:"LS↔" },
+  "LS:Y": { bg:"#C23B22", text:"#fff", label:"LS↕" },
+  "LS:XY": { bg:"#C23B22", text:"#fff", label:"LS✦" },
+  "RS:X": { bg:"#2E8B57", text:"#fff", label:"RS↔" },
+  "RS:Y": { bg:"#2E8B57", text:"#fff", label:"RS↕" },
+  "RS:XY": { bg:"#2E8B57", text:"#fff", label:"RS✦" },
+  Start: { bg:"#333", text:"#fff", label:"≡" },
+  Back: { bg:"#333", text:"#fff", label:"⧉" },
+  "▲": { bg:"#222", text:"#fff", label:"▲" },
+  "▼": { bg:"#222", text:"#fff", label:"▼" },
+  "▶": { bg:"#222", text:"#fff", label:"▶" },
+  "◀": { bg:"#222", text:"#fff", label:"◀" },
+  "▲▶": { bg:"#222", text:"#fff", label:"▲▶" },
+  "▼▶": { bg:"#222", text:"#fff", label:"▼▶" },
+  "◀▼": { bg:"#222", text:"#fff", label:"◀▼" },
+  "◀▲": { bg:"#222", text:"#fff", label:"◀▲" },
+  LP1: { bg:"#4B0082", text:"#fff", label:"LP1" },
+  LP2: { bg:"#4B0082", text:"#fff", label:"LP2" },
+  RP1: { bg:"#5D4037", text:"#fff", label:"RP1" },
+  RP2: { bg:"#5D4037", text:"#fff", label:"RP2" },
+  "/": { bg:"#1a1a1a", text:"#fff", label:"🎮" },
+};
+
+const GAMEPAD_BUTTON_MAP = {
+  0:"A", 1:"B", 2:"X", 3:"Y", 4:"LB", 5:"RB", 6:"LT", 7:"RT",
+  8:"Back", 9:"Start", 10:"LS", 11:"RS", 12:"▲", 13:"▼", 14:"◀", 15:"▶",
+};
+const AXIS_THRESHOLD = 0.5;
+const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY"]);
+const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY"]);
+
+const TYPE_LABELS = { category:"カテゴリ", mapping:"マッピング", separator:"セパレーター", pagebreak:"改ページ", colbreak:"改カラム" };
+const TYPE_COLORS = { category:"#f59e0b", mapping:"#60a5fa", separator:"#888", pagebreak:"#c084fc", colbreak:"#34d399" };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════════════════════════════
+
+function genId() { return nextId++; }
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function parseMappingString(str) {
+  if (!str) return [];
+  return str.split("+").map(s => s.replace(/^\[|\]$/g,"").trim()).filter(Boolean);
+}
+function toMappingString(buttons) {
+  return buttons.map(b => `[${b}]`).join("+");
+}
+
+function badgeHTML(name) {
+  const s = BUTTON_STYLES[name] || { bg:"#555", text:"#fff", label:name };
+  return `<span class="btn-badge" style="background:${s.bg};color:${s.text}">${esc(s.label)}</span>`;
+}
+function mappingBadgesHTML(mapping) {
+  const btns = parseMappingString(mapping);
+  if (btns.length === 0) return '';
+  return btns.map((b,i) => (i > 0 ? '<span class="btn-plus">+</span>' : '') + badgeHTML(b)).join('');
+}
+
+function csvEscape(val) {
+  const s = String(val ?? "");
+  if (s.includes(",") || s.includes('"') || s.includes("\n")) return '"' + s.replace(/"/g,'""') + '"';
+  return s;
+}
+function csvParseLine(line) {
+  const result = []; let current = "", inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) { if (ch==='"' && line[i+1]==='"'){current+='"';i++;} else if(ch==='"'){inQ=false;} else{current+=ch;} }
+    else { if(ch==='"'){inQ=true;} else if(ch===','){result.push(current);current="";} else{current+=ch;} }
+  }
+  result.push(current);
+  return result;
+}
+function itemsToCSV() {
+  const header = "id,parentId,type,name,mapping";
+  const rows = items.map(it => [it.id, it.parentId??"", it.type, csvEscape(it.name), csvEscape(it.mapping)].join(","));
+  return [header, ...rows].join("\n");
+}
+function csvToItems(text) {
+  const lines = text.split(/\r?\n/).filter(l=>l.trim());
+  if (lines.length < 1) return [];
+  const dataLines = lines[0].startsWith("id,") ? lines.slice(1) : lines;
+  let maxId = 0;
+  const result = dataLines.map(line => {
+    const f = csvParseLine(line);
+    const id = parseInt(f[0]) || genId();
+    if (id > maxId) maxId = id;
+    return { id, parentId: f[1] ? parseInt(f[1]) || null : null, type: f[2]||"mapping", name: f[3]||"", mapping: f[4]||"" };
+  });
+  nextId = maxId + 1;
+  return result;
+}
+
+function getDepth(item) {
+  let d = 0, cur = item;
+  while (cur.parentId) { cur = items.find(it=>it.id===cur.parentId); if(!cur) break; d++; }
+  return d;
+}
+function getOrderedItems() {
+  const result = [], inResult = new Set();
+  function add(item, skipChildren) {
+    result.push(item);
+    inResult.add(item.id);
+    if (!skipChildren) {
+      items.filter(it=>it.parentId===item.id).forEach(child => add(child, collapsedIds.has(child.id)));
+    }
+  }
+  items.filter(it=>!it.parentId).forEach(item => add(item, collapsedIds.has(item.id)));
+  // Add any orphans
+  items.forEach(it => { if(!inResult.has(it.id)) result.push(it); });
+  return result;
+}
+
+function toggleCollapse(id, e) {
+  if (e) e.stopPropagation();
+  if (collapsedIds.has(id)) collapsedIds.delete(id);
+  else collapsedIds.add(id);
+  render();
+}
+
+function hasChildren(id) {
+  return items.some(it => it.parentId === id);
+}
+function getNextMappingItem(afterId) {
+  const ordered = getOrderedItems();
+  const idx = ordered.findIndex(it=>it.id===afterId);
+  for (let i=idx+1; i<ordered.length; i++) { if(ordered[i].type==="mapping") return ordered[i].id; }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// UNDO
+// ═══════════════════════════════════════════════════════════════════════════
+
+function pushUndo() {
+  undoStack.push(JSON.stringify(items));
+  if (undoStack.length > 30) undoStack.shift();
+  document.getElementById("undoBtn").disabled = false;
+}
+function undo() {
+  if (undoStack.length === 0) return;
+  items = JSON.parse(undoStack.pop());
+  document.getElementById("undoBtn").disabled = undoStack.length === 0;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDERING
+// ═══════════════════════════════════════════════════════════════════════════
+
+function render() {
+  const list = document.getElementById("item-list");
+  const ordered = getOrderedItems();
+  const categories = items.filter(it=>it.type==="category");
+  const catOptions = categories.map(c => `<option value="${c.id}" style="background:#252536">${esc(c.name||'ID:'+c.id)}</option>`).join("");
+
+  let html = "";
+  if (ordered.length === 0) {
+    html = '<div style="text-align:center;padding:40px;color:#555;font-size:13px">アイテムがありません。下の「+」ボタンか、CSVファイルを読み込んでください。</div>';
+  }
+
+  for (const item of ordered) {
+    const depth = getDepth(item);
+    const pl = 8 + depth * 20;
+    const sel = item.id === selectedId ? " selected" : "";
+    const isCat = item.type === "category";
+    const isMap = item.type === "mapping";
+    const isDeco = item.type === "separator" || item.type === "pagebreak" || item.type === "colbreak";
+
+    html += `<div class="item-row${sel}" data-id="${item.id}" style="padding-left:${pl}px"
+      onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
+      ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
+      ondragleave="onDragLeave(event, ${item.id})">`;
+
+    // Drag handle
+    html += `<div class="drag-handle" draggable="true"
+      ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
+      title="ドラッグして移動">⠿</div>`;
+    // Type selector
+    html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'#aaa'}"
+      onchange="updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
+    for (const [k,v] of Object.entries(TYPE_LABELS)) {
+      html += `<option value="${k}" ${k===item.type?"selected":""} style="background:#252536;color:${TYPE_COLORS[k]}">${v}</option>`;
+    }
+    html += `</select></div>`;
+
+    if (isDeco) {
+      // Decorative items
+      if (item.type === "separator") html += `<div class="deco-line"></div>`;
+      else if (item.type === "pagebreak") html += `<div class="deco-pagebreak"><span>改ページ</span></div>`;
+      else html += `<div class="deco-colbreak"><span>改カラム</span></div>`;
+    } else {
+      // Name
+      html += `<div class="col-name">`;
+      if (isCat) {
+        const hasKids = hasChildren(item.id);
+        const isCollapsed = collapsedIds.has(item.id);
+        if (hasKids) {
+          html += `<span class="collapse-toggle${isCollapsed?' collapsed':''}" onclick="toggleCollapse(${item.id}, event)">${isCollapsed ? '▶' : '▼'}</span>`;
+        } else {
+          html += `<span style="display:inline-block;width:16px;margin-right:2px"></span>`;
+        }
+        html += `<span style="color:#f59e0b;margin-right:4px;font-size:12px">📁</span>`;
+      }
+      html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
+        placeholder="${isCat ? 'カテゴリ名...' : '機能名...'}"
+        onchange="updateItem(${item.id}, 'name', this.value)" onclick="event.stopPropagation()">`;
+      html += `</div>`;
+
+      // Mapping
+      if (isMap) {
+        const badges = mappingBadgesHTML(item.mapping);
+        html += `<div class="col-mapping">`;
+        html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
+          onclick="startMappingEdit(${item.id}); event.stopPropagation()">`;
+        html += badges || 'クリックして入力...';
+        html += `</div>`;
+        html += `<button class="gamepad-btn" onclick="openGamepadModal(${item.id}); event.stopPropagation()" title="コントローラーで入力">🎮</button>`;
+        html += `</div>`;
+      } else {
+        html += `<div class="col-mapping"></div>`;
+      }
+
+      // Parent
+      html += `<div class="col-parent"><select class="parent-select"
+        onchange="updateItem(${item.id}, 'parentId', this.value ? parseInt(this.value) : null); event.stopPropagation()">`;
+      html += `<option value="" style="background:#252536">（ルート）</option>`;
+      for (const c of categories) {
+        if (c.id === item.id) continue;
+        html += `<option value="${c.id}" ${item.parentId===c.id?"selected":""} style="background:#252536">${esc(c.name||'ID:'+c.id)}</option>`;
+      }
+      html += `</select></div>`;
+    }
+
+    html += `</div>`;
+  }
+  list.innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ITEM OPERATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateItem(id, field, value) {
+  pushUndo();
+  const item = items.find(it=>it.id===id);
+  if (item) { item[field] = value; render(); }
+}
+function selectItem(id) { selectedId = id; render(); }
+
+function addItem(type, afterId) {
+  pushUndo();
+  const newItem = { id:genId(), parentId:null, type, name:"", mapping:"" };
+  if (afterId !== undefined) {
+    const idx = items.findIndex(it=>it.id===afterId);
+    const target = items[idx];
+    if (target && target.type === "category") newItem.parentId = target.id;
+    else if (target) newItem.parentId = target.parentId;
+    items.splice(idx+1, 0, newItem);
+  } else {
+    items.push(newItem);
+  }
+  selectedId = newItem.id;
+  render();
+}
+function insertItemBefore(id) {
+  pushUndo();
+  const idx = items.findIndex(it=>it.id===id);
+  const target = items[idx];
+  const newItem = { id:genId(), parentId:target?.parentId||null, type:"mapping", name:"", mapping:"" };
+  items.splice(idx, 0, newItem);
+  selectedId = newItem.id;
+  render();
+}
+function deleteItem(id) {
+  pushUndo();
+  const toDelete = getDescendantIds(id);
+  toDelete.add(id);
+  items = items.filter(it => !toDelete.has(it.id));
+  if (toDelete.has(selectedId)) selectedId = null;
+  render();
+}
+
+// Get all descendant IDs of an item
+function getDescendantIds(id) {
+  const result = new Set();
+  let changed = true;
+  const seeds = new Set([id]);
+  while (changed) {
+    changed = false;
+    items.forEach(it => {
+      if (it.parentId && (seeds.has(it.parentId) || result.has(it.parentId)) && !result.has(it.id)) {
+        result.add(it.id); changed = true;
+      }
+    });
+  }
+  return result;
+}
+
+// Collect an item and all its descendants as a subtree snapshot
+function collectSubtree(id) {
+  const root = items.find(it=>it.id===id);
+  if (!root) return [];
+  const descIds = getDescendantIds(id);
+  const subtreeItems = [root, ...items.filter(it=>descIds.has(it.id))];
+  return subtreeItems.map(it => ({...it})); // deep copy
+}
+
+// Paste a subtree: assign new IDs, remap internal parent pointers, set root's parent
+function pasteSubtree(subtree, newParentId, insertIdx) {
+  if (subtree.length === 0) return;
+  const idMap = {};
+  const rootOldId = subtree[0].id;
+  // Generate new IDs
+  subtree.forEach(it => { idMap[it.id] = genId(); });
+  const newItems = subtree.map(it => ({
+    ...it,
+    id: idMap[it.id],
+    parentId: it.id === rootOldId ? newParentId : (idMap[it.parentId] ?? it.parentId),
+  }));
+  // Insert into items array at position
+  items.splice(insertIdx, 0, ...newItems);
+}
+
+function moveUp(id) {
+  pushUndo();
+  const item = items.find(it=>it.id===id);
+  if (!item) return;
+  // Get siblings in array order
+  const siblings = items.filter(it=>it.parentId===item.parentId);
+  const sibIdx = siblings.findIndex(it=>it.id===id);
+  if (sibIdx <= 0) return;
+  const prevSibling = siblings[sibIdx - 1];
+  // Swap positions in the items array
+  const aIdx = items.findIndex(it=>it.id===id);
+  const bIdx = items.findIndex(it=>it.id===prevSibling.id);
+  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
+  render();
+}
+function moveDown(id) {
+  pushUndo();
+  const item = items.find(it=>it.id===id);
+  if (!item) return;
+  const siblings = items.filter(it=>it.parentId===item.parentId);
+  const sibIdx = siblings.findIndex(it=>it.id===id);
+  if (sibIdx < 0 || sibIdx >= siblings.length - 1) return;
+  const nextSibling = siblings[sibIdx + 1];
+  const aIdx = items.findIndex(it=>it.id===id);
+  const bIdx = items.findIndex(it=>it.id===nextSibling.id);
+  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
+  render();
+}
+
+function copyItem(id) {
+  clipboard = collectSubtree(id);
+  clipboardCut = false;
+}
+function cutItem(id) {
+  clipboard = collectSubtree(id);
+  clipboardCut = true;
+  clipboardCutRootId = id;
+}
+
+function pasteAbove(targetId) {
+  if (!clipboard || clipboard.length === 0) return;
+  pushUndo();
+  if (clipboardCut) {
+    const cutIds = new Set(clipboard.map(it=>it.id));
+    items = items.filter(it => !cutIds.has(it.id));
+  }
+  const idx = items.findIndex(it=>it.id===targetId);
+  const target = items[idx];
+  pasteSubtree(clipboard, target?.parentId ?? null, idx < 0 ? items.length : idx);
+  if (clipboardCut) { clipboard = null; clipboardCut = false; }
+  render();
+}
+function pasteBelow(targetId) {
+  if (!clipboard || clipboard.length === 0) return;
+  pushUndo();
+  if (clipboardCut) {
+    const cutIds = new Set(clipboard.map(it=>it.id));
+    items = items.filter(it => !cutIds.has(it.id));
+  }
+  const idx = items.findIndex(it=>it.id===targetId);
+  const target = items[idx];
+  pasteSubtree(clipboard, target?.parentId ?? null, idx < 0 ? items.length : idx + 1);
+  if (clipboardCut) { clipboard = null; clipboardCut = false; }
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DRAG AND DROP REORDER
+// ═══════════════════════════════════════════════════════════════════════════
+
+let dragItemId = null;
+let currentDropZone = null; // "above" | "child" | "below"
+
+function isDescendantOf(itemId, ancestorId) {
+  // Check if itemId is a descendant of ancestorId
+  let cur = items.find(it=>it.id===itemId);
+  while (cur && cur.parentId) {
+    if (cur.parentId === ancestorId) return true;
+    cur = items.find(it=>it.id===cur.parentId);
+  }
+  return false;
+}
+
+// Find the last index (in items array) of an item's subtree
+function getSubtreeLastIndex(id) {
+  const descIds = getDescendantIds(id);
+  let lastIdx = items.findIndex(it=>it.id===id);
+  items.forEach((it, idx) => {
+    if (descIds.has(it.id) && idx > lastIdx) lastIdx = idx;
+  });
+  return lastIdx;
+}
+
+function getDropZone(e, targetId) {
+  const row = e.currentTarget;
+  const rect = row.getBoundingClientRect();
+  const y = e.clientY - rect.top;
+  const h = rect.height;
+  const target = items.find(it=>it.id===targetId);
+  const isCat = target && target.type === "category";
+
+  if (isCat) {
+    // 3 zones for categories: top 25% | middle 50% | bottom 25%
+    if (y < h * 0.25) return "above";
+    if (y > h * 0.75) return "below";
+    return "child";
+  } else {
+    // 2 zones for non-categories: top 50% | bottom 50%
+    return y < h * 0.5 ? "above" : "below";
+  }
+}
+
+function clearDropIndicators() {
+  document.querySelectorAll(".item-row").forEach(r => {
+    r.style.borderTop = "";
+    r.style.borderBottom = "";
+    r.classList.remove("drop-child");
+  });
+}
+
+function onDragStart(e, id) {
+  dragItemId = id;
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", String(id));
+  setTimeout(() => {
+    const el = document.querySelector(`.item-row[data-id="${id}"]`);
+    if (el) el.style.opacity = "0.3";
+  }, 0);
+}
+
+function onDragEnd(e) {
+  const el = document.querySelector(`.item-row[data-id="${dragItemId}"]`);
+  if (el) el.style.opacity = "";
+  dragItemId = null;
+  currentDropZone = null;
+  clearDropIndicators();
+}
+
+function onDragOver(e, targetId) {
+  if (dragItemId === null || dragItemId === targetId) return;
+  // Prevent dropping onto own descendant
+  if (isDescendantOf(targetId, dragItemId)) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+
+  const zone = getDropZone(e, targetId);
+  currentDropZone = zone;
+
+  clearDropIndicators();
+  const row = e.currentTarget;
+  if (zone === "above") {
+    row.style.borderTop = "2px solid #60a5fa";
+  } else if (zone === "below") {
+    row.style.borderBottom = "2px solid #60a5fa";
+  } else {
+    row.classList.add("drop-child");
+  }
+}
+
+function onDragLeave(e, targetId) {
+  const row = e.currentTarget;
+  // Only clear if actually leaving (not entering a child element)
+  const related = e.relatedTarget;
+  if (related && row.contains(related)) return;
+  row.style.borderTop = "";
+  row.style.borderBottom = "";
+  row.classList.remove("drop-child");
+}
+
+function onDrop(e, targetId) {
+  e.preventDefault();
+  if (dragItemId === null || dragItemId === targetId) return;
+  if (isDescendantOf(targetId, dragItemId)) return;
+
+  const zone = getDropZone(e, targetId);
+  const target = items.find(it=>it.id===targetId);
+  const dragItem = items.find(it=>it.id===dragItemId);
+  if (!target || !dragItem) return;
+
+  pushUndo();
+
+  // Collect the subtree to move (for categories, includes all descendants)
+  const dragDescIds = getDescendantIds(dragItemId);
+  const allDragIds = new Set([dragItemId, ...dragDescIds]);
+  const subtree = items.filter(it => allDragIds.has(it.id));
+
+  // Remove subtree from items
+  items = items.filter(it => !allDragIds.has(it.id));
+
+  if (zone === "child") {
+    // Make child of target category
+    dragItem.parentId = targetId;
+    // Insert after target's last descendant
+    const lastIdx = getSubtreeLastIndex(targetId);
+    items.splice(lastIdx + 1, 0, ...subtree);
+  } else if (zone === "above") {
+    // Insert as sibling before target
+    dragItem.parentId = target.parentId;
+    const targetIdx = items.findIndex(it=>it.id===targetId);
+    items.splice(targetIdx, 0, ...subtree);
+  } else {
+    // Insert as sibling after target (and its subtree)
+    dragItem.parentId = target.parentId;
+    const lastIdx = getSubtreeLastIndex(targetId);
+    items.splice(lastIdx + 1, 0, ...subtree);
+  }
+
+  clearDropIndicators();
+  dragItemId = null;
+  currentDropZone = null;
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INLINE MAPPING EDIT
+// ═══════════════════════════════════════════════════════════════════════════
+
+function startMappingEdit(id) {
+  const item = items.find(it=>it.id===id);
+  if (!item) return;
+  const box = document.querySelector(`.mapping-box[data-item-id="${id}"]`);
+  if (!box) return;
+  box.innerHTML = `<input class="mapping-edit-input" value="${esc(item.mapping)}"
+    onblur="finishMappingEdit(${id}, this.value)"
+    onkeydown="if(event.key==='Enter'||event.key==='Escape') this.blur()">`;
+  const input = box.querySelector("input");
+  input.focus(); input.select();
+  input.onclick = function(e) { e.stopPropagation(); };
+}
+function finishMappingEdit(id, value) {
+  updateItem(id, "mapping", value);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CONTEXT MENU
+// ═══════════════════════════════════════════════════════════════════════════
+
+function showContextMenu(e, id) {
+  e.preventDefault(); e.stopPropagation();
+  selectedId = id;
+  const menu = document.getElementById("ctx-menu");
+  const hasClip = !!clipboard;
+  menu.innerHTML = `
+    <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">⬆ 上に挿入</div>
+    <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">⬇ 下に挿入</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">⬆ 上へ移動</div>
+    <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">⬇ 下へ移動</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">📋 コピー</div>
+    <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">✂️ 切り取り</div>
+    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">📋 上に貼り付け</div>
+    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">📋 下に貼り付け</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">🗑 削除</div>
+  `;
+  menu.style.left = e.clientX + "px";
+  menu.style.top = e.clientY + "px";
+  menu.classList.add("show");
+  render();
+}
+function hideContextMenu() { document.getElementById("ctx-menu").classList.remove("show"); }
+document.addEventListener("mousedown", e => {
+  const menu = document.getElementById("ctx-menu");
+  if (!menu.contains(e.target)) hideContextMenu();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FILE OPERATIONS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function setFileName(name) {
+  fileName = name;
+  document.getElementById("filenameDisplay").textContent = name;
+}
+function startFileNameEdit() {
+  const display = document.getElementById("filenameDisplay");
+  const edit = document.getElementById("filenameEdit");
+  edit.value = fileName;
+  display.style.display = "none";
+  edit.style.display = "";
+  edit.focus();
+  // .csv の前にカーソルを置く
+  const dotIdx = edit.value.lastIndexOf(".");
+  if (dotIdx > 0) edit.setSelectionRange(0, dotIdx);
+  else edit.select();
+}
+function finishFileNameEdit() {
+  const edit = document.getElementById("filenameEdit");
+  const display = document.getElementById("filenameDisplay");
+  let val = edit.value.trim();
+  if (val && !val.endsWith(".csv")) val += ".csv";
+  if (val) setFileName(val);
+  edit.style.display = "none";
+  display.style.display = "";
+}
+function handleNew() {
+  if (items.length > 0 && !confirm("現在のデータを破棄して新規作成しますか？")) return;
+  nextId = 1; items = []; undoStack = []; selectedId = null;
+  setFileName("new_mapping.csv");
+  document.getElementById("undoBtn").disabled = true;
+  render();
+}
+function openCSV() { document.getElementById("csvInput").click(); }
+function handleOpenCSV(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => { items = csvToItems(ev.target.result); undoStack=[]; setFileName(file.name); render(); };
+  reader.readAsText(file); e.target.value = "";
+}
+function saveCSV() {
+  const csv = itemsToCSV();
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GAMEPAD MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+
+function updateGamepadItemName() {
+  const el = document.getElementById("gamepadItemName");
+  const mapEl = document.getElementById("gamepadCurrentMapping");
+  const item = items.find(it=>it.id===gamepadTargetId);
+  el.textContent = item ? (item.name || "（名前未設定）") : "";
+  if (item && item.mapping) {
+    mapEl.innerHTML = mappingBadgesHTML(item.mapping);
+  } else {
+    mapEl.innerHTML = '<span style="color:#555;font-size:12px">なし</span>';
+  }
+}
+function gamepadSkipNext() {
+  if (gamepadTargetId !== null) {
+    const next = getNextMappingItem(gamepadTargetId);
+    if (next) { gamepadTargetId = next; gamepadPressedButtons = []; gamepadIsIdle = true; gamepadPrevPressed = new Set(); updateGamepadItemName(); renderGamepadDisplay(); return; }
+  }
+  closeGamepadModal();
+}
+function gamepadModalKeyHandler(e) {
+  if (e.key === "Escape") { e.preventDefault(); gamepadCancel(); }
+  else if (e.key === "Enter") { e.preventDefault(); gamepadApply(); }
+  else if (e.key === " ") { e.preventDefault(); gamepadApplyNext(); }
+  else if (e.key === "Tab") { e.preventDefault(); gamepadSkipNext(); }
+}
+function openGamepadModal(id) {
+  gamepadTargetId = id;
+  gamepadPressedButtons = [];
+  gamepadIsIdle = true;
+  gamepadPrevPressed = new Set();
+  document.getElementById("gamepadModal").classList.add("show");
+  document.addEventListener("keydown", gamepadModalKeyHandler);
+  updateGamepadItemName();
+  renderGamepadDisplay();
+  pollGamepad();
+}
+function closeGamepadModal() {
+  cancelAnimationFrame(gamepadRAF);
+  document.getElementById("gamepadModal").classList.remove("show");
+  document.removeEventListener("keydown", gamepadModalKeyHandler);
+  gamepadTargetId = null;
+}
+function gamepadCancel() {
+  closeGamepadModal();
+}
+function gamepadApply() {
+  if (gamepadTargetId !== null) updateItem(gamepadTargetId, "mapping", toMappingString(gamepadPressedButtons));
+  closeGamepadModal();
+}
+function gamepadApplyNext() {
+  if (gamepadTargetId !== null) {
+    updateItem(gamepadTargetId, "mapping", toMappingString(gamepadPressedButtons));
+    const next = getNextMappingItem(gamepadTargetId);
+    if (next) { gamepadTargetId = next; gamepadPressedButtons = []; gamepadIsIdle = true; gamepadPrevPressed = new Set(); updateGamepadItemName(); renderGamepadDisplay(); return; }
+  }
+  closeGamepadModal();
+}
+
+function renderGamepadDisplay() {
+  const el = document.getElementById("gamepadDisplay");
+  if (gamepadPressedButtons.length === 0) {
+    el.innerHTML = '<span style="color:#555;font-size:13px">入力なし</span>';
+  } else {
+    el.innerHTML = gamepadPressedButtons.map((b,i) =>
+      (i > 0 ? '<span style="color:#666;margin:0 4px;font-size:14px">+</span>' : '') + badgeHTML(b)
+    ).join('');
+  }
+}
+
+function mergeStick(prevBtns, currentX, currentY, stickSet, prefix) {
+  const prevEntry = prevBtns.find(b => stickSet.has(b));
+  const hadX = prevEntry === `${prefix}:X` || prevEntry === `${prefix}:XY`;
+  const hadY = prevEntry === `${prefix}:Y` || prevEntry === `${prefix}:XY`;
+  const mergedX = currentX || hadX;
+  const mergedY = currentY || hadY;
+  let result = null;
+  if (mergedX && mergedY) result = `${prefix}:XY`;
+  else if (mergedX) result = `${prefix}:X`;
+  else if (mergedY) result = `${prefix}:Y`;
+  const filtered = prevBtns.filter(b => !stickSet.has(b));
+  return { filtered, value: result };
+}
+
+function pollGamepad() {
+  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gps[0]||gps[1]||gps[2]||gps[3];
+  if (!gp) { gamepadRAF = requestAnimationFrame(pollGamepad); return; }
+
+  const currentlyPressed = new Set();
+  gp.buttons.forEach((btn, idx) => { if(btn.pressed && GAMEPAD_BUTTON_MAP[idx]) currentlyPressed.add(GAMEPAD_BUTTON_MAP[idx]); });
+
+  let lsX = false, lsY = false;
+  if (gp.axes.length >= 2) { lsX = Math.abs(gp.axes[0]) > AXIS_THRESHOLD; lsY = Math.abs(gp.axes[1]) > AXIS_THRESHOLD; }
+  let rsX = false, rsY = false;
+  if (gp.axes.length >= 4) { rsX = Math.abs(gp.axes[2]) > AXIS_THRESHOLD; rsY = Math.abs(gp.axes[3]) > AXIS_THRESHOLD; }
+  const hasLs = lsX || lsY, hasRs = rsX || rsY;
+  if (hasLs) currentlyPressed.add("__LS__");
+  if (hasRs) currentlyPressed.add("__RS__");
+
+  const wasIdle = gamepadPrevPressed.size === 0;
+  const nowHasInput = currentlyPressed.size > 0;
+
+  if (wasIdle && nowHasInput) {
+    let fresh = [...currentlyPressed].filter(b=>b!=="__LS__"&&b!=="__RS__");
+    if (hasLs) { if(lsX&&lsY) fresh.push("LS:XY"); else if(lsX) fresh.push("LS:X"); else fresh.push("LS:Y"); }
+    if (hasRs) { if(rsX&&rsY) fresh.push("RS:XY"); else if(rsX) fresh.push("RS:X"); else fresh.push("RS:Y"); }
+    gamepadPressedButtons = fresh;
+    gamepadIsIdle = false;
+    renderGamepadDisplay();
+  } else if (nowHasInput) {
+    let newBtns = [...gamepadPressedButtons];
+    if (hasLs) { const m = mergeStick(newBtns, lsX, lsY, LS_INPUTS, "LS"); newBtns = m.filtered; if(m.value) newBtns.push(m.value); }
+    if (hasRs) { const m = mergeStick(newBtns, rsX, rsY, RS_INPUTS, "RS"); newBtns = m.filtered; if(m.value) newBtns.push(m.value); }
+    for (const btn of currentlyPressed) { if(btn==="__LS__"||btn==="__RS__") continue; if(!newBtns.includes(btn)) newBtns.push(btn); }
+    if (newBtns.length !== gamepadPressedButtons.length || newBtns.some((b,i)=>b!==gamepadPressedButtons[i])) {
+      gamepadPressedButtons = newBtns;
+      renderGamepadDisplay();
+    }
+  }
+
+  if (currentlyPressed.size === 0 && gamepadPrevPressed.size > 0) gamepadIsIdle = true;
+  gamepadPrevPressed = currentlyPressed;
+  gamepadRAF = requestAnimationFrame(pollGamepad);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHEATSHEET EXPORT
+// ═══════════════════════════════════════════════════════════════════════════
+
+const PF_CLASSES = {
+  A:{cls:"pf-xbox-a",color:"pf-color-green"},B:{cls:"pf-xbox-b",color:"pf-color-red"},
+  X:{cls:"pf-xbox-x",color:"pf-color-blue"},Y:{cls:"pf-xbox-y",color:"pf-color-yellow"},
+  LB:{cls:"pf-xbox-left-shoulder",color:"pf-color-red-gradient"},RB:{cls:"pf-xbox-right-shoulder",color:"pf-color-green-gradient"},
+  LT:{cls:"pf-xbox-left-trigger",color:"pf-color-red-gradient"},RT:{cls:"pf-xbox-right-trigger",color:"pf-color-green-gradient"},
+  LS:{cls:"pf-analog-l-click",color:"pf-color-analog-l"},RS:{cls:"pf-analog-r-click",color:"pf-color-analog-r"},
+  "LS:X":{cls:"pf-analog-l-left-right",color:"pf-color-analog-l"},"LS:Y":{cls:"pf-analog-l-up-down",color:"pf-color-analog-l"},
+  "LS:XY":{cls:"pf-analog-l-any",color:"pf-color-analog-l"},"RS:X":{cls:"pf-analog-r-left-right",color:"pf-color-analog-r"},
+  "RS:Y":{cls:"pf-analog-r-up-down",color:"pf-color-analog-r"},"RS:XY":{cls:"pf-analog-r-any",color:"pf-color-analog-r"},
+  Start:{cls:"pf-xbox-menu",color:"pf-color-black"},Back:{cls:"pf-xbox-view",color:"pf-color-black"},
+  "▲":{cls:"pf-dpad-up",color:"pf-color-black"},"▼":{cls:"pf-dpad-down",color:"pf-color-black"},
+  "▶":{cls:"pf-dpad-right",color:"pf-color-black"},"◀":{cls:"pf-dpad-left",color:"pf-color-black"},
+  "▲▶":{cls:"pf-gamepad-up-right",color:"pf-color-black"},"▼▶":{cls:"pf-dpad-right-down",color:"pf-color-black"},
+  "◀▼":{cls:"pf-dpad-left-down",color:"pf-color-black"},"◀▲":{cls:"pf-dupad-left-up",color:"pf-color-black"},
+  LP1:{cls:"pf-gamepad-l4",color:"pf-color-dark-purple"},LP2:{cls:"pf-gamepad-l5",color:"pf-color-dark-purple"},
+  RP1:{cls:"pf-gamepad-r4",color:"pf-color-dark-brown"},RP2:{cls:"pf-gamepad-r5",color:"pf-color-dark-brown"},
+  "/":{cls:"pf-device-x360",color:"pf-color-black"},
+};
+
+function pfButtonHTML(mapping) {
+  return parseMappingString(mapping).map(b => {
+    const info = PF_CLASSES[b] || {cls:"pf-button-press",color:"pf-color-black"};
+    return `<span class="pf ${info.cls} ${info.color}"></span>`;
+  }).join("");
+}
+
+function generateCheatsheetHTML(cols, fs) {
+  function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function getChildren(pid) { return items.filter(it=>it.parentId===pid); }
+  function renderCat(cat) {
+    const children = getChildren(cat.id);
+    const subs = children.filter(c=>c.type==="category");
+    const maps = children.filter(c=>c.type==="mapping");
+    let h = `<div class="category-section"><div class="category-header">${e(cat.name)}</div>`;
+    h += `<table><colgroup><col style="width:68%"><col style="width:32%"></colgroup>`;
+    for (const m of maps) h += `<tr><td>${e(m.name)}</td><td>${pfButtonHTML(m.mapping)}</td></tr>`;
+    for (const sub of subs) {
+      const subMaps = getChildren(sub.id).filter(c=>c.type==="mapping");
+      h += `<tr><td colspan="2" style="background:#88aadd;color:#fff;font-weight:bold;text-align:center">${e(sub.name)}</td></tr>`;
+      for (const m of subMaps) h += `<tr><td>${e(m.name)}</td><td>${pfButtonHTML(m.mapping)}</td></tr>`;
+    }
+    h += `</table></div>`;
+    return h;
+  }
+
+  let body = "";
+  const topLevel = items.filter(it=>!it.parentId);
+  for (const item of topLevel) {
+    if (item.type==="category") body += renderCat(item);
+    else if (item.type==="separator") body += `<div style="border-top:2px solid #333;margin:4px 0;break-inside:avoid"></div>`;
+    else if (item.type==="pagebreak") body += `</div><div style="page-break-after:always"></div><div class="container">`;
+    else if (item.type==="colbreak") body += `<div style="break-after:column"></div>`;
+  }
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Controller Mapping Cheat Sheet</title>
+<link rel="stylesheet" href="promptfont.css">
+<style>
+@page{size:A4 auto;margin:3mm}
+body{font-family:メイリオ,Arial,sans-serif;font-size:${fs}pt;line-height:1;background:#fff}
+.container{column-count:${cols};column-gap:3px}
+.category-section{background:#fff;border:1px solid #e0e0e0;margin-bottom:3px;break-inside:avoid;padding:2px;border-radius:2px}
+.category-header{font-weight:bold;background:#1c1c1c;color:#fff;padding:2px;text-align:left;margin-bottom:2px}
+table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:2px}
+td{padding:0 1px;border:1px solid #d0d0d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td:nth-child(1){font-size:${fs-2}pt;text-align:right;padding-right:3px}
+td:nth-child(2){font-size:${fs}pt;text-align:left;padding-left:2px}
+.pf{font-size:${fs}pt;margin:0 1px}
+.pf-color-green{background:linear-gradient(to bottom right,#0F0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-red{background:linear-gradient(to bottom right,#F00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-blue{background:linear-gradient(to bottom right,#33F,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-yellow{background:linear-gradient(to bottom right,#FA0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-black{color:black}
+.pf-color-red-gradient{background:linear-gradient(to bottom,#F00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-green-gradient{background:linear-gradient(to bottom,#0F0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-analog-l{background:radial-gradient(#F00,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-analog-r{background:radial-gradient(#0F0,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-dark-purple{background:linear-gradient(to right,#4B0082,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-dark-brown{background:linear-gradient(to right,#5D4037,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+</style></head><body><div class="container">${body}</div></body></html>`;
+}
+
+function showExportModal() {
+  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
+  document.getElementById("exportFilenameHint").textContent =
+    `出力ファイル: ${baseName}.html（promptfont.css, promptfont.ttf と同じフォルダに配置してください）`;
+  document.getElementById("exportModal").classList.add("show");
+  updateExportPreview();
+}
+function closeExportModal() { document.getElementById("exportModal").classList.remove("show"); }
+function updateExportPreview() {
+  const cols = parseInt(document.getElementById("exportCols").value);
+  const fs = parseFloat(document.getElementById("exportFontSize").value);
+  const html = generateCheatsheetHTML(cols, fs);
+  const iframe = document.getElementById("exportPreview");
+  iframe.srcdoc = html;
+}
+document.getElementById("exportCols")?.addEventListener("change", updateExportPreview);
+document.getElementById("exportFontSize")?.addEventListener("change", updateExportPreview);
+
+function downloadHTML() {
+  const cols = parseInt(document.getElementById("exportCols").value);
+  const fs = parseFloat(document.getElementById("exportFontSize").value);
+  const html = generateCheatsheetHTML(cols, fs);
+  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
+  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = baseName + ".html"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// GAMEPAD STATUS
+// ═══════════════════════════════════════════════════════════════════════════
+
+setInterval(() => {
+  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gps[0]||gps[1]||gps[2]||gps[3];
+  document.getElementById("gpDot").style.background = gp ? "#22c55e" : "#555";
+  document.getElementById("gpStatus").textContent = gp ? "🎮 " + (gp.id||"").substring(0,50) : "コントローラー未接続";
+  document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#666";
+}, 1000);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key === "z") { e.preventDefault(); undo(); }
+  if (e.ctrlKey && e.key === "s") { e.preventDefault(); saveCSV(); }
+  if (e.key === "Delete" && selectedId && (e.target === document.body || e.target.tagName === "DIV")) { deleteItem(selectedId); }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════════════
+
+render();
+</script>
+</body>
+</html>
