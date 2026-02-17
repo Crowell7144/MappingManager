@@ -35,14 +35,11 @@
 
 ```
 index.html               ← メインアプリケーション（ブラウザで開く）
+sample_msfs2024.csv      ← サンプルcsv
 promptfont.css           ← PromptFontスタイルシート（チートシート出力に必要）
 promptfont.ttf           ← PromptFontフォント（チートシート出力に必要）
 PromptFont_LICENSE.txt   ← PromptFontのライセンス
-tsv2csv.py               ← 旧形式TSVから新形式CSVへの変換ツール
-legacy/                  ← 旧バージョン（v1）のファイル
-  tsv2html.py
-  config.ini
-  paste.tsv
+legacy/tsv2csv.py        ← 旧形式TSVから新形式CSVへの変換ツール
 ```
 
 ## 使い方
@@ -154,7 +151,7 @@ RP1, RP2            （エリコン右パドル）
 
 ## 旧バージョンからの移行
 
-旧バージョン（ControllerMappingCheatSheetGenerator）のTSVファイル（`paste.tsv` / `paste.txt`）は、付属の変換スクリプトで新形式のCSVに変換できます。
+旧バージョン（ControllerMappingCheatSheetGenerator）のTSVファイル（`paste.tsv` / `paste.txt`）は、legacy内の変換スクリプトで新形式のCSVに変換できます。
 
 ```bash
 python tsv2csv.py paste.tsv
@@ -167,8 +164,6 @@ python tsv2csv.py paste.tsv
 ```bash
 python tsv2csv.py paste.tsv -o output.csv    # 出力先を指定
 ```
-
-旧バージョンのファイル（`tsv2html.py`, `config.ini`, `paste.tsv`）は `legacy/` フォルダに格納しています。
 
 ## ライセンス
 
