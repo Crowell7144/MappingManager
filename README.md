@@ -36,6 +36,7 @@
 ```
 index.html               ← メインアプリケーション（ブラウザで開く）
 sample_msfs2024.csv      ← サンプルcsv
+LICENSE                  ← 当プロジェクトのライセンス
 promptfont.css           ← PromptFontスタイルシート（チートシート出力に必要）
 promptfont.ttf           ← PromptFontフォント（チートシート出力に必要）
 PromptFont_LICENSE.txt   ← PromptFontのライセンス
