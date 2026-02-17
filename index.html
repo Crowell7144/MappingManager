@@ -89,6 +89,15 @@
   }
   .drag-handle:hover { color: #888; background: rgba(255,255,255,0.06); }
   .drag-handle:active { cursor: grabbing; }
+  .row-delete-btn {
+    width: 22px; height: 22px; flex-shrink: 0; margin-left: 4px;
+    background: transparent; border: none; border-radius: 4px;
+    color: #444; font-size: 15px; line-height: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+  }
+  .item-row:hover .row-delete-btn { opacity: 1; }
+  .row-delete-btn:hover { color: #f87171; background: rgba(248,113,113,0.12); }
   .item-row.drop-child {
     background: rgba(96,165,250,0.15) !important;
     outline: 1px dashed #60a5fa;
@@ -281,6 +290,9 @@
       <span style="color:#555;font-size:12px">なし</span>
     </div>
     <div class="modal-subtitle">コントローラーのボタンを押してください。同時押しに対応しています。</div>
+    <div style="font-size:10px;color:#665;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px">
+      💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。
+    </div>
     <div style="font-size:11px;color:#666;margin-bottom:4px">新しい入力:</div>
     <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
       <span style="color:#555;font-size:13px">入力なし</span>
@@ -296,27 +308,45 @@
 
 <!-- Export Modal -->
 <div class="modal-overlay" id="exportModal">
-  <div class="modal-box" style="width:620px;max-height:80vh;display:flex;flex-direction:column">
+  <div class="modal-box" style="width:660px;max-height:85vh;display:flex;flex-direction:column">
     <div class="modal-title">📄 チートシート出力</div>
-    <div style="display:flex;gap:16px;margin-bottom:12px">
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+    <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         カラム数:
-        <select id="exportCols" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+        <select id="exportCols" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
         </select>
       </label>
-      <label style="display:flex;align-items:center;gap:8px;font-size:13px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         フォントサイズ:
-        <input type="number" id="exportFontSize" value="7" min="4" max="20" step="0.5"
+        <input type="number" id="exportFontSize" value="7" min="4" max="20" step="0.5" onchange="updateExportPreview()"
           style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px;width:60px"> pt
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+        ボタン表示:
+        <select id="exportRenderMode" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+          <option value="promptfont">PromptFont（グリフ）</option>
+          <option value="badge">テキストバッジ（CSS）</option>
+        </select>
+      </label>
+    </div>
+    <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+        フォント参照先:
+        <select id="exportFontSource" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+          <option value="local">ローカル（同フォルダ）</option>
+          <option value="ghpages">GitHub Pages（URL参照）</option>
+        </select>
       </label>
     </div>
     <div id="exportFilenameHint" style="font-size:11px;color:#888;margin-bottom:8px"></div>
-    <div style="flex:1;overflow:auto;background:#fff;border-radius:6px;margin-bottom:16px;min-height:200px">
+    <div style="flex:1;overflow:auto;background:#fff;border-radius:6px;margin-bottom:12px;min-height:200px">
       <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
     </div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
+    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
       <button class="modal-btn" style="background:#555" onclick="closeExportModal()">閉じる</button>
+      <button class="modal-btn" style="background:#6b7280" onclick="openInNewTab()">🔗 別タブで開く</button>
+      <button class="modal-btn" style="background:#7c3aed" onclick="printCheatsheet()">🖨 印刷</button>
       <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()">💾 HTMLを保存</button>
     </div>
   </div>
@@ -595,6 +625,9 @@ function render() {
       }
       html += `</select></div>`;
     }
+
+    // Delete button
+    html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="削除">×</button>`;
 
     html += `</div>`;
   }
@@ -1136,6 +1169,8 @@ function pollGamepad() {
 // CHEATSHEET EXPORT
 // ═══════════════════════════════════════════════════════════════════════════
 
+const GHPAGES_BASE_URL = "https://crowell7144.github.io/MappingManager";
+
 const PF_CLASSES = {
   A:{cls:"pf-xbox-a",color:"pf-color-green"},B:{cls:"pf-xbox-b",color:"pf-color-red"},
   X:{cls:"pf-xbox-x",color:"pf-color-blue"},Y:{cls:"pf-xbox-y",color:"pf-color-yellow"},
@@ -1155,27 +1190,69 @@ const PF_CLASSES = {
   "/":{cls:"pf-device-x360",color:"pf-color-black"},
 };
 
+// Badge colors for text badge mode (used in both editor and badge-mode export)
+const BADGE_COLORS = {
+  A:"#107C10", B:"#E81123", X:"#0078D7", Y:"#FFC300",
+  LB:"#555", RB:"#555", LT:"#666", RT:"#666",
+  LS:"#C23B22", RS:"#2E8B57",
+  "LS:X":"#C23B22", "LS:Y":"#C23B22", "LS:XY":"#C23B22",
+  "RS:X":"#2E8B57", "RS:Y":"#2E8B57", "RS:XY":"#2E8B57",
+  Start:"#333", Back:"#333",
+  "▲":"#222", "▼":"#222", "▶":"#222", "◀":"#222",
+  "▲▶":"#222", "▼▶":"#222", "◀▼":"#222", "◀▲":"#222",
+  LP1:"#4B0082", LP2:"#4B0082", RP1:"#5D4037", RP2:"#5D4037",
+  "/":"#1a1a1a",
+};
+const BADGE_TEXT_COLORS = { Y:"#1a1a1a" }; // dark text for yellow
+
 function pfButtonHTML(mapping) {
   return parseMappingString(mapping).map(b => {
-    const info = PF_CLASSES[b] || {cls:"pf-button-press",color:"pf-color-black"};
-    return `<span class="pf ${info.cls} ${info.color}"></span>`;
+    const info = PF_CLASSES[b];
+    if (info) return `<span class="pf ${info.cls} ${info.color}"></span>`;
+    // Unknown button fallback: text badge in PromptFont mode too
+    return `<span class="btn-b" style="background:#555;color:#fff">${esc(b)}</span>`;
   }).join("");
 }
 
-function generateCheatsheetHTML(cols, fs) {
+function badgeButtonHTML(mapping, fs) {
+  const btns = parseMappingString(mapping);
+  if (btns.length === 0) return "";
+  return btns.map((b, i) => {
+    const bg = BADGE_COLORS[b] || "#555";
+    const tc = BADGE_TEXT_COLORS[b] || "#fff";
+    const label = BUTTON_STYLES[b]?.label || b;
+    const prefix = i > 0 ? `<span style="color:#888;font-size:${Math.max(fs-2,4)}pt;margin:0 1px">+</span>` : "";
+    return `${prefix}<span class="btn-b" style="background:${bg};color:${tc}">${esc(label)}</span>`;
+  }).join("");
+}
+
+function getExportSettings() {
+  const mode = document.getElementById("exportRenderMode").value;
+  return {
+    cols: parseInt(document.getElementById("exportCols").value),
+    fs: parseFloat(document.getElementById("exportFontSize").value),
+    mode,
+    fontSource: mode === "promptfont" ? document.getElementById("exportFontSource").value : null,
+  };
+}
+
+function generateCheatsheetHTML(cols, fs, mode, fontSource) {
   function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function getChildren(pid) { return items.filter(it=>it.parentId===pid); }
+
+  const btnFn = mode === "badge" ? (m) => badgeButtonHTML(m, fs) : pfButtonHTML;
+
   function renderCat(cat) {
     const children = getChildren(cat.id);
     const subs = children.filter(c=>c.type==="category");
     const maps = children.filter(c=>c.type==="mapping");
     let h = `<div class="category-section"><div class="category-header">${e(cat.name)}</div>`;
     h += `<table><colgroup><col style="width:68%"><col style="width:32%"></colgroup>`;
-    for (const m of maps) h += `<tr><td>${e(m.name)}</td><td>${pfButtonHTML(m.mapping)}</td></tr>`;
+    for (const m of maps) h += `<tr><td>${e(m.name)}</td><td>${btnFn(m.mapping)}</td></tr>`;
     for (const sub of subs) {
       const subMaps = getChildren(sub.id).filter(c=>c.type==="mapping");
       h += `<tr><td colspan="2" style="background:#88aadd;color:#fff;font-weight:bold;text-align:center">${e(sub.name)}</td></tr>`;
-      for (const m of subMaps) h += `<tr><td>${e(m.name)}</td><td>${pfButtonHTML(m.mapping)}</td></tr>`;
+      for (const m of subMaps) h += `<tr><td>${e(m.name)}</td><td>${btnFn(m.mapping)}</td></tr>`;
     }
     h += `</table></div>`;
     return h;
@@ -1190,18 +1267,17 @@ function generateCheatsheetHTML(cols, fs) {
     else if (item.type==="colbreak") body += `<div style="break-after:column"></div>`;
   }
 
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Controller Mapping Cheat Sheet</title>
-<link rel="stylesheet" href="promptfont.css">
-<style>
-@page{size:A4 auto;margin:3mm}
-body{font-family:メイリオ,Arial,sans-serif;font-size:${fs}pt;line-height:1;background:#fff}
-.container{column-count:${cols};column-gap:3px}
-.category-section{background:#fff;border:1px solid #e0e0e0;margin-bottom:3px;break-inside:avoid;padding:2px;border-radius:2px}
-.category-header{font-weight:bold;background:#1c1c1c;color:#fff;padding:2px;text-align:left;margin-bottom:2px}
-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:2px}
-td{padding:0 1px;border:1px solid #d0d0d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-td:nth-child(1){font-size:${fs-2}pt;text-align:right;padding-right:3px}
-td:nth-child(2){font-size:${fs}pt;text-align:left;padding-left:2px}
+  // PromptFont CSS reference (only for promptfont mode)
+  let pfLink = "";
+  if (mode === "promptfont") {
+    const cssUrl = fontSource === "ghpages" ? `${GHPAGES_BASE_URL}/promptfont.css` : "promptfont.css";
+    pfLink = `<link rel="stylesheet" href="${cssUrl}">`; 
+  }
+
+  // Badge styles (always included as fallback for unknown buttons, and as primary for badge mode)
+  const badgeCSS = `.btn-b{display:inline-block;padding:0 3px;border-radius:2px;font-size:${Math.max(fs-1,4)}pt;font-weight:bold;font-family:Arial,sans-serif;line-height:${fs+2}pt;margin:0 0.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}`;
+
+  const pfColorCSS = mode === "promptfont" ? `
 .pf{font-size:${fs}pt;margin:0 1px}
 .pf-color-green{background:linear-gradient(to bottom right,#0F0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .pf-color-red{background:linear-gradient(to bottom right,#F00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -1213,37 +1289,79 @@ td:nth-child(2){font-size:${fs}pt;text-align:left;padding-left:2px}
 .pf-color-analog-l{background:radial-gradient(#F00,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .pf-color-analog-r{background:radial-gradient(#0F0,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .pf-color-dark-purple{background:linear-gradient(to right,#4B0082,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-dark-brown{background:linear-gradient(to right,#5D4037,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.pf-color-dark-brown{background:linear-gradient(to right,#5D4037,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}` : "";
+
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Controller Mapping Cheat Sheet</title>
+${pfLink}
+<style>
+@page{size:A4 auto;margin:3mm}
+body{font-family:メイリオ,Arial,sans-serif;font-size:${fs}pt;line-height:1;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.container{column-count:${cols};column-gap:3px}
+.category-section{background:#fff;border:1px solid #e0e0e0;margin-bottom:3px;break-inside:avoid;padding:2px;border-radius:2px}
+.category-header{font-weight:bold;background:#1c1c1c;color:#fff;padding:2px;text-align:left;margin-bottom:2px}
+table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:2px}
+td{padding:0 1px;border:1px solid #d0d0d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+td:nth-child(1){font-size:${fs-2}pt;text-align:right;padding-right:3px}
+td:nth-child(2){font-size:${fs}pt;text-align:left;padding-left:2px}
+${badgeCSS}
+${pfColorCSS}
 </style></head><body><div class="container">${body}</div></body></html>`;
 }
 
 function showExportModal() {
-  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
-  document.getElementById("exportFilenameHint").textContent =
-    `出力ファイル: ${baseName}.html（promptfont.css, promptfont.ttf と同じフォルダに配置してください）`;
   document.getElementById("exportModal").classList.add("show");
   updateExportPreview();
 }
 function closeExportModal() { document.getElementById("exportModal").classList.remove("show"); }
+
 function updateExportPreview() {
-  const cols = parseInt(document.getElementById("exportCols").value);
-  const fs = parseFloat(document.getElementById("exportFontSize").value);
-  const html = generateCheatsheetHTML(cols, fs);
-  const iframe = document.getElementById("exportPreview");
-  iframe.srcdoc = html;
+  const {cols, fs, mode, fontSource} = getExportSettings();
+  const html = generateCheatsheetHTML(cols, fs, mode, fontSource);
+  document.getElementById("exportPreview").srcdoc = html;
+  // Toggle font source row visibility
+  document.getElementById("fontSourceRow").style.display = mode === "promptfont" ? "flex" : "none";
+  // Update filename hint
+  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
+  let hint = `出力ファイル: ${baseName}.html`;
+  if (mode === "promptfont") {
+    if (fontSource === "ghpages") hint += `（フォントをGitHub Pagesから読み込み — 単体で動作します）`;
+    else hint += `（promptfont.css, promptfont.ttf と同じフォルダに配置してください）`;
+  } else {
+    hint += `（外部ファイル不要 — 単体で動作します）`;
+  }
+  document.getElementById("exportFilenameHint").textContent = hint;
 }
-document.getElementById("exportCols")?.addEventListener("change", updateExportPreview);
-document.getElementById("exportFontSize")?.addEventListener("change", updateExportPreview);
+
+function getExportHTML() {
+  const {cols, fs, mode, fontSource} = getExportSettings();
+  return generateCheatsheetHTML(cols, fs, mode, fontSource);
+}
 
 function downloadHTML() {
-  const cols = parseInt(document.getElementById("exportCols").value);
-  const fs = parseFloat(document.getElementById("exportFontSize").value);
-  const html = generateCheatsheetHTML(cols, fs);
+  const html = getExportHTML();
   const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
   const blob = new Blob([html], {type:"text/html;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob); a.download = baseName + ".html"; a.click();
   URL.revokeObjectURL(a.href);
+}
+
+function openInNewTab() {
+  const html = getExportHTML();
+  const w = window.open("", "_blank");
+  if (w) { w.document.write(html); w.document.close(); }
+}
+
+function printCheatsheet() {
+  const html = getExportHTML();
+  const w = window.open("", "_blank");
+  if (w) {
+    w.document.write(html);
+    w.document.close();
+    w.onload = () => { w.print(); };
+    // fallback if onload doesn't fire
+    setTimeout(() => { try { w.print(); } catch(e) {} }, 500);
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

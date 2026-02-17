@@ -1,24 +1,32 @@
-# Controller Mapping Cheatsheet Manager
+# Mapping Manager
 
 コントローラーのボタンマッピングを管理し、チートシート形式のHTMLを出力するツールです。
 
 ブラウザ上で動作する単体HTMLアプリケーションで、Python等の実行環境は不要です。
 
 <!-- スクリーンショットがあればここに追加 -->
-<!-- ![screenshot](docs/screenshot.png) -->
+<!-- ![screenshot](screenshot.png) -->
 
 ## 主な機能
 
 - **GUIでのマッピング編集** — カテゴリ・マッピング・セパレーター等をリストで管理
 - **コントローラー直接入力** — Gamepad APIによるボタン入力で、同時押しを順番通りに記録
 - **ドラッグ&ドロップ** — アイテムの並べ替え、カテゴリ間の移動
-- **チートシート出力** — PromptFontを使ったボタンアイコン付きHTMLを生成（印刷・サブ画面表示用）
+- **チートシート出力** — PromptFontまたはテキストバッジでボタンアイコン付きHTMLを生成（印刷・サブ画面表示用）
 - **CSV入出力** — データをCSVファイルで保存・読み込み
 
 ## クイックスタート
 
-1. [Releases](https://github.com/Crowell7144/ControllerMappingCheatSheetGenerator/releases) からZIPをダウンロードして展開
-2. `cheatsheet-manager.html` をブラウザで開く
+### オンライン（GitHub Pages）
+
+ダウンロード不要で、ブラウザからすぐに使えます:
+
+👉 **https://crowell7144.github.io/MappingManager/**
+
+### ローカル
+
+1. [Releases](https://github.com/Crowell7144/MappingManager/releases) からZIPをダウンロードして展開
+2. `index.html` をブラウザで開く
 3. 「+ マッピング」「+ カテゴリ」ボタンでアイテムを追加
 4. 🎮 アイコンをクリックしてコントローラーからボタンを入力、またはマッピング欄をクリックして文字列を直接編集
 5. 「CSV保存」でデータを保存、「チートシート出力」でHTMLを出力
@@ -26,11 +34,15 @@
 ## ファイル構成
 
 ```
-cheatsheet-manager.html  ← メインアプリケーション（ブラウザで開く）
+index.html               ← メインアプリケーション（ブラウザで開く）
 promptfont.css           ← PromptFontスタイルシート（チートシート出力に必要）
 promptfont.ttf           ← PromptFontフォント（チートシート出力に必要）
 PromptFont_LICENSE.txt   ← PromptFontのライセンス
-legacy/tsv2csv.py        ← 旧バージョン（v1）のファイル
+tsv2csv.py               ← 旧形式TSVから新形式CSVへの変換ツール
+legacy/                  ← 旧バージョン（v1）のファイル
+  tsv2html.py
+  config.ini
+  paste.tsv
 ```
 
 ## 使い方
@@ -44,6 +56,7 @@ legacy/tsv2csv.py        ← 旧バージョン（v1）のファイル
 | 右クリック | 挿入・移動・コピー・削除メニュー |
 | ドラッグハンドル (⠿) | アイテムの並べ替え・カテゴリ間移動 |
 | カテゴリの ▼/▶ | 子アイテムの折りたたみ |
+| 行右端の × | アイテムの削除 |
 
 ### コントローラー入力モーダル
 
@@ -55,6 +68,11 @@ legacy/tsv2csv.py        ← 旧バージョン（v1）のファイル
 | Space | 適用して次のマッピングへ |
 | Tab | 変更せずに次のマッピングへ |
 | Esc | キャンセル |
+
+> **⚠️ パドル入力（LP1, LP2, RP1, RP2）について**
+>
+> Gamepad APIの制約により、エリートコントローラー等のパドルボタンはコントローラー入力モーダルから取得できません。マッピング欄をクリックして `[LP1]` 等と直接入力してください。
+> 定義されていないボタン名も `[任意の名前]` として入力可能で、グレーのバッジとして表示されます。
 
 ### キーボードショートカット
 
@@ -69,7 +87,23 @@ legacy/tsv2csv.py        ← 旧バージョン（v1）のファイル
 「チートシート出力」ボタンからHTMLを生成できます。
 
 - カラム数（1〜4）とフォントサイズを指定可能
-- 出力したHTMLは `promptfont.css` と `promptfont.ttf` と同じフォルダに配置してください
+- **ボタン表示モード** を選択可能:
+
+| モード | 説明 |
+|--------|------|
+| PromptFont（グリフ） | フォントのグリフでボタンアイコンを表示。印刷品質が高い |
+| テキストバッジ（CSS） | 背景色付きテキストでボタンを表示。外部ファイル不要で単体動作する |
+
+- PromptFontモードでは**フォント参照先**を選択可能:
+
+| 参照先 | 説明 |
+|--------|------|
+| ローカル（同フォルダ） | 相対パスで参照。出力HTMLと同フォルダに `promptfont.css`, `promptfont.ttf` の配置が必要 |
+| GitHub Pages（URL参照） | GitHub Pages上のフォントを参照。出力HTML単体で動作する（インターネット接続が必要） |
+
+- **🔗 別タブで開く** — 生成結果をブラウザの別タブで表示
+- **🖨 印刷** — 別タブで開いてブラウザの印刷ダイアログを呼び出し
+- **💾 HTMLを保存** — HTMLファイルとしてダウンロード
 
 ### マッピング文字列の書式
 
@@ -96,6 +130,8 @@ RP1, RP2            （エリコン右パドル）
 /                    （コントローラーアイコン）
 ```
 
+上記以外の任意の文字列も `[任意の名前]` として入力可能です。未定義のボタン名はグレーのバッジとして表示されます。
+
 ### アイテム種類
 
 | 種別 | 説明 |
@@ -106,9 +142,19 @@ RP1, RP2            （エリコン右パドル）
 | 改ページ | チートシート出力時に強制改ページ |
 | 改カラム | チートシート出力時に強制カラム分割 |
 
-## 旧バージョン（v1）からの移行
+## GitHub Pages
 
-v1の TSVファイル（`paste.tsv` / `paste.txt`）は、`legacy/` フォルダ内の変換スクリプトで新形式のCSVに変換できます。
+本リポジトリは GitHub Pages で公開されています。ルートの `index.html` がそのまま配信されます。
+
+### 有効化手順（リポジトリ管理者向け）
+
+1. リポジトリの Settings → Pages を開く
+2. Source を「Deploy from a branch」に設定
+3. Branch を `main`、フォルダを `/ (root)` に設定して Save
+
+## 旧バージョンからの移行
+
+旧バージョン（ControllerMappingCheatSheetGenerator）のTSVファイル（`paste.tsv` / `paste.txt`）は、付属の変換スクリプトで新形式のCSVに変換できます。
 
 ```bash
 python tsv2csv.py paste.tsv
@@ -121,6 +167,8 @@ python tsv2csv.py paste.tsv
 ```bash
 python tsv2csv.py paste.tsv -o output.csv    # 出力先を指定
 ```
+
+旧バージョンのファイル（`tsv2html.py`, `config.ini`, `paste.tsv`）は `legacy/` フォルダに格納しています。
 
 ## ライセンス
 
