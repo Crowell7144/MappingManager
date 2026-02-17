@@ -243,26 +243,28 @@
 <!-- Header -->
 <div id="header">
   <span class="app-title">🎮 Mapping Manager</span>
-  <span class="filename" id="filenameDisplay" title="クリックしてファイル名を変更" onclick="startFileNameEdit()" style="cursor:pointer">new_mapping.csv</span>
+  <span class="filename" id="filenameDisplay" data-i18n-title="filename.tooltip" onclick="startFileNameEdit()" style="cursor:pointer">new_mapping.csv</span>
   <input type="text" id="filenameEdit" class="filename" style="display:none;cursor:text;outline:1px solid #5a5aff;width:220px"
     onblur="finishFileNameEdit()" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value=fileName;this.blur();}">
   <span class="toolbar-spacer"></span>
-  <button class="toolbar-btn" onclick="handleNew()">📄 新規</button>
-  <button class="toolbar-btn" onclick="openCSV()">📂 CSV読込</button>
-  <button class="toolbar-btn accent" onclick="saveCSV()">💾 CSV保存</button>
+  <button class="toolbar-btn" onclick="handleNew()" data-i18n="btn.new">📄 新規</button>
+  <button class="toolbar-btn" onclick="openCSV()" data-i18n="btn.openCsv">📂 CSV読込</button>
+  <button class="toolbar-btn accent" onclick="saveCSV()" data-i18n="btn.saveCsv">💾 CSV保存</button>
   <span class="toolbar-sep"></span>
-  <button class="toolbar-btn accent2" onclick="showExportModal()">📄 チートシート出力</button>
+  <button class="toolbar-btn accent2" onclick="showExportModal()" data-i18n="btn.export">📄 チートシート出力</button>
   <span class="toolbar-sep"></span>
-  <button class="toolbar-btn" id="undoBtn" onclick="undo()" disabled>↩ 元に戻す</button>
+  <button class="toolbar-btn" id="undoBtn" onclick="undo()" disabled data-i18n="btn.undo">↩ 元に戻す</button>
+  <span class="toolbar-sep"></span>
+  <button class="toolbar-btn" onclick="setLang(currentLang==='ja'?'en':'ja')" id="langBtn" style="font-size:13px">🌐 EN</button>
   <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleOpenCSV(event)">
 </div>
 
 <!-- Column Headers -->
 <div id="col-headers">
-  <div class="col-type" style="padding-left:28px">種別</div>
-  <div class="col-name">名前</div>
-  <div class="col-mapping">マッピング</div>
-  <div class="col-parent" style="margin-left:6px">親</div>
+  <div class="col-type" style="padding-left:28px" data-i18n="col.type">種別</div>
+  <div class="col-name" data-i18n="col.name">名前</div>
+  <div class="col-mapping" data-i18n="col.mapping">マッピング</div>
+  <div class="col-parent" style="margin-left:6px" data-i18n="col.parent">親</div>
 </div>
 
 <!-- Item List -->
@@ -270,11 +272,11 @@
 
 <!-- Add Buttons -->
 <div id="add-bar">
-  <button class="add-btn" style="color:#60a5fa;border-color:#60a5fa" onclick="addItem('mapping')">+ マッピング</button>
-  <button class="add-btn" style="color:#f59e0b;border-color:#f59e0b" onclick="addItem('category')">+ カテゴリ</button>
-  <button class="add-btn" style="color:#888;border-color:#888" onclick="addItem('separator')">+ セパレーター</button>
-  <button class="add-btn" style="color:#c084fc;border-color:#c084fc" onclick="addItem('pagebreak')">+ 改ページ</button>
-  <button class="add-btn" style="color:#34d399;border-color:#34d399" onclick="addItem('colbreak')">+ 改カラム</button>
+  <button class="add-btn" style="color:#60a5fa;border-color:#60a5fa" onclick="addItem('mapping')" data-i18n="add.mapping">+ マッピング</button>
+  <button class="add-btn" style="color:#f59e0b;border-color:#f59e0b" onclick="addItem('category')" data-i18n="add.category">+ カテゴリ</button>
+  <button class="add-btn" style="color:#888;border-color:#888" onclick="addItem('separator')" data-i18n="add.separator">+ セパレーター</button>
+  <button class="add-btn" style="color:#c084fc;border-color:#c084fc" onclick="addItem('pagebreak')" data-i18n="add.pagebreak">+ 改ページ</button>
+  <button class="add-btn" style="color:#34d399;border-color:#34d399" onclick="addItem('colbreak')" data-i18n="add.colbreak">+ 改カラム</button>
 </div>
 
 <!-- Context Menu -->
@@ -283,25 +285,23 @@
 <!-- Gamepad Input Modal -->
 <div class="modal-overlay" id="gamepadModal">
   <div class="modal-box" style="min-width:420px;max-width:500px">
-    <div class="modal-title">🎮 コントローラ入力待機中</div>
+    <div class="modal-title" data-i18n="gp.title">🎮 コントローラ入力待機中</div>
     <div id="gamepadItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-    <div style="font-size:11px;color:#666;margin-bottom:4px">現在のマッピング:</div>
+    <div style="font-size:11px;color:#666;margin-bottom:4px" data-i18n="gp.currentMapping">現在のマッピング:</div>
     <div id="gamepadCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:12px">
-      <span style="color:#555;font-size:12px">なし</span>
+      <span style="color:#555;font-size:12px" data-i18n="gp.none">なし</span>
     </div>
-    <div class="modal-subtitle">コントローラーのボタンを押してください。同時押しに対応しています。</div>
-    <div style="font-size:10px;color:#665;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px">
-      💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。
-    </div>
-    <div style="font-size:11px;color:#666;margin-bottom:4px">新しい入力:</div>
+    <div class="modal-subtitle" data-i18n="gp.instruction">コントローラーのボタンを押してください。同時押しに対応しています。</div>
+    <div style="font-size:10px;color:#665;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px" data-i18n-html="gp.paddleHint"></div>
+    <div style="font-size:11px;color:#666;margin-bottom:4px" data-i18n="gp.newInput">新しい入力:</div>
     <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
-      <span style="color:#555;font-size:13px">入力なし</span>
+      <span style="color:#555;font-size:13px" data-i18n="gp.noInput">入力なし</span>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
-      <button class="modal-btn" style="background:#555" onclick="gamepadCancel()">キャンセル <kbd class="kbd-hint">Esc</kbd></button>
-      <button class="modal-btn" style="background:#6b7280" onclick="gamepadSkipNext()">次へ <kbd class="kbd-hint">Tab</kbd></button>
-      <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()">適用 <kbd class="kbd-hint">Enter</kbd></button>
-      <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()">適用して次へ <kbd class="kbd-hint">Space</kbd></button>
+      <button class="modal-btn" style="background:#555" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
+      <button class="modal-btn" style="background:#6b7280" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
+      <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()"><span data-i18n="gp.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
+      <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()"><span data-i18n="gp.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
   </div>
 </div>
@@ -309,33 +309,33 @@
 <!-- Export Modal -->
 <div class="modal-overlay" id="exportModal">
   <div class="modal-box" style="width:660px;max-height:85vh;display:flex;flex-direction:column">
-    <div class="modal-title">📄 チートシート出力</div>
+    <div class="modal-title" data-i18n="exp.title">📄 チートシート出力</div>
     <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-        カラム数:
+        <span data-i18n="exp.columns">カラム数:</span>
         <select id="exportCols" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
         </select>
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-        フォントサイズ:
+        <span data-i18n="exp.fontSize">フォントサイズ:</span>
         <input type="number" id="exportFontSize" value="7" min="4" max="20" step="0.5" onchange="updateExportPreview()"
           style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px;width:60px"> pt
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-        ボタン表示:
+        <span data-i18n="exp.buttonStyle">ボタン表示:</span>
         <select id="exportRenderMode" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
-          <option value="promptfont">PromptFont（グリフ）</option>
-          <option value="badge">テキストバッジ（CSS）</option>
+          <option value="promptfont" data-i18n="exp.promptfont">PromptFont（グリフ）</option>
+          <option value="badge" data-i18n="exp.badge">テキストバッジ（CSS）</option>
         </select>
       </label>
     </div>
     <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
-        フォント参照先:
+        <span data-i18n="exp.fontSource">フォント参照先:</span>
         <select id="exportFontSource" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
-          <option value="local">ローカル（同フォルダ）</option>
-          <option value="ghpages">GitHub Pages（URL参照）</option>
+          <option value="local" data-i18n="exp.fontLocal">ローカル（同フォルダ）</option>
+          <option value="ghpages" data-i18n="exp.fontGhpages">GitHub Pages（URL参照）</option>
         </select>
       </label>
     </div>
@@ -344,10 +344,10 @@
       <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="modal-btn" style="background:#555" onclick="closeExportModal()">閉じる</button>
-      <button class="modal-btn" style="background:#6b7280" onclick="openInNewTab()">🔗 別タブで開く</button>
-      <button class="modal-btn" style="background:#7c3aed" onclick="printCheatsheet()">🖨 印刷</button>
-      <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()">💾 HTMLを保存</button>
+      <button class="modal-btn" style="background:#555" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
+      <button class="modal-btn" style="background:#6b7280" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
+      <button class="modal-btn" style="background:#7c3aed" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>
+      <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()" data-i18n="exp.saveHtml">💾 HTMLを保存</button>
     </div>
   </div>
 </div>
@@ -355,12 +355,232 @@
 <!-- Status Bar -->
 <div id="status-bar">
   <span class="status-dot" id="gpDot" style="background:#555"></span>
-  <span id="gpStatus">コントローラー未接続</span>
+  <span id="gpStatus" data-i18n="status.noController">コントローラー未接続</span>
   <span class="toolbar-spacer"></span>
-  <span>Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>
+  <span data-i18n="status.shortcuts">Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>
 </div>
 
 <script>
+// ═══════════════════════════════════════════════════════════════════════════
+// I18N (INTERNATIONALIZATION)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const I18N = {
+  ja: {
+    // Header / Toolbar
+    "filename.tooltip": "クリックしてファイル名を変更",
+    "btn.new": "📄 新規",
+    "btn.openCsv": "📂 CSV読込",
+    "btn.saveCsv": "💾 CSV保存",
+    "btn.export": "📄 チートシート出力",
+    "btn.undo": "↩ 元に戻す",
+    // Column Headers
+    "col.type": "種別",
+    "col.name": "名前",
+    "col.mapping": "マッピング",
+    "col.parent": "親",
+    // Add Buttons
+    "add.mapping": "+ マッピング",
+    "add.category": "+ カテゴリ",
+    "add.separator": "+ セパレーター",
+    "add.pagebreak": "+ 改ページ",
+    "add.colbreak": "+ 改カラム",
+    // Type Labels
+    "type.category": "カテゴリ",
+    "type.mapping": "マッピング",
+    "type.separator": "セパレーター",
+    "type.pagebreak": "改ページ",
+    "type.colbreak": "改カラム",
+    // Gamepad Modal
+    "gp.title": "🎮 コントローラ入力待機中",
+    "gp.currentMapping": "現在のマッピング:",
+    "gp.none": "なし",
+    "gp.instruction": "コントローラーのボタンを押してください。同時押しに対応しています。",
+    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。',
+    "gp.newInput": "新しい入力:",
+    "gp.noInput": "入力なし",
+    "gp.cancel": "キャンセル",
+    "gp.skip": "次へ",
+    "gp.apply": "適用",
+    "gp.applyNext": "適用して次へ",
+    "gp.nameEmpty": "（名前未設定）",
+    // Export Modal
+    "exp.title": "📄 チートシート出力",
+    "exp.columns": "カラム数:",
+    "exp.fontSize": "フォントサイズ:",
+    "exp.buttonStyle": "ボタン表示:",
+    "exp.promptfont": "PromptFont（グリフ）",
+    "exp.badge": "テキストバッジ（CSS）",
+    "exp.fontSource": "フォント参照先:",
+    "exp.fontLocal": "ローカル（同フォルダ）",
+    "exp.fontGhpages": "GitHub Pages（URL参照）",
+    "exp.close": "閉じる",
+    "exp.newTab": "🔗 別タブで開く",
+    "exp.print": "🖨 印刷",
+    "exp.saveHtml": "💾 HTMLを保存",
+    "exp.hintFile": "出力ファイル:",
+    "exp.hintLocal": "（promptfont.css, promptfont.ttf と同じフォルダに配置してください）",
+    "exp.hintGhpages": "（フォントをGitHub Pagesから読み込み — 単体で動作します）",
+    "exp.hintBadge": "（外部ファイル不要 — 単体で動作します）",
+    // Status Bar
+    "status.noController": "コントローラー未接続",
+    "status.shortcuts": "Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー",
+    // Context Menu
+    "ctx.insertAbove": "⬆ 上に挿入",
+    "ctx.insertBelow": "⬇ 下に挿入",
+    "ctx.moveUp": "⬆ 上へ移動",
+    "ctx.moveDown": "⬇ 下へ移動",
+    "ctx.copy": "📋 コピー",
+    "ctx.cut": "✂️ 切り取り",
+    "ctx.pasteAbove": "📋 上に貼り付け",
+    "ctx.pasteBelow": "📋 下に貼り付け",
+    "ctx.delete": "🗑 削除",
+    // Render / Misc
+    "list.empty": 'アイテムがありません。下の「+」ボタンか、CSVファイルを読み込んでください。',
+    "drag.tooltip": "ドラッグして移動",
+    "deco.pagebreak": "改ページ",
+    "deco.colbreak": "改カラム",
+    "placeholder.category": "カテゴリ名...",
+    "placeholder.mapping": "機能名...",
+    "mapping.clickToEdit": "クリックして入力...",
+    "gamepad.tooltip": "コントローラーで入力",
+    "parent.root": "（ルート）",
+    "delete.tooltip": "削除",
+    "confirm.new": "現在のデータを破棄して新規作成しますか？",
+    // Language
+    "lang.label": "🌐",
+  },
+  en: {
+    "filename.tooltip": "Click to rename",
+    "btn.new": "📄 New",
+    "btn.openCsv": "📂 Open CSV",
+    "btn.saveCsv": "💾 Save CSV",
+    "btn.export": "📄 Export Cheatsheet",
+    "btn.undo": "↩ Undo",
+    "col.type": "Type",
+    "col.name": "Name",
+    "col.mapping": "Mapping",
+    "col.parent": "Parent",
+    "add.mapping": "+ Mapping",
+    "add.category": "+ Category",
+    "add.separator": "+ Separator",
+    "add.pagebreak": "+ Page Break",
+    "add.colbreak": "+ Col Break",
+    "type.category": "Category",
+    "type.mapping": "Mapping",
+    "type.separator": "Separator",
+    "type.pagebreak": "Page Break",
+    "type.colbreak": "Col Break",
+    "gp.title": "🎮 Waiting for Controller Input",
+    "gp.currentMapping": "Current mapping:",
+    "gp.none": "None",
+    "gp.instruction": "Press buttons on your controller. Simultaneous presses are supported.",
+    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code style="color:#aaa">[LP1]</code> etc. directly in the mapping field.',
+    "gp.newInput": "New input:",
+    "gp.noInput": "No input",
+    "gp.cancel": "Cancel",
+    "gp.skip": "Skip",
+    "gp.apply": "Apply",
+    "gp.applyNext": "Apply & Next",
+    "gp.nameEmpty": "(unnamed)",
+    "exp.title": "📄 Export Cheatsheet",
+    "exp.columns": "Columns:",
+    "exp.fontSize": "Font size:",
+    "exp.buttonStyle": "Button style:",
+    "exp.promptfont": "PromptFont (Glyph)",
+    "exp.badge": "Text Badge (CSS)",
+    "exp.fontSource": "Font source:",
+    "exp.fontLocal": "Local (same folder)",
+    "exp.fontGhpages": "GitHub Pages (URL)",
+    "exp.close": "Close",
+    "exp.newTab": "🔗 Open in New Tab",
+    "exp.print": "🖨 Print",
+    "exp.saveHtml": "💾 Save HTML",
+    "exp.hintFile": "Output file:",
+    "exp.hintLocal": "(place alongside promptfont.css and promptfont.ttf)",
+    "exp.hintGhpages": "(loads font from GitHub Pages — works standalone)",
+    "exp.hintBadge": "(no external files needed — works standalone)",
+    "status.noController": "No controller connected",
+    "status.shortcuts": "Ctrl+S: Save | Ctrl+Z: Undo | Right-click: Menu",
+    "ctx.insertAbove": "⬆ Insert Above",
+    "ctx.insertBelow": "⬇ Insert Below",
+    "ctx.moveUp": "⬆ Move Up",
+    "ctx.moveDown": "⬇ Move Down",
+    "ctx.copy": "📋 Copy",
+    "ctx.cut": "✂️ Cut",
+    "ctx.pasteAbove": "📋 Paste Above",
+    "ctx.pasteBelow": "📋 Paste Below",
+    "ctx.delete": "🗑 Delete",
+    "list.empty": "No items. Use the \"+\" buttons below or open a CSV file.",
+    "drag.tooltip": "Drag to reorder",
+    "deco.pagebreak": "Page Break",
+    "deco.colbreak": "Col Break",
+    "placeholder.category": "Category name...",
+    "placeholder.mapping": "Function name...",
+    "mapping.clickToEdit": "Click to edit...",
+    "gamepad.tooltip": "Input from controller",
+    "parent.root": "(root)",
+    "delete.tooltip": "Delete",
+    "confirm.new": "Discard current data and create new?",
+    "lang.label": "🌐",
+  }
+};
+
+let currentLang = "ja";
+
+function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ja[key] || key; }
+
+function detectLang() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("lang") && I18N[params.get("lang")]) return params.get("lang");
+  const stored = localStorage.getItem("mappingManagerLang");
+  if (stored && I18N[stored]) return stored;
+  const nav = (navigator.language || "").substring(0, 2);
+  return I18N[nav] ? nav : "ja";
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem("mappingManagerLang", lang);
+  const url = new URL(window.location);
+  url.searchParams.set("lang", lang);
+  history.replaceState(null, "", url);
+  document.documentElement.lang = lang;
+  translatePage();
+  if (typeof updateLangButton === "function") updateLangButton();
+  render();
+}
+
+function translatePage() {
+  // Static elements with data-i18n
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    el.innerHTML = t(el.dataset.i18nHtml);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  // Update gamepad status immediately
+  updateGamepadStatusText();
+}
+
+function updateGamepadStatusText() {
+  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
+  const gp = gps[0]||gps[1]||gps[2]||gps[3];
+  document.getElementById("gpDot").style.background = gp ? "#22c55e" : "#555";
+  document.getElementById("gpStatus").textContent = gp ? "🎮 " + (gp.id||"").substring(0,50) : t("status.noController");
+  document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#666";
+}
+
+function getTypeLabelMap() {
+  return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak"), colbreak:t("type.colbreak") };
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // DATA MODEL
 // ═══════════════════════════════════════════════════════════════════════════
@@ -422,7 +642,7 @@ const AXIS_THRESHOLD = 0.5;
 const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY"]);
 const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY"]);
 
-const TYPE_LABELS = { category:"カテゴリ", mapping:"マッピング", separator:"セパレーター", pagebreak:"改ページ", colbreak:"改カラム" };
+function getTypeLabels() { return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak"), colbreak:t("type.colbreak") }; }
 const TYPE_COLORS = { category:"#f59e0b", mapping:"#60a5fa", separator:"#888", pagebreak:"#c084fc", colbreak:"#34d399" };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -550,7 +770,7 @@ function render() {
 
   let html = "";
   if (ordered.length === 0) {
-    html = '<div style="text-align:center;padding:40px;color:#555;font-size:13px">アイテムがありません。下の「+」ボタンか、CSVファイルを読み込んでください。</div>';
+    html = `<div style="text-align:center;padding:40px;color:#555;font-size:13px">${t("list.empty")}</div>`;
   }
 
   for (const item of ordered) {
@@ -569,11 +789,11 @@ function render() {
     // Drag handle
     html += `<div class="drag-handle" draggable="true"
       ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
-      title="ドラッグして移動">⠿</div>`;
+      title="${t("drag.tooltip")}">⠿</div>`;
     // Type selector
     html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'#aaa'}"
       onchange="updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
-    for (const [k,v] of Object.entries(TYPE_LABELS)) {
+    for (const [k,v] of Object.entries(getTypeLabels())) {
       html += `<option value="${k}" ${k===item.type?"selected":""} style="background:#252536;color:${TYPE_COLORS[k]}">${v}</option>`;
     }
     html += `</select></div>`;
@@ -581,8 +801,8 @@ function render() {
     if (isDeco) {
       // Decorative items
       if (item.type === "separator") html += `<div class="deco-line"></div>`;
-      else if (item.type === "pagebreak") html += `<div class="deco-pagebreak"><span>改ページ</span></div>`;
-      else html += `<div class="deco-colbreak"><span>改カラム</span></div>`;
+      else if (item.type === "pagebreak") html += `<div class="deco-pagebreak"><span>${t("deco.pagebreak")}</span></div>`;
+      else html += `<div class="deco-colbreak"><span>${t("deco.colbreak")}</span></div>`;
     } else {
       // Name
       html += `<div class="col-name">`;
@@ -597,7 +817,7 @@ function render() {
         html += `<span style="color:#f59e0b;margin-right:4px;font-size:12px">📁</span>`;
       }
       html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
-        placeholder="${isCat ? 'カテゴリ名...' : '機能名...'}"
+        placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
         onchange="updateItem(${item.id}, 'name', this.value)" onclick="event.stopPropagation()">`;
       html += `</div>`;
 
@@ -607,9 +827,9 @@ function render() {
         html += `<div class="col-mapping">`;
         html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
           onclick="startMappingEdit(${item.id}); event.stopPropagation()">`;
-        html += badges || 'クリックして入力...';
+        html += badges || t('mapping.clickToEdit');
         html += `</div>`;
-        html += `<button class="gamepad-btn" onclick="openGamepadModal(${item.id}); event.stopPropagation()" title="コントローラーで入力">🎮</button>`;
+        html += `<button class="gamepad-btn" onclick="openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
         html += `</div>`;
       } else {
         html += `<div class="col-mapping"></div>`;
@@ -618,7 +838,7 @@ function render() {
       // Parent
       html += `<div class="col-parent"><select class="parent-select"
         onchange="updateItem(${item.id}, 'parentId', this.value ? parseInt(this.value) : null); event.stopPropagation()">`;
-      html += `<option value="" style="background:#252536">（ルート）</option>`;
+      html += `<option value="" style="background:#252536">${t('parent.root')}</option>`;
       for (const c of categories) {
         if (c.id === item.id) continue;
         html += `<option value="${c.id}" ${item.parentId===c.id?"selected":""} style="background:#252536">${esc(c.name||'ID:'+c.id)}</option>`;
@@ -627,7 +847,7 @@ function render() {
     }
 
     // Delete button
-    html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="削除">×</button>`;
+    html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="${t('delete.tooltip')}">×</button>`;
 
     html += `</div>`;
   }
@@ -962,18 +1182,18 @@ function showContextMenu(e, id) {
   const menu = document.getElementById("ctx-menu");
   const hasClip = !!clipboard;
   menu.innerHTML = `
-    <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">⬆ 上に挿入</div>
-    <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">⬇ 下に挿入</div>
+    <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">${t("ctx.insertAbove")}</div>
+    <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">${t("ctx.insertBelow")}</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">⬆ 上へ移動</div>
-    <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">⬇ 下へ移動</div>
+    <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">${t("ctx.moveUp")}</div>
+    <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">${t("ctx.moveDown")}</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">📋 コピー</div>
-    <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">✂️ 切り取り</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">📋 上に貼り付け</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">📋 下に貼り付け</div>
+    <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">${t("ctx.copy")}</div>
+    <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">${t("ctx.cut")}</div>
+    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">${t("ctx.pasteAbove")}</div>
+    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">${t("ctx.pasteBelow")}</div>
     <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">🗑 削除</div>
+    <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
   `;
   menu.style.left = e.clientX + "px";
   menu.style.top = e.clientY + "px";
@@ -1016,7 +1236,7 @@ function finishFileNameEdit() {
   display.style.display = "";
 }
 function handleNew() {
-  if (items.length > 0 && !confirm("現在のデータを破棄して新規作成しますか？")) return;
+  if (items.length > 0 && !confirm(t("confirm.new"))) return;
   nextId = 1; items = []; undoStack = []; selectedId = null;
   setFileName("new_mapping.csv");
   document.getElementById("undoBtn").disabled = true;
@@ -1045,11 +1265,11 @@ function updateGamepadItemName() {
   const el = document.getElementById("gamepadItemName");
   const mapEl = document.getElementById("gamepadCurrentMapping");
   const item = items.find(it=>it.id===gamepadTargetId);
-  el.textContent = item ? (item.name || "（名前未設定）") : "";
+  el.textContent = item ? (item.name || t("gp.nameEmpty")) : "";
   if (item && item.mapping) {
     mapEl.innerHTML = mappingBadgesHTML(item.mapping);
   } else {
-    mapEl.innerHTML = '<span style="color:#555;font-size:12px">なし</span>';
+    mapEl.innerHTML = `<span style="color:#555;font-size:12px">${t("gp.none")}</span>`;
   }
 }
 function gamepadSkipNext() {
@@ -1101,7 +1321,7 @@ function gamepadApplyNext() {
 function renderGamepadDisplay() {
   const el = document.getElementById("gamepadDisplay");
   if (gamepadPressedButtons.length === 0) {
-    el.innerHTML = '<span style="color:#555;font-size:13px">入力なし</span>';
+    el.innerHTML = `<span style="color:#555;font-size:13px">${t("gp.noInput")}</span>`;
   } else {
     el.innerHTML = gamepadPressedButtons.map((b,i) =>
       (i > 0 ? '<span style="color:#666;margin:0 4px;font-size:14px">+</span>' : '') + badgeHTML(b)
@@ -1320,14 +1540,13 @@ function updateExportPreview() {
   document.getElementById("exportPreview").srcdoc = html;
   // Toggle font source row visibility
   document.getElementById("fontSourceRow").style.display = mode === "promptfont" ? "flex" : "none";
-  // Update filename hint
   const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
-  let hint = `出力ファイル: ${baseName}.html`;
+  let hint = `${t("exp.hintFile")} ${baseName}.html`;
   if (mode === "promptfont") {
-    if (fontSource === "ghpages") hint += `（フォントをGitHub Pagesから読み込み — 単体で動作します）`;
-    else hint += `（promptfont.css, promptfont.ttf と同じフォルダに配置してください）`;
+    if (fontSource === "ghpages") hint += ` ${t("exp.hintGhpages")}`;
+    else hint += ` ${t("exp.hintLocal")}`;
   } else {
-    hint += `（外部ファイル不要 — 単体で動作します）`;
+    hint += ` ${t("exp.hintBadge")}`;
   }
   document.getElementById("exportFilenameHint").textContent = hint;
 }
@@ -1369,11 +1588,7 @@ function printCheatsheet() {
 // ═══════════════════════════════════════════════════════════════════════════
 
 setInterval(() => {
-  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
-  const gp = gps[0]||gps[1]||gps[2]||gps[3];
-  document.getElementById("gpDot").style.background = gp ? "#22c55e" : "#555";
-  document.getElementById("gpStatus").textContent = gp ? "🎮 " + (gp.id||"").substring(0,50) : "コントローラー未接続";
-  document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#666";
+  updateGamepadStatusText();
 }, 1000);
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1390,7 +1605,16 @@ document.addEventListener("keydown", e => {
 // INIT
 // ═══════════════════════════════════════════════════════════════════════════
 
+currentLang = detectLang();
+document.documentElement.lang = currentLang;
+translatePage();
+updateLangButton();
 render();
+
+function updateLangButton() {
+  const btn = document.getElementById("langBtn");
+  if (btn) btn.textContent = currentLang === "ja" ? "🌐 EN" : "🌐 日本語";
+}
 </script>
 </body>
 </html>
