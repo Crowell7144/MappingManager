@@ -245,10 +245,6 @@ function updateGamepadStatusText() {
   document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#888";
 }
 
-function getTypeLabelMap() {
-  return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak") };
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // DATA MODEL
 // ═══════════════════════════════════════════════════════════════════════════
@@ -614,7 +610,6 @@ function render() {
     const ancestorExcluded = isAncestorExcluded(item.id);
     const toggleClass = ancestorExcluded ? 'inherited-exclude' : (isExcluded ? 'excluded' : '');
     const toggleTitle = ancestorExcluded ? t('output.inheritedOff') : (isExcluded ? t('output.off') : t('output.on'));
-    const toggleIcon = (isExcluded || ancestorExcluded) ? '👁‍🗨' : '👁';
     if (ancestorExcluded) {
       html += `<div class="col-output"><button class="output-toggle ${toggleClass}" title="${toggleTitle}" onclick="event.stopPropagation()">👁</button></div>`;
     } else {
@@ -809,32 +804,59 @@ function pasteSubtree(subtree, newParentId, insertIdx) {
   items.splice(insertIdx, 0, ...newItems);
 }
 
+function getSubtree(id) {
+  // Return [item, ...descendants] in current items array order
+  const descIds = getDescendantIds(id);
+  return items.filter(it => it.id === id || descIds.has(it.id));
+}
+
 function moveUp(id) {
   pushUndo();
-  const item = items.find(it=>it.id===id);
+  const item = items.find(it => it.id === id);
   if (!item) return;
-  // Get siblings in array order
-  const siblings = items.filter(it=>it.parentId===item.parentId);
-  const sibIdx = siblings.findIndex(it=>it.id===id);
+  const siblings = items.filter(it => it.parentId === item.parentId);
+  const sibIdx = siblings.findIndex(it => it.id === id);
   if (sibIdx <= 0) return;
   const prevSibling = siblings[sibIdx - 1];
-  // Swap positions in the items array
-  const aIdx = items.findIndex(it=>it.id===id);
-  const bIdx = items.findIndex(it=>it.id===prevSibling.id);
-  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
+
+  // Collect both subtrees
+  const itemSubtree = getSubtree(id);
+  const prevSubtree = getSubtree(prevSibling.id);
+  const allMoved = new Set([...itemSubtree, ...prevSubtree].map(it => it.id));
+
+  // Find insertion point (start of prevSibling's subtree in items)
+  const insertAt = items.findIndex(it => it.id === prevSibling.id);
+
+  // Remove both subtrees from items
+  items = items.filter(it => !allMoved.has(it.id));
+
+  // Re-insert: item subtree first, then prevSibling subtree
+  items.splice(insertAt, 0, ...itemSubtree, ...prevSubtree);
   render();
 }
+
 function moveDown(id) {
   pushUndo();
-  const item = items.find(it=>it.id===id);
+  const item = items.find(it => it.id === id);
   if (!item) return;
-  const siblings = items.filter(it=>it.parentId===item.parentId);
-  const sibIdx = siblings.findIndex(it=>it.id===id);
+  const siblings = items.filter(it => it.parentId === item.parentId);
+  const sibIdx = siblings.findIndex(it => it.id === id);
   if (sibIdx < 0 || sibIdx >= siblings.length - 1) return;
   const nextSibling = siblings[sibIdx + 1];
-  const aIdx = items.findIndex(it=>it.id===id);
-  const bIdx = items.findIndex(it=>it.id===nextSibling.id);
-  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
+
+  // Collect both subtrees
+  const itemSubtree = getSubtree(id);
+  const nextSubtree = getSubtree(nextSibling.id);
+  const allMoved = new Set([...itemSubtree, ...nextSubtree].map(it => it.id));
+
+  // Find insertion point (start of item's subtree in items)
+  const insertAt = items.findIndex(it => it.id === id);
+
+  // Remove both subtrees from items
+  items = items.filter(it => !allMoved.has(it.id));
+
+  // Re-insert: nextSibling subtree first, then item subtree
+  items.splice(insertAt, 0, ...nextSubtree, ...itemSubtree);
   render();
 }
 
@@ -1124,7 +1146,6 @@ function showContextMenu(e, id) {
   menu.style.left = e.clientX + "px";
   menu.style.top = e.clientY + "px";
   menu.classList.add("show");
-  render();
 }
 function hideContextMenu() { document.getElementById("ctx-menu").classList.remove("show"); }
 document.addEventListener("mousedown", e => {
@@ -1525,24 +1546,9 @@ const PF_CLASSES = {
 };
 
 // Badge colors for text badge mode (used in both editor and badge-mode export)
-const BADGE_COLORS = {
-  A:"#107C10", B:"#E81123", X:"#0078D7", Y:"#FFC300",
-  LB:"#555", RB:"#555", LT:"#666", RT:"#666",
-  LS:"#C23B22", RS:"#2E8B57",
-  "LS:X":"#C23B22", "LS:Y":"#C23B22", "LS:XY":"#C23B22",
-  "RS:X":"#2E8B57", "RS:Y":"#2E8B57", "RS:XY":"#2E8B57",
-  Start:"#333", Back:"#333",
-  "▲":"#222", "▼":"#222", "▶":"#222", "◀":"#222",
-  "▲▶":"#222", "▼▶":"#222", "◀▼":"#222", "◀▲":"#222",
-  LP1:"#4B0082", LP2:"#4B0082", RP1:"#5D4037", RP2:"#5D4037",
-  Controller:"#1a1a1a",
-  '×':"#003087", '○':"#E81123", '□':"#c2185b", '△':"#107C10",
-  L1:"#555", R1:"#555", L2:"#666", R2:"#666",
-  Share:"#333", Create:"#333", Options:"#333",
-  L:"#555", R:"#555", ZL:"#666", ZR:"#666",
-  '−':"#333", '+':"#333",
-};
-const BADGE_TEXT_COLORS = { Y:"#1a1a1a" }; // dark text for yellow
+// BUTTON_STYLES から背景色・文字色を導出（二重管理を避けるため）
+const BADGE_COLORS     = Object.fromEntries(Object.entries(BUTTON_STYLES).map(([k,v]) => [k, v.bg]));
+const BADGE_TEXT_COLORS = Object.fromEntries(Object.entries(BUTTON_STYLES).filter(([,v]) => v.text !== "#fff").map(([k,v]) => [k, v.text]));
 
 // Keyboard key PromptFont class mappings
 const PF_KEY_CLASSES = {};
@@ -1662,7 +1668,6 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
     return "";
   }
 
-  // Build a flat list of page-groups.
   // Build a flat list of page-groups.
   // Each page-group is an array of block html strings.
   function buildPages() {
@@ -1892,9 +1897,8 @@ function printCheatsheet() {
   if (w) {
     w.document.write(html);
     w.document.close();
-    w.onload = () => { w.print(); };
-    // fallback if onload doesn't fire
-    setTimeout(() => { try { w.print(); } catch(e) {} }, 500);
+    // document.write後のonloadは環境によって発火しないためsetTimeoutのみ使用
+    setTimeout(() => { try { w.print(); } catch(e) {} }, 300);
   }
 }
 
