@@ -714,6 +714,25 @@ function updateItem(id, field, value) {
 }
 function selectItem(id) { selectedId = id; render(); }
 
+function scrollSelectedIntoView() {
+  requestAnimationFrame(() => {
+    if (!selectedId) return;
+    const row = document.querySelector(`.item-row[data-id="${selectedId}"]`);
+    if (!row) return;
+    const addBar = document.getElementById('add-bar');
+    const statusBar = document.getElementById('status-bar');
+    const addBarH = addBar ? addBar.offsetHeight : 0;
+    const statusH = statusBar ? statusBar.offsetHeight : 0;
+    const margin = addBarH + statusH;
+    const rowBottom = row.getBoundingClientRect().bottom;
+    const visibleBottom = window.innerHeight - margin;
+    if (rowBottom > visibleBottom) {
+      const extra = rowBottom - visibleBottom + 8;
+      window.scrollBy({ top: extra, behavior: 'smooth' });
+    }
+  });
+}
+
 function addItem(type, afterId) {
   pushUndo();
   const newItem = { id:genId(), parentId:null, type, name:"", mapping:"", exclude:0 };
@@ -728,6 +747,7 @@ function addItem(type, afterId) {
   }
   selectedId = newItem.id;
   render();
+  scrollSelectedIntoView();
 }
 function insertItemBefore(id) {
   pushUndo();
@@ -737,6 +757,7 @@ function insertItemBefore(id) {
   items.splice(idx, 0, newItem);
   selectedId = newItem.id;
   render();
+  scrollSelectedIntoView();
 }
 function deleteItem(id) {
   pushUndo();
@@ -1031,7 +1052,9 @@ function handleNameInputKeydown(e, id) {
   for (let i = idx + 1; i < ordered.length; i++) {
     const next = ordered[i];
     if (next.type === 'category' || next.type === 'mapping') {
+      selectedId = next.id;
       render();
+      scrollSelectedIntoView();
       const input = document.querySelector(`.item-row[data-id="${next.id}"] .name-input`);
       if (input) { input.focus(); input.select(); }
       return;
@@ -1066,6 +1089,7 @@ function handleNameInputKeydown(e, id) {
 
   selectedId = newItem.id;
   render();
+  scrollSelectedIntoView();
   const input = document.querySelector(`.item-row[data-id="${newItem.id}"] .name-input`);
   if (input) { input.focus(); }
 }

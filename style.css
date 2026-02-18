@@ -67,7 +67,7 @@
   #col-headers .col-output { width: 32px; flex-shrink: 0; text-align: center; }
 
   /* ── Item Rows ── */
-  #item-list { padding: 2px 0; padding-bottom: 60px; }
+  #item-list { padding: 2px 0; padding-bottom: 88px; }
   .item-row {
     display: flex; align-items: center; padding: 3px 8px;
     border-left: 2px solid transparent; border-bottom: 1px solid rgba(255,255,255,0.03);
@@ -230,6 +230,10 @@
   #add-bar {
     display: flex; align-items: center; justify-content: center;
     padding: 8px; border-top: 1px solid var(--border); gap: 8px;
+    position: sticky;
+    bottom: 28px;
+    background: var(--bg-primary);
+    z-index: 50;
   }
   .add-btn {
     background: transparent; border: 1px dashed; border-radius: 6px;
