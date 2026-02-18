@@ -1,6 +1,6 @@
 # Mapping Manager
 
-[日本語はこちら / 日本語セクションへ](#mapping-manager-ja)
+[日本語はこちら / Japanese](#mapping-manager-ja)
 
 A web app for managing game controller mappings and exporting cheat sheets.
 
