@@ -14,6 +14,18 @@
 <!-- Header -->
 <div id="header">
   <span class="app-title">🎮 Mapping Manager</span>
+  <a href="https://github.com/Crowell7144/MappingManager" target="_blank" rel="noopener" class="github-link" title="GitHub Repository">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+        -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+        .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+        -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27
+        .68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12
+        .51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48
+        0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </svg>
+  </a>
   <span class="filename" id="filenameDisplay" data-i18n-title="filename.tooltip" onclick="startFileNameEdit()" style="cursor:pointer">new_mapping.csv</span>
   <input type="text" id="filenameEdit" class="filename" style="display:none;cursor:text;outline:1px solid #5a5aff;width:220px"
     onblur="finishFileNameEdit()" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value=fileName;this.blur();}">
@@ -24,7 +36,10 @@
     style="background:#1e1e2e;color:#9a9a9a;border:1px solid #333;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer;max-width:180px">
     <option value="" data-i18n="sample.placeholder">📂 サンプルを開く</option>
   </select>
-  <button class="toolbar-btn accent" onclick="saveCSV()" data-i18n="btn.saveCsv">💾 CSV保存</button>
+  <a id="saveCsvBtn" class="toolbar-btn accent" href="#" data-i18n="btn.saveCsv"
+    onclick="handleSaveCSVClick(event)"
+    onmouseenter="refreshSaveCsvHref()"
+    oncontextmenu="refreshSaveCsvHref()">💾 CSV保存</a>
   <span class="toolbar-sep"></span>
   <button class="toolbar-btn accent2" onclick="showExportModal()" data-i18n="btn.export">📄 チートシート出力</button>
   <span class="toolbar-sep"></span>
@@ -102,8 +117,13 @@
     <div id="kbDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:10px;min-height:40px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:10px">
       <span style="color:#777;font-size:13px" data-i18n="kb.noInput">入力なし</span>
     </div>
+    <!-- Tab switch -->
+    <div class="kb-tabs">
+      <button class="kb-tab active" id="kbTabKeys" onclick="switchKbTab('keys')" data-i18n="kb.tabKeys">キー</button>
+      <button class="kb-tab" id="kbTabSymbols" onclick="switchKbTab('symbols')" data-i18n="kb.tabSymbols">記号</button>
+    </div>
     <!-- Key grid -->
-    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
+    <div id="kb-panel-keys" style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
       <!-- Row: Esc, Numbers, BS -->
       <div class="kb-row">
         <button class="kb-key" onclick="kbAddKey('Esc')" style="font-size:9px">Esc</button>
@@ -148,9 +168,11 @@
         <button class="kb-key" onclick="kbAddKey('L')">L</button>
         <button class="kb-key" onclick="kbAddKey('Enter')" style="flex:2;font-size:8px">Enter</button>
       </div>
-      <!-- Row: Shift, Z-M, Ins -->
+      <!-- Row: LShift, Shift, RShift, Z-M -->
       <div class="kb-row">
-        <button class="kb-key" onclick="kbAddKey('Shift')" style="flex:2;font-size:9px">Shift</button>
+        <button class="kb-key" onclick="kbAddKey('LShift')" style="font-size:8px">L⇧</button>
+        <button class="kb-key" onclick="kbAddKey('Shift')" style="font-size:9px">Shift</button>
+        <button class="kb-key" onclick="kbAddKey('RShift')" style="font-size:8px">R⇧</button>
         <button class="kb-key" onclick="kbAddKey('Z')">Z</button>
         <button class="kb-key" onclick="kbAddKey('X')">X</button>
         <button class="kb-key" onclick="kbAddKey('C')">C</button>
@@ -158,15 +180,18 @@
         <button class="kb-key" onclick="kbAddKey('B')">B</button>
         <button class="kb-key" onclick="kbAddKey('N')">N</button>
         <button class="kb-key" onclick="kbAddKey('M')">M</button>
-        <button class="kb-key" onclick="kbAddKey('Ins')" style="font-size:9px">Ins</button>
         <button class="kb-key" onclick="kbRemoveLast()" style="color:#f87171;font-size:11px" title="Remove last">✕</button>
       </div>
-      <!-- Row: Ctrl, Win, Alt, Space -->
+      <!-- Row: LCtrl, Ctrl, RCtrl, LAlt, Alt, RAlt, Space, Win, Fn -->
       <div class="kb-row">
-        <button class="kb-key" onclick="kbAddKey('Ctrl')" style="flex:2;font-size:9px">Ctrl</button>
-        <button class="kb-key" onclick="kbAddKey('Win')" style="font-size:9px">Win</button>
+        <button class="kb-key" onclick="kbAddKey('LCtrl')" style="font-size:8px">L⌃</button>
+        <button class="kb-key" onclick="kbAddKey('Ctrl')" style="font-size:9px">Ctrl</button>
+        <button class="kb-key" onclick="kbAddKey('RCtrl')" style="font-size:8px">R⌃</button>
+        <button class="kb-key" onclick="kbAddKey('LAlt')" style="font-size:8px">L⎇</button>
         <button class="kb-key" onclick="kbAddKey('Alt')" style="font-size:9px">Alt</button>
-        <button class="kb-key" onclick="kbAddKey('Space')" style="flex:5;font-size:9px">Space</button>
+        <button class="kb-key" onclick="kbAddKey('RAlt')" style="font-size:8px">R⎇</button>
+        <button class="kb-key" onclick="kbAddKey('Space')" style="flex:3;font-size:9px">Space</button>
+        <button class="kb-key" onclick="kbAddKey('Win')" style="font-size:9px">Win</button>
         <button class="kb-key" onclick="kbAddKey('Fn')" style="font-size:9px">Fn</button>
       </div>
       <!-- Row: F-keys -->
@@ -200,12 +225,58 @@
         <button class="kb-key" onclick="kbAddKey('Right')">→</button>
       </div>
     </div>
+    <!-- Symbol grid -->
+    <div id="kb-panel-symbols" style="display:none;flex-direction:column;gap:3px;margin-bottom:10px">
+      <!-- Row: 数字行記号 / Number-row symbols -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('!')">!</button>
+        <button class="kb-key" onclick="kbAddKey('@')">@</button>
+        <button class="kb-key" onclick="kbAddKey('#')">#</button>
+        <button class="kb-key" onclick="kbAddKey('$')">$</button>
+        <button class="kb-key" onclick="kbAddKey('%')">%</button>
+        <button class="kb-key" onclick="kbAddKey('^')">^</button>
+        <button class="kb-key" onclick="kbAddKey('&amp;')">&amp;</button>
+        <button class="kb-key" onclick="kbAddKey('*')">*</button>
+        <button class="kb-key" onclick="kbAddKey('(')"> (</button>
+        <button class="kb-key" onclick="kbAddKey(')')">)</button>
+        <button class="kb-key" onclick="kbAddKey('-')">-</button>
+        <button class="kb-key" onclick="kbAddKey('_')">_</button>
+        <button class="kb-key" onclick="kbAddKey('=')">=</button>
+        <button class="kb-key" onclick="kbAddKey('+')">+</button>
+      </div>
+      <!-- Row: 括弧・区切り / Brackets & delimiters -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('[')">[ <span style="font-size:7px;opacity:0.6">[ ]</span></button>
+        <button class="kb-key" onclick="kbAddKey(']')">]</button>
+        <button class="kb-key" onclick="kbAddKey('{')">{ <span style="font-size:7px;opacity:0.6">{ }</span></button>
+        <button class="kb-key" onclick="kbAddKey('}')">}</button>
+        <button class="kb-key" onclick="kbAddKey('&lt;')">&lt;</button>
+        <button class="kb-key" onclick="kbAddKey('&gt;')">&gt;</button>
+        <button class="kb-key" onclick="kbAddKey('\\')">\</button>
+        <button class="kb-key" onclick="kbAddKey('|')">|</button>
+        <button class="kb-key" onclick="kbAddKey('/')">/ </button>
+        <button class="kb-key" onclick="kbAddKey('~')">~</button>
+        <button class="kb-key" onclick="kbAddKey('`')">`</button>
+      </div>
+      <!-- Row: 句読点 / Punctuation -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey(';')">;</button>
+        <button class="kb-key" onclick="kbAddKey(':')">:</button>
+        <button class="kb-key" onclick="kbAddKey(&quot;'&quot;)">'</button>
+        <button class="kb-key" onclick='kbAddKey("&quot;')">"</button>
+        <button class="kb-key" onclick="kbAddKey(',')">,</button>
+        <button class="kb-key" onclick="kbAddKey('.')">.</button>
+        <button class="kb-key" onclick="kbAddKey('?')">?</button>
+        <span style="flex:3"></span>
+        <button class="kb-key" onclick="kbRemoveLast()" style="color:#f87171;font-size:11px" title="Remove last">✕</button>
+      </div>
+    </div>
     <!-- Action buttons -->
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
-      <button class="modal-btn" style="background:#5a5a6a" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span></button>
+      <button class="modal-btn" style="background:#5a5a6a" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
       <button class="modal-btn" style="background:#6b7280" onclick="kbClear()"><span data-i18n="kb.clear">クリア</span></button>
-      <button class="modal-btn" style="background:#2563eb" onclick="kbApply()"><span data-i18n="kb.apply">適用</span></button>
-      <button class="modal-btn" style="background:#16a34a" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span></button>
+      <button class="modal-btn" style="background:#2563eb" onclick="kbApply()"><span data-i18n="kb.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
+      <button class="modal-btn" style="background:#16a34a" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
   </div>
 </div>

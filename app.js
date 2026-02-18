@@ -80,6 +80,11 @@ const I18N = {
     "gamepad.tooltip": "コントローラーで入力",
     "keyboard.tooltip": "キーボードで入力",
     "kb.title": "⌨️ キーボード入力",
+    "kb.tabKeys": "キー",
+    "kb.tabSymbols": "記号",
+    "kb.lshift": "L-Shift", "kb.rshift": "R-Shift",
+    "kb.lctrl": "L-Ctrl",  "kb.rctrl": "R-Ctrl",
+    "kb.lalt": "L-Alt",    "kb.ralt": "R-Alt",
     "kb.currentMapping": "現在のマッピング:",
     "kb.none": "なし",
     "kb.instruction": "修飾キーをONにしてからキーをクリックしてください。修飾キーは追加後に自動でOFFになります。",
@@ -170,6 +175,11 @@ const I18N = {
     "gamepad.tooltip": "Input from controller",
     "keyboard.tooltip": "Input from keyboard",
     "kb.title": "⌨️ Keyboard Input",
+    "kb.tabKeys": "Keys",
+    "kb.tabSymbols": "Symbols",
+    "kb.lshift": "L-Shift", "kb.rshift": "R-Shift",
+    "kb.lctrl": "L-Ctrl",  "kb.rctrl": "R-Ctrl",
+    "kb.lalt": "L-Alt",    "kb.ralt": "R-Alt",
     "kb.currentMapping": "Current mapping:",
     "kb.none": "None",
     "kb.instruction": "Toggle modifier keys ON, then click a key. Modifiers auto-reset after each key.",
@@ -600,7 +610,7 @@ function render() {
     const isDeco = item.type === "separator" || item.type === "pagebreak";
     const treeHTML = getTreeConnectors(item, ordered);
 
-    html += `<div class="item-row${sel}" data-id="${item.id}" style="padding-left:8px"
+    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}" data-id="${item.id}" style="padding-left:8px"
       onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
       ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
       ondragleave="onDragLeave(event, ${item.id})">`;
@@ -1197,12 +1207,31 @@ function handleOpenCSV(e) {
   reader.onload = ev => { items = csvToItems(ev.target.result); undoStack=[]; setFileName(file.name); render(); };
   reader.readAsText(file); e.target.value = "";
 }
-function saveCSV() {
+let _saveCsvBlobUrl = null;
+
+function refreshSaveCsvHref() {
+  if (_saveCsvBlobUrl) URL.revokeObjectURL(_saveCsvBlobUrl);
   const csv = itemsToCSV();
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
-  URL.revokeObjectURL(a.href);
+  const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+  _saveCsvBlobUrl = URL.createObjectURL(blob);
+  const a = document.getElementById("saveCsvBtn");
+  if (a) { a.href = _saveCsvBlobUrl; a.download = fileName; }
+}
+
+function handleSaveCSVClick(e) {
+  // 左クリック時：href が更新済みならそのままダウンロード、未更新なら手動実行
+  if (!_saveCsvBlobUrl) {
+    e.preventDefault();
+    refreshSaveCsvHref();
+    document.getElementById("saveCsvBtn").click();
+  }
+  // 右クリックはcontextmenu → refreshSaveCsvHref() で href 更新済みのためそのまま
+}
+
+function saveCSV() {
+  // Ctrl+S ショートカット用（アンカー経由で保存）
+  refreshSaveCsvHref();
+  document.getElementById("saveCsvBtn").click();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1457,16 +1486,32 @@ function updateKbItemInfo() {
   }
 }
 
+function kbModalKeyHandler(e) {
+  if (e.key === "Escape") { e.preventDefault(); kbCancel(); }
+  else if (e.key === "Enter") { e.preventDefault(); kbApply(); }
+  else if (e.key === " ")    { e.preventDefault(); kbApplyNext(); }
+}
+
+function switchKbTab(tab) {
+  document.getElementById('kb-panel-keys').style.display    = tab === 'keys'    ? 'flex' : 'none';
+  document.getElementById('kb-panel-symbols').style.display = tab === 'symbols' ? 'flex' : 'none';
+  document.getElementById('kbTabKeys').classList.toggle('active',    tab === 'keys');
+  document.getElementById('kbTabSymbols').classList.toggle('active', tab === 'symbols');
+}
+
 function openKeyboardModal(id) {
   kbTargetId = id;
   kbCapturedKeys = [];
+  switchKbTab('keys');
   document.getElementById("keyboardModal").classList.add("show");
+  document.addEventListener("keydown", kbModalKeyHandler);
   updateKbItemInfo();
   renderKbDisplay();
 }
 
 function closeKeyboardModal() {
   document.getElementById("keyboardModal").classList.remove("show");
+  document.removeEventListener("keydown", kbModalKeyHandler);
   kbTargetId = null;
 }
 
@@ -1565,7 +1610,11 @@ for (let i = 0; i <= 9; i++) {
 // Special keys
 Object.assign(PF_KEY_CLASSES, {
   Ctrl:"pf-keyboard-control", Control:"pf-keyboard-control",
-  Alt:"pf-keyboard-alt", Shift:"pf-keyboard-shift",
+  LCtrl:"pf-keyboard-control", RCtrl:"pf-keyboard-control",
+  Alt:"pf-keyboard-alt",
+  LAlt:"pf-keyboard-alt",   RAlt:"pf-keyboard-alt",
+  Shift:"pf-keyboard-shift",
+  LShift:"pf-keyboard-shift", RShift:"pf-keyboard-shift",
   Tab:"pf-keyboard-tab", Caps:"pf-keyboard-caps", CapsLock:"pf-keyboard-caps",
   Enter:"pf-keyboard-enter", Return:"pf-keyboard-enter",
   Esc:"pf-keyboard-escape", Escape:"pf-keyboard-escape",
@@ -1699,6 +1748,9 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
         }
         if (rowsHtml) {
           pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div>${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
+        } else if (children.length === 0) {
+          // 子アイテムのないカテゴリ → タイトルのみのブロックとして出力
+          pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div></div>`);
         }
       } else if (item.type === "mapping") {
         pushBlock(`<div class="cat-section">${TABLE_OPEN}<tr><td>${e(item.name)}</td><td>${btnFn(item.mapping)}</td></tr>${TABLE_CLOSE}</div>`);
