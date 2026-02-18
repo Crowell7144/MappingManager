@@ -6,9 +6,14 @@
       "file": "samples/en/tutorial.csv"
     },
     {
-      "id": "msfs2024",
-      "name": "MSFS 2024 Customed Settings Sample",
-      "file": "samples/en/msfs2024.csv"
+      "id": "msfs2024 - default",
+      "name": "MSFS 2024 Default Settings Sample",
+      "file": "samples/en/msfs2024_default.csv"
+    },
+    {
+      "id": "msfs2024 - default",
+      "name": "MSFS 2024 Crowell Custom Settings Sample",
+      "file": "samples/en/msfs2024_crowell.csv"
     }
   ]
 }

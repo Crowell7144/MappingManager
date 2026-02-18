@@ -6,9 +6,14 @@
       "file": "samples/ja/tutorial.csv"
     },
     {
+      "id": "msfs2024 - default",
+      "name": "MSFS 2024 デフォルト設定 サンプル",
+      "file": "samples/ja/msfs2024_default.csv"
+    },
+    {
       "id": "msfs2024",
-      "name": "MSFS 2024 カスタム設定 サンプル",
-      "file": "samples/ja/msfs2024.csv"
+      "name": "MSFS 2024 Crowellカスタム サンプル",
+      "file": "samples/ja/msfs2024_crowell.csv"
     }
   ]
 }
