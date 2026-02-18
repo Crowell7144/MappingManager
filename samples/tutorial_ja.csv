@@ -1,0 +1,58 @@
+id,parentId,type,name,mapping,exclude
+1,,category,👋 Mapping Manager へようこそ,,0
+2,1,mapping,このアプリの使い方を説明します,,0
+3,,category,📁 カテゴリ,,0
+4,3,mapping,カテゴリはアイテムをグループ化します,,0
+5,3,category,サブカテゴリ,,0
+6,5,mapping,カテゴリの中にカテゴリを作れます,,0
+7,5,mapping,ドラッグ＆ドロップで並び替えできます,,0
+8,,category,🎮 ボタン入力,,0
+9,8,mapping,Aボタン（下）,[B],0
+10,8,mapping,Bボタン（右）,[A],0
+11,8,mapping,Xボタン（左）,[Y],0
+12,8,mapping,Yボタン（上）,[X],0
+13,8,mapping,同時押し,[B][A],0
+14,8,mapping,ショルダーボタン,[LB][RB],0
+15,8,mapping,トリガー,[LT][RT],0
+16,8,mapping,スタート・バック,[Start][Back],0
+17,,category,🕹️ スティック入力,,0
+18,17,mapping,左スティック 水平,[LS:X],0
+19,17,mapping,左スティック 垂直,[LS:Y],0
+20,17,mapping,左スティック 全方向,[LS:XY],0
+21,17,mapping,右スティック 全方向,[RS:XY],0
+22,17,mapping,スティック押込み,[LS][RS],0
+23,,category,🎯 十字キー,,0
+24,23,mapping,上,[▲],0
+25,23,mapping,下,[▼],0
+26,23,mapping,左,[◀],0
+27,23,mapping,右,[▶],0
+28,23,mapping,斜め入力,[▲▶],0
+29,,category,⌨️ テキスト表現,,0
+30,29,mapping,ボタン＋テキスト,[B]長押し,0
+31,29,mapping,パドルボタン（Gamepad API非対応）,[LP1],0
+32,29,mapping,複数パドル,[LP1][LP2],0
+33,29,mapping,テキストのみ,説明文もそのまま表示,0
+34,29,mapping,混在,[LB]を押しながら[LS:XY],0
+35,,category,⌨️ キーボード入力,,0
+36,35,mapping,単キー,{W},0
+37,35,mapping,修飾キー＋キー,{Ctrl}{C},0
+38,35,mapping,方向キー,{Up},0
+39,35,mapping,ファンクションキー,{F5},0
+40,,category,👁 出力除外,,0
+41,40,mapping,このアイテムは出力されます,,0
+42,40,mapping,👁アイコンをクリックで除外,,1
+43,40,category,カテゴリごと除外も可,,1
+44,43,mapping,親が除外されると子も除外,,0
+70,,category,📄 レイアウト要素,,0
+71,70,mapping,セパレーター: 項目間に横線を引きます,,0
+72,70,separator,,,0
+51,70,mapping,改ページ: ↓ここでページを区切ります。次のセクションは次ページから始まります,,0
+52,70,pagebreak,,,0
+53,,category,💡 ヒント,,0
+54,53,mapping,↑改ページにより このカテゴリは次のページから始まっています,,0
+55,53,mapping,右クリックでコンテキストメニュー,,0
+56,53,mapping,Ctrl+Z で元に戻す,,0
+57,53,mapping,Ctrl+S でCSV保存,,0
+58,53,mapping,🎮ボタンでコントローラー入力,,0
+59,53,mapping,⌨️ボタンでキーボード入力,,0
+60,53,mapping,チートシート出力でPDF印刷可,,0

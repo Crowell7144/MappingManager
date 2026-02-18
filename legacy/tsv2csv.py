@@ -28,12 +28,12 @@ def convert_mapping(mapping_str):
     """旧形式のマッピング文字列を新形式に変換する。
     
     旧: "B, ▲"  or  "LB, RB"
-    新: "[B]+[▲]"  or  "[LB]+[RB]"
+    新: "[B][▲]"  or  "[LB][RB]"
     """
     if not mapping_str or not mapping_str.strip():
         return ""
     buttons = [b.strip() for b in mapping_str.split(",") if b.strip()]
-    return "+".join(f"[{b}]" for b in buttons)
+    return "".join(f"[{b}]" for b in buttons)
 
 
 def tsv_to_csv(tsv_path):
@@ -76,6 +76,7 @@ def tsv_to_csv(tsv_path):
                 "type": "category",
                 "name": cat,
                 "mapping": "",
+                "exclude": 0,
             })
             category_map[cat] = cat_id
 
@@ -93,6 +94,7 @@ def tsv_to_csv(tsv_path):
                     "type": "category",
                     "name": sub_cat,
                     "mapping": "",
+                    "exclude": 0,
                 })
                 subcategory_map[sub_key] = sub_id
             parent_id = subcategory_map[sub_key]
@@ -106,6 +108,7 @@ def tsv_to_csv(tsv_path):
             "type": "mapping",
             "name": name,
             "mapping": convert_mapping(mapping),
+            "exclude": 0,
         })
 
     return items
@@ -115,7 +118,7 @@ def write_csv(items, output_path):
     """アイテムリストをCSVファイルに書き出す。"""
     with open(output_path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["id", "parentId", "type", "name", "mapping"])
+        writer.writerow(["id", "parentId", "type", "name", "mapping", "exclude"])
         for item in items:
             writer.writerow([
                 item["id"],
@@ -123,6 +126,7 @@ def write_csv(items, output_path):
                 item["type"],
                 item["name"],
                 item["mapping"],
+                item.get("exclude", 0),
             ])
 
 

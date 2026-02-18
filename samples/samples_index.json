@@ -1,0 +1,22 @@
+{
+  "samples": [
+    {
+      "id": "tutorial_ja",
+      "name_ja": "チュートリアル（機能紹介）",
+      "name_en": "チュートリアル（機能紹介）",
+      "file": "samples/tutorial_ja.csv"
+    },
+    {
+      "id": "tutorial_en",
+      "name_ja": "Tutorial (Feature Overview)",
+      "name_en": "Tutorial (Feature Overview)",
+      "file": "samples/tutorial_en.csv"
+    },
+    {
+      "id": "msfs2024",
+      "name_ja": "MSFS 2024 サンプル",
+      "name_en": "MSFS 2024 Sample",
+      "file": "samples/msfs2024.csv"
+    }
+  ]
+}

@@ -4,239 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mapping Manager</title>
-<style>
-  :root {
-    --bg-primary: #16161e;
-    --bg-secondary: #1a1a2e;
-    --bg-tertiary: #1e1e2e;
-    --bg-input: #12121f;
-    --border: #2a2a3a;
-    --border-light: #3a3a4a;
-    --text-primary: #e0e0e0;
-    --text-secondary: #888;
-    --text-muted: #555;
-    --accent-blue: #60a5fa;
-    --accent-purple: #b0b8ff;
-    --accent-yellow: #f59e0b;
-    --accent-green: #34d399;
-    --accent-violet: #c084fc;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Segoe UI', 'メイリオ', sans-serif;
-    background: var(--bg-primary); color: var(--text-primary);
-    font-size: 13px; line-height: 1.4;
-  }
-  button { font-family: inherit; }
-
-  /* ── Header ── */
-  #header {
-    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
-    padding: 8px 12px; display: flex; align-items: center; gap: 8px;
-    position: sticky; top: 0; z-index: 100; flex-wrap: wrap;
-  }
-  #header .app-title { font-size: 15px; font-weight: 700; color: var(--accent-purple); margin-right: 4px; }
-  #header .filename {
-    background: var(--bg-input); border: 1px solid #333; border-radius: 4px;
-    padding: 4px 10px; font-size: 12px; color: #78f0c0; font-weight: 600;
-  }
-  #header .filename[id="filenameDisplay"]:hover {
-    border-color: #5a5aff; cursor: pointer;
-  }
-  #header .filename[id="filenameDisplay"]::after {
-    content: " ✏️"; font-size: 10px; opacity: 0; transition: opacity 0.15s;
-  }
-  #header .filename[id="filenameDisplay"]:hover::after { opacity: 1; }
-  .toolbar-spacer { flex: 1; }
-  .toolbar-sep { width: 1px; height: 20px; background: #333; }
-  .toolbar-btn {
-    background: transparent; color: var(--text-primary); border: 1px solid #333;
-    border-radius: 6px; padding: 5px 12px; font-size: 12px; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap;
-  }
-  .toolbar-btn:hover { background: #2a2a3a; }
-  .toolbar-btn:disabled { opacity: 0.4; cursor: default; }
-  .toolbar-btn.accent { background: #2563eb; border: none; }
-  .toolbar-btn.accent:hover { background: #1d4ed8; }
-  .toolbar-btn.accent2 { background: #7c3aed; border: none; }
-  .toolbar-btn.accent2:hover { background: #6d28d9; }
-
-  /* ── Column Headers ── */
-  #col-headers {
-    display: flex; align-items: center; padding: 4px 8px;
-    background: #1a1a28; border-bottom: 1px solid var(--border);
-    font-size: 10px; color: #666; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.5px; position: sticky; top: 44px; z-index: 99;
-  }
-  #col-headers .col-type { width: 80px; flex-shrink: 0; margin-right: 6px; padding-left: 8px; }
-  #col-headers .col-name { flex: 1; }
-  #col-headers .col-mapping { width: 240px; flex-shrink: 0; }
-  #col-headers .col-parent { width: 110px; flex-shrink: 0; margin-left: 6px; }
-
-  /* ── Item Rows ── */
-  #item-list { padding: 2px 0; padding-bottom: 60px; }
-  .item-row {
-    display: flex; align-items: center; padding: 3px 8px;
-    border-left: 2px solid transparent; border-bottom: 1px solid rgba(255,255,255,0.03);
-    transition: background 0.1s; cursor: default;
-  }
-  .item-row:hover { background: rgba(255,255,255,0.03); }
-  .item-row.selected { background: rgba(96,165,250,0.12); border-left-color: var(--accent-blue); }
-  .drag-handle {
-    width: 18px; flex-shrink: 0; cursor: grab; color: #444;
-    font-size: 14px; text-align: center; user-select: none;
-    line-height: 24px; margin-right: 2px; border-radius: 3px;
-  }
-  .drag-handle:hover { color: #888; background: rgba(255,255,255,0.06); }
-  .drag-handle:active { cursor: grabbing; }
-  .row-delete-btn {
-    width: 22px; height: 22px; flex-shrink: 0; margin-left: 4px;
-    background: transparent; border: none; border-radius: 4px;
-    color: #444; font-size: 15px; line-height: 20px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
-  }
-  .item-row:hover .row-delete-btn { opacity: 1; }
-  .row-delete-btn:hover { color: #f87171; background: rgba(248,113,113,0.12); }
-  .item-row.drop-child {
-    background: rgba(96,165,250,0.15) !important;
-    outline: 1px dashed #60a5fa;
-    outline-offset: -1px;
-  }
-  .item-row .col-type { width: 80px; flex-shrink: 0; margin-right: 6px; }
-  .item-row .col-name { flex: 1; min-width: 0; margin-right: 8px; }
-  .item-row .col-mapping { width: 240px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
-  .item-row .col-parent { width: 110px; flex-shrink: 0; margin-left: 6px; }
-
-  .type-select {
-    background: transparent; color: var(--accent-blue); border: 1px solid var(--border-light);
-    border-radius: 4px; padding: 2px 4px; font-size: 11px; font-weight: 600;
-    cursor: pointer; outline: none; width: 100%;
-  }
-  .type-select option { background: #252536; }
-
-  .name-input {
-    background: transparent; color: var(--text-primary); border: none; outline: none;
-    width: 100%; font-size: 12px; padding: 2px 4px;
-    border-bottom: 1px solid transparent;
-  }
-  .name-input:focus { border-bottom: 1px solid #5a5aff; }
-  .name-input.is-category { color: var(--accent-yellow); font-size: 13px; font-weight: 700; }
-
-  .collapse-toggle {
-    display: inline-block; width: 16px; text-align: center; cursor: pointer;
-    color: #888; font-size: 10px; margin-right: 2px; user-select: none;
-    border-radius: 3px; line-height: 18px; vertical-align: middle;
-    transition: color 0.15s;
-  }
-  .collapse-toggle:hover { color: #ddd; background: rgba(255,255,255,0.08); }
-
-  .parent-select {
-    background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
-    border-radius: 4px; padding: 2px; font-size: 10px; width: 100%; outline: none; cursor: pointer;
-  }
-  .parent-select option { background: #252536; }
-
-  /* Mapping display */
-  .mapping-box {
-    flex: 1; background: var(--bg-input); border-radius: 4px; border: 1px solid var(--border);
-    min-height: 28px; display: flex; align-items: center; padding: 2px 4px;
-    cursor: text; min-width: 0; overflow: hidden;
-  }
-  .mapping-box.empty { color: #666; font-size: 11px; font-style: italic; }
-  .mapping-edit-input {
-    background: var(--bg-input); color: var(--text-primary); border: 1px solid #5a5aff;
-    border-radius: 4px; padding: 2px 6px; font-size: 12px; font-family: monospace;
-    width: 100%; outline: none;
-  }
-  .gamepad-btn {
-    background: #2a2a3a; border: 1px solid var(--border-light); border-radius: 4px;
-    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; flex-shrink: 0; font-size: 14px; padding: 0; color: #aaa;
-    transition: background 0.15s, border-color 0.15s;
-  }
-  .gamepad-btn:hover { background: #3a3a5a; border-color: #6a6aff; }
-
-  /* Button badges */
-  .btn-badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 1px 5px; border-radius: 4px; font-size: 11px; font-weight: 700;
-    margin-right: 1px; min-width: 20px; line-height: 18px; font-family: monospace;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15);
-  }
-  .btn-plus { color: #888; margin: 0 2px; font-size: 10px; }
-
-  /* Decorative rows */
-  .deco-line { flex: 1; height: 1px; background: #555; }
-  .deco-pagebreak { flex: 1; height: 0; border-top: 2px dashed var(--accent-violet); position: relative; }
-  .deco-pagebreak span {
-    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
-    background: var(--bg-primary); padding: 0 6px; color: var(--accent-violet); font-size: 10px;
-  }
-  .deco-colbreak { flex: 1; height: 0; border-top: 2px dotted var(--accent-green); position: relative; }
-  .deco-colbreak span {
-    position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
-    background: var(--bg-primary); padding: 0 6px; color: var(--accent-green); font-size: 10px;
-  }
-
-  /* Add buttons */
-  #add-bar {
-    display: flex; align-items: center; justify-content: center;
-    padding: 8px; border-top: 1px solid var(--border); gap: 8px;
-  }
-  .add-btn {
-    background: transparent; border: 1px dashed; border-radius: 6px;
-    padding: 4px 12px; font-size: 11px; cursor: pointer; font-weight: 600; opacity: 0.7;
-  }
-  .add-btn:hover { opacity: 1; }
-
-  /* ── Context Menu ── */
-  #ctx-menu {
-    display: none; position: fixed; background: #252536; border: 1px solid #444;
-    border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    z-index: 2000; padding: 4px 0; min-width: 180px;
-  }
-  #ctx-menu.show { display: block; }
-  #ctx-menu .ctx-item {
-    padding: 6px 14px; cursor: pointer; color: #ddd; font-size: 13px;
-  }
-  #ctx-menu .ctx-item:hover { background: #333; }
-  #ctx-menu .ctx-item.disabled { color: #555; opacity: 0.5; cursor: default; }
-  #ctx-menu .ctx-sep { border-top: 1px solid #3a3a4a; margin: 4px 0; }
-
-  /* ── Modals ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    align-items: center; justify-content: center; z-index: 1000;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal-box {
-    background: var(--bg-tertiary); border: 1px solid #444; border-radius: 12px;
-    padding: 24px; color: var(--text-primary); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 8px; color: var(--accent-purple); }
-  .modal-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
-  .modal-btn {
-    border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px;
-    font-weight: 600; cursor: pointer; color: #fff;
-  }
-
-  /* ── Status Bar ── */
-  #status-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--bg-secondary); border-top: 1px solid var(--border);
-    padding: 4px 16px; font-size: 11px; display: flex; align-items: center; gap: 8px;
-    color: #666; z-index: 100;
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-  }
-  .kbd-hint {
-    display: inline-block; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 3px; padding: 0 4px; font-size: 10px; font-family: inherit;
-    margin-left: 4px; line-height: 16px; vertical-align: middle; opacity: 0.7;
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -249,11 +17,23 @@
   <span class="toolbar-spacer"></span>
   <button class="toolbar-btn" onclick="handleNew()" data-i18n="btn.new">📄 新規</button>
   <button class="toolbar-btn" onclick="openCSV()" data-i18n="btn.openCsv">📂 CSV読込</button>
+  <select id="sampleSelect" onchange="loadSampleFile(this.value)"
+    style="background:#1e1e2e;color:#9a9a9a;border:1px solid #333;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer;max-width:180px">
+    <option value="" data-i18n="sample.placeholder">📂 サンプルを開く</option>
+  </select>
   <button class="toolbar-btn accent" onclick="saveCSV()" data-i18n="btn.saveCsv">💾 CSV保存</button>
   <span class="toolbar-sep"></span>
   <button class="toolbar-btn accent2" onclick="showExportModal()" data-i18n="btn.export">📄 チートシート出力</button>
   <span class="toolbar-sep"></span>
   <button class="toolbar-btn" id="undoBtn" onclick="undo()" disabled data-i18n="btn.undo">↩ 元に戻す</button>
+  <span class="toolbar-sep"></span>
+  <select id="controllerSelect" onchange="switchController(this.value)"
+    style="background:#1e1e2e;color:#e0e0e0;border:1px solid #444;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;cursor:pointer">
+    <option value="xbox">🎮 Xbox</option>
+    <option value="ps4">🎮 PS4</option>
+    <option value="ps5">🎮 PS5</option>
+    <option value="switch">🎮 Switch</option>
+  </select>
   <span class="toolbar-sep"></span>
   <button class="toolbar-btn" onclick="setLang(currentLang==='ja'?'en':'ja')" id="langBtn" style="font-size:13px">🌐 EN</button>
   <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleOpenCSV(event)">
@@ -261,10 +41,10 @@
 
 <!-- Column Headers -->
 <div id="col-headers">
+  <div class="col-output">👁</div>
   <div class="col-type" style="padding-left:28px" data-i18n="col.type">種別</div>
   <div class="col-name" data-i18n="col.name">名前</div>
   <div class="col-mapping" data-i18n="col.mapping">マッピング</div>
-  <div class="col-parent" style="margin-left:6px" data-i18n="col.parent">親</div>
 </div>
 
 <!-- Item List -->
@@ -276,7 +56,6 @@
   <button class="add-btn" style="color:#f59e0b;border-color:#f59e0b" onclick="addItem('category')" data-i18n="add.category">+ カテゴリ</button>
   <button class="add-btn" style="color:#888;border-color:#888" onclick="addItem('separator')" data-i18n="add.separator">+ セパレーター</button>
   <button class="add-btn" style="color:#c084fc;border-color:#c084fc" onclick="addItem('pagebreak')" data-i18n="add.pagebreak">+ 改ページ</button>
-  <button class="add-btn" style="color:#34d399;border-color:#34d399" onclick="addItem('colbreak')" data-i18n="add.colbreak">+ 改カラム</button>
 </div>
 
 <!-- Context Menu -->
@@ -287,21 +66,143 @@
   <div class="modal-box" style="min-width:420px;max-width:500px">
     <div class="modal-title" data-i18n="gp.title">🎮 コントローラ入力待機中</div>
     <div id="gamepadItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-    <div style="font-size:11px;color:#666;margin-bottom:4px" data-i18n="gp.currentMapping">現在のマッピング:</div>
+    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="gp.currentMapping">現在のマッピング:</div>
     <div id="gamepadCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:12px">
-      <span style="color:#555;font-size:12px" data-i18n="gp.none">なし</span>
+      <span style="color:#777;font-size:12px" data-i18n="gp.none">なし</span>
     </div>
     <div class="modal-subtitle" data-i18n="gp.instruction">コントローラーのボタンを押してください。同時押しに対応しています。</div>
-    <div style="font-size:10px;color:#665;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px" data-i18n-html="gp.paddleHint"></div>
-    <div style="font-size:11px;color:#666;margin-bottom:4px" data-i18n="gp.newInput">新しい入力:</div>
+    <div style="font-size:10px;color:#886;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px" data-i18n-html="gp.paddleHint"></div>
+    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="gp.newInput">新しい入力:</div>
     <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
-      <span style="color:#555;font-size:13px" data-i18n="gp.noInput">入力なし</span>
+      <span style="color:#777;font-size:13px" data-i18n="gp.noInput">入力なし</span>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
-      <button class="modal-btn" style="background:#555" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
+      <button class="modal-btn" style="background:#5a5a6a" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
       <button class="modal-btn" style="background:#6b7280" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
       <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()"><span data-i18n="gp.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
       <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()"><span data-i18n="gp.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
+    </div>
+  </div>
+</div>
+
+<!-- Keyboard Input Modal -->
+<div class="modal-overlay" id="keyboardModal">
+  <div class="modal-box" style="min-width:520px;max-width:600px">
+    <div class="modal-title" data-i18n="kb.title">⌨️ キーボード入力</div>
+    <div id="kbItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="kb.currentMapping">現在のマッピング:</div>
+    <div id="kbCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:8px">
+      <span style="color:#777;font-size:12px" data-i18n="kb.none">なし</span>
+    </div>
+    <!-- New Input Display -->
+    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="kb.newInput">新しい入力:</div>
+    <div id="kbDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:10px;min-height:40px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+      <span style="color:#777;font-size:13px" data-i18n="kb.noInput">入力なし</span>
+    </div>
+    <!-- Key grid -->
+    <div style="display:flex;flex-direction:column;gap:3px;margin-bottom:10px">
+      <!-- Row: Esc, Numbers, BS -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('Esc')" style="font-size:9px">Esc</button>
+        <button class="kb-key" onclick="kbAddKey('1')">1</button>
+        <button class="kb-key" onclick="kbAddKey('2')">2</button>
+        <button class="kb-key" onclick="kbAddKey('3')">3</button>
+        <button class="kb-key" onclick="kbAddKey('4')">4</button>
+        <button class="kb-key" onclick="kbAddKey('5')">5</button>
+        <button class="kb-key" onclick="kbAddKey('6')">6</button>
+        <button class="kb-key" onclick="kbAddKey('7')">7</button>
+        <button class="kb-key" onclick="kbAddKey('8')">8</button>
+        <button class="kb-key" onclick="kbAddKey('9')">9</button>
+        <button class="kb-key" onclick="kbAddKey('0')">0</button>
+        <button class="kb-key" onclick="kbAddKey('Backspace')" style="font-size:8px">BS</button>
+      </div>
+      <!-- Row: Tab, Q-P -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('Tab')" style="font-size:9px">Tab</button>
+        <button class="kb-key" onclick="kbAddKey('Q')">Q</button>
+        <button class="kb-key" onclick="kbAddKey('W')">W</button>
+        <button class="kb-key" onclick="kbAddKey('E')">E</button>
+        <button class="kb-key" onclick="kbAddKey('R')">R</button>
+        <button class="kb-key" onclick="kbAddKey('T')">T</button>
+        <button class="kb-key" onclick="kbAddKey('Y')">Y</button>
+        <button class="kb-key" onclick="kbAddKey('U')">U</button>
+        <button class="kb-key" onclick="kbAddKey('I')">I</button>
+        <button class="kb-key" onclick="kbAddKey('O')">O</button>
+        <button class="kb-key" onclick="kbAddKey('P')">P</button>
+        <button class="kb-key" onclick="kbAddKey('Del')" style="font-size:9px">Del</button>
+      </div>
+      <!-- Row: Caps, A-L, Enter -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('Caps')" style="font-size:8px">Caps</button>
+        <button class="kb-key" onclick="kbAddKey('A')">A</button>
+        <button class="kb-key" onclick="kbAddKey('S')">S</button>
+        <button class="kb-key" onclick="kbAddKey('D')">D</button>
+        <button class="kb-key" onclick="kbAddKey('F')">F</button>
+        <button class="kb-key" onclick="kbAddKey('G')">G</button>
+        <button class="kb-key" onclick="kbAddKey('H')">H</button>
+        <button class="kb-key" onclick="kbAddKey('J')">J</button>
+        <button class="kb-key" onclick="kbAddKey('K')">K</button>
+        <button class="kb-key" onclick="kbAddKey('L')">L</button>
+        <button class="kb-key" onclick="kbAddKey('Enter')" style="flex:2;font-size:8px">Enter</button>
+      </div>
+      <!-- Row: Shift, Z-M, Ins -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('Shift')" style="flex:2;font-size:9px">Shift</button>
+        <button class="kb-key" onclick="kbAddKey('Z')">Z</button>
+        <button class="kb-key" onclick="kbAddKey('X')">X</button>
+        <button class="kb-key" onclick="kbAddKey('C')">C</button>
+        <button class="kb-key" onclick="kbAddKey('V')">V</button>
+        <button class="kb-key" onclick="kbAddKey('B')">B</button>
+        <button class="kb-key" onclick="kbAddKey('N')">N</button>
+        <button class="kb-key" onclick="kbAddKey('M')">M</button>
+        <button class="kb-key" onclick="kbAddKey('Ins')" style="font-size:9px">Ins</button>
+        <button class="kb-key" onclick="kbRemoveLast()" style="color:#f87171;font-size:11px" title="Remove last">✕</button>
+      </div>
+      <!-- Row: Ctrl, Win, Alt, Space -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('Ctrl')" style="flex:2;font-size:9px">Ctrl</button>
+        <button class="kb-key" onclick="kbAddKey('Win')" style="font-size:9px">Win</button>
+        <button class="kb-key" onclick="kbAddKey('Alt')" style="font-size:9px">Alt</button>
+        <button class="kb-key" onclick="kbAddKey('Space')" style="flex:5;font-size:9px">Space</button>
+        <button class="kb-key" onclick="kbAddKey('Fn')" style="font-size:9px">Fn</button>
+      </div>
+      <!-- Row: F-keys -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('F1')" style="font-size:9px">F1</button>
+        <button class="kb-key" onclick="kbAddKey('F2')" style="font-size:9px">F2</button>
+        <button class="kb-key" onclick="kbAddKey('F3')" style="font-size:9px">F3</button>
+        <button class="kb-key" onclick="kbAddKey('F4')" style="font-size:9px">F4</button>
+        <button class="kb-key" onclick="kbAddKey('F5')" style="font-size:9px">F5</button>
+        <button class="kb-key" onclick="kbAddKey('F6')" style="font-size:9px">F6</button>
+        <button class="kb-key" onclick="kbAddKey('F7')" style="font-size:9px">F7</button>
+        <button class="kb-key" onclick="kbAddKey('F8')" style="font-size:9px">F8</button>
+        <button class="kb-key" onclick="kbAddKey('F9')" style="font-size:9px">F9</button>
+        <button class="kb-key" onclick="kbAddKey('F10')" style="font-size:8px">F10</button>
+        <button class="kb-key" onclick="kbAddKey('F11')" style="font-size:8px">F11</button>
+        <button class="kb-key" onclick="kbAddKey('F12')" style="font-size:8px">F12</button>
+      </div>
+      <!-- Row: Nav / Arrows -->
+      <div class="kb-row">
+        <button class="kb-key" onclick="kbAddKey('PrtSc')" style="font-size:7px">PrtSc</button>
+        <button class="kb-key" onclick="kbAddKey('Pause')" style="font-size:8px">Pause</button>
+        <button class="kb-key" onclick="kbAddKey('Home')" style="font-size:8px">Home</button>
+        <button class="kb-key" onclick="kbAddKey('End')" style="font-size:9px">End</button>
+        <button class="kb-key" onclick="kbAddKey('PgUp')" style="font-size:8px">PgUp</button>
+        <button class="kb-key" onclick="kbAddKey('PgDn')" style="font-size:8px">PgDn</button>
+        <span style="flex:1"></span>
+        <button class="kb-key" onclick="kbAddKey('Up')">↑</button>
+        <span style="width:2px"></span>
+        <button class="kb-key" onclick="kbAddKey('Left')">←</button>
+        <button class="kb-key" onclick="kbAddKey('Down')">↓</button>
+        <button class="kb-key" onclick="kbAddKey('Right')">→</button>
+      </div>
+    </div>
+    <!-- Action buttons -->
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+      <button class="modal-btn" style="background:#5a5a6a" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span></button>
+      <button class="modal-btn" style="background:#6b7280" onclick="kbClear()"><span data-i18n="kb.clear">クリア</span></button>
+      <button class="modal-btn" style="background:#2563eb" onclick="kbApply()"><span data-i18n="kb.apply">適用</span></button>
+      <button class="modal-btn" style="background:#16a34a" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span></button>
     </div>
   </div>
 </div>
@@ -344,7 +245,7 @@
       <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="modal-btn" style="background:#555" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
+      <button class="modal-btn" style="background:#5a5a6a" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
       <button class="modal-btn" style="background:#6b7280" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
       <button class="modal-btn" style="background:#7c3aed" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>
       <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()" data-i18n="exp.saveHtml">💾 HTMLを保存</button>
@@ -354,1267 +255,12 @@
 
 <!-- Status Bar -->
 <div id="status-bar">
-  <span class="status-dot" id="gpDot" style="background:#555"></span>
+  <span class="status-dot" id="gpDot" style="background:#666"></span>
   <span id="gpStatus" data-i18n="status.noController">コントローラー未接続</span>
   <span class="toolbar-spacer"></span>
   <span data-i18n="status.shortcuts">Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>
 </div>
 
-<script>
-// ═══════════════════════════════════════════════════════════════════════════
-// I18N (INTERNATIONALIZATION)
-// ═══════════════════════════════════════════════════════════════════════════
-
-const I18N = {
-  ja: {
-    // Header / Toolbar
-    "filename.tooltip": "クリックしてファイル名を変更",
-    "btn.new": "📄 新規",
-    "btn.openCsv": "📂 CSV読込",
-    "btn.saveCsv": "💾 CSV保存",
-    "btn.export": "📄 チートシート出力",
-    "btn.undo": "↩ 元に戻す",
-    // Column Headers
-    "col.type": "種別",
-    "col.name": "名前",
-    "col.mapping": "マッピング",
-    "col.parent": "親",
-    // Add Buttons
-    "add.mapping": "+ マッピング",
-    "add.category": "+ カテゴリ",
-    "add.separator": "+ セパレーター",
-    "add.pagebreak": "+ 改ページ",
-    "add.colbreak": "+ 改カラム",
-    // Type Labels
-    "type.category": "カテゴリ",
-    "type.mapping": "マッピング",
-    "type.separator": "セパレーター",
-    "type.pagebreak": "改ページ",
-    "type.colbreak": "改カラム",
-    // Gamepad Modal
-    "gp.title": "🎮 コントローラ入力待機中",
-    "gp.currentMapping": "現在のマッピング:",
-    "gp.none": "なし",
-    "gp.instruction": "コントローラーのボタンを押してください。同時押しに対応しています。",
-    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。',
-    "gp.newInput": "新しい入力:",
-    "gp.noInput": "入力なし",
-    "gp.cancel": "キャンセル",
-    "gp.skip": "次へ",
-    "gp.apply": "適用",
-    "gp.applyNext": "適用して次へ",
-    "gp.nameEmpty": "（名前未設定）",
-    // Export Modal
-    "exp.title": "📄 チートシート出力",
-    "exp.columns": "カラム数:",
-    "exp.fontSize": "フォントサイズ:",
-    "exp.buttonStyle": "ボタン表示:",
-    "exp.promptfont": "PromptFont（グリフ）",
-    "exp.badge": "テキストバッジ（CSS）",
-    "exp.fontSource": "フォント参照先:",
-    "exp.fontLocal": "ローカル（同フォルダ）",
-    "exp.fontGhpages": "GitHub Pages（URL参照）",
-    "exp.close": "閉じる",
-    "exp.newTab": "🔗 別タブで開く",
-    "exp.print": "🖨 印刷",
-    "exp.saveHtml": "💾 HTMLを保存",
-    "exp.hintFile": "出力ファイル:",
-    "exp.hintLocal": "（promptfont.css, promptfont.ttf と同じフォルダに配置してください）",
-    "exp.hintGhpages": "（フォントをGitHub Pagesから読み込み — 単体で動作します）",
-    "exp.hintBadge": "（外部ファイル不要 — 単体で動作します）",
-    // Status Bar
-    "status.noController": "コントローラー未接続",
-    "status.shortcuts": "Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー",
-    // Context Menu
-    "ctx.insertAbove": "⬆ 上に挿入",
-    "ctx.insertBelow": "⬇ 下に挿入",
-    "ctx.moveUp": "⬆ 上へ移動",
-    "ctx.moveDown": "⬇ 下へ移動",
-    "ctx.copy": "📋 コピー",
-    "ctx.cut": "✂️ 切り取り",
-    "ctx.pasteAbove": "📋 上に貼り付け",
-    "ctx.pasteBelow": "📋 下に貼り付け",
-    "ctx.delete": "🗑 削除",
-    // Render / Misc
-    "list.empty": 'アイテムがありません。下の「+」ボタンか、CSVファイルを読み込んでください。',
-    "drag.tooltip": "ドラッグして移動",
-    "deco.pagebreak": "改ページ",
-    "deco.colbreak": "改カラム",
-    "placeholder.category": "カテゴリ名...",
-    "placeholder.mapping": "機能名...",
-    "mapping.clickToEdit": "クリックして入力...",
-    "gamepad.tooltip": "コントローラーで入力",
-    "parent.root": "（ルート）",
-    "delete.tooltip": "削除",
-    "confirm.new": "現在のデータを破棄して新規作成しますか？",
-    // Language
-    "lang.label": "🌐",
-  },
-  en: {
-    "filename.tooltip": "Click to rename",
-    "btn.new": "📄 New",
-    "btn.openCsv": "📂 Open CSV",
-    "btn.saveCsv": "💾 Save CSV",
-    "btn.export": "📄 Export Cheatsheet",
-    "btn.undo": "↩ Undo",
-    "col.type": "Type",
-    "col.name": "Name",
-    "col.mapping": "Mapping",
-    "col.parent": "Parent",
-    "add.mapping": "+ Mapping",
-    "add.category": "+ Category",
-    "add.separator": "+ Separator",
-    "add.pagebreak": "+ Page Break",
-    "add.colbreak": "+ Col Break",
-    "type.category": "Category",
-    "type.mapping": "Mapping",
-    "type.separator": "Separator",
-    "type.pagebreak": "Page Break",
-    "type.colbreak": "Col Break",
-    "gp.title": "🎮 Waiting for Controller Input",
-    "gp.currentMapping": "Current mapping:",
-    "gp.none": "None",
-    "gp.instruction": "Press buttons on your controller. Simultaneous presses are supported.",
-    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code style="color:#aaa">[LP1]</code> etc. directly in the mapping field.',
-    "gp.newInput": "New input:",
-    "gp.noInput": "No input",
-    "gp.cancel": "Cancel",
-    "gp.skip": "Skip",
-    "gp.apply": "Apply",
-    "gp.applyNext": "Apply & Next",
-    "gp.nameEmpty": "(unnamed)",
-    "exp.title": "📄 Export Cheatsheet",
-    "exp.columns": "Columns:",
-    "exp.fontSize": "Font size:",
-    "exp.buttonStyle": "Button style:",
-    "exp.promptfont": "PromptFont (Glyph)",
-    "exp.badge": "Text Badge (CSS)",
-    "exp.fontSource": "Font source:",
-    "exp.fontLocal": "Local (same folder)",
-    "exp.fontGhpages": "GitHub Pages (URL)",
-    "exp.close": "Close",
-    "exp.newTab": "🔗 Open in New Tab",
-    "exp.print": "🖨 Print",
-    "exp.saveHtml": "💾 Save HTML",
-    "exp.hintFile": "Output file:",
-    "exp.hintLocal": "(place alongside promptfont.css and promptfont.ttf)",
-    "exp.hintGhpages": "(loads font from GitHub Pages — works standalone)",
-    "exp.hintBadge": "(no external files needed — works standalone)",
-    "status.noController": "No controller connected",
-    "status.shortcuts": "Ctrl+S: Save | Ctrl+Z: Undo | Right-click: Menu",
-    "ctx.insertAbove": "⬆ Insert Above",
-    "ctx.insertBelow": "⬇ Insert Below",
-    "ctx.moveUp": "⬆ Move Up",
-    "ctx.moveDown": "⬇ Move Down",
-    "ctx.copy": "📋 Copy",
-    "ctx.cut": "✂️ Cut",
-    "ctx.pasteAbove": "📋 Paste Above",
-    "ctx.pasteBelow": "📋 Paste Below",
-    "ctx.delete": "🗑 Delete",
-    "list.empty": "No items. Use the \"+\" buttons below or open a CSV file.",
-    "drag.tooltip": "Drag to reorder",
-    "deco.pagebreak": "Page Break",
-    "deco.colbreak": "Col Break",
-    "placeholder.category": "Category name...",
-    "placeholder.mapping": "Function name...",
-    "mapping.clickToEdit": "Click to edit...",
-    "gamepad.tooltip": "Input from controller",
-    "parent.root": "(root)",
-    "delete.tooltip": "Delete",
-    "confirm.new": "Discard current data and create new?",
-    "lang.label": "🌐",
-  }
-};
-
-let currentLang = "ja";
-
-function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ja[key] || key; }
-
-function detectLang() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("lang") && I18N[params.get("lang")]) return params.get("lang");
-  const stored = localStorage.getItem("mappingManagerLang");
-  if (stored && I18N[stored]) return stored;
-  const nav = (navigator.language || "").substring(0, 2);
-  return I18N[nav] ? nav : "ja";
-}
-
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem("mappingManagerLang", lang);
-  const url = new URL(window.location);
-  url.searchParams.set("lang", lang);
-  history.replaceState(null, "", url);
-  document.documentElement.lang = lang;
-  translatePage();
-  if (typeof updateLangButton === "function") updateLangButton();
-  render();
-}
-
-function translatePage() {
-  // Static elements with data-i18n
-  document.querySelectorAll("[data-i18n]").forEach(el => {
-    el.textContent = t(el.dataset.i18n);
-  });
-  document.querySelectorAll("[data-i18n-html]").forEach(el => {
-    el.innerHTML = t(el.dataset.i18nHtml);
-  });
-  document.querySelectorAll("[data-i18n-title]").forEach(el => {
-    el.title = t(el.dataset.i18nTitle);
-  });
-  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
-    el.placeholder = t(el.dataset.i18nPlaceholder);
-  });
-  // Update gamepad status immediately
-  updateGamepadStatusText();
-}
-
-function updateGamepadStatusText() {
-  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
-  const gp = gps[0]||gps[1]||gps[2]||gps[3];
-  document.getElementById("gpDot").style.background = gp ? "#22c55e" : "#555";
-  document.getElementById("gpStatus").textContent = gp ? "🎮 " + (gp.id||"").substring(0,50) : t("status.noController");
-  document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#666";
-}
-
-function getTypeLabelMap() {
-  return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak"), colbreak:t("type.colbreak") };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DATA MODEL
-// ═══════════════════════════════════════════════════════════════════════════
-
-let nextId = 1;
-let items = [];
-let fileName = "new_mapping.csv";
-let selectedId = null;
-let clipboard = null;
-let clipboardCut = false;
-let clipboardCutRootId = null;
-let undoStack = [];
-let collapsedIds = new Set();
-let gamepadTargetId = null;
-let gamepadPressedButtons = [];
-let gamepadIsIdle = true;
-let gamepadPrevPressed = new Set();
-let gamepadRAF = null;
-
-const BUTTON_STYLES = {
-  A: { bg:"#107C10", text:"#fff", label:"A" },
-  B: { bg:"#E81123", text:"#fff", label:"B" },
-  X: { bg:"#0078D7", text:"#fff", label:"X" },
-  Y: { bg:"#FFC300", text:"#1a1a1a", label:"Y" },
-  LB: { bg:"#555", text:"#fff", label:"LB" },
-  RB: { bg:"#555", text:"#fff", label:"RB" },
-  LT: { bg:"#666", text:"#fff", label:"LT" },
-  RT: { bg:"#666", text:"#fff", label:"RT" },
-  LS: { bg:"#C23B22", text:"#fff", label:"LS" },
-  RS: { bg:"#2E8B57", text:"#fff", label:"RS" },
-  "LS:X": { bg:"#C23B22", text:"#fff", label:"LS↔" },
-  "LS:Y": { bg:"#C23B22", text:"#fff", label:"LS↕" },
-  "LS:XY": { bg:"#C23B22", text:"#fff", label:"LS✦" },
-  "RS:X": { bg:"#2E8B57", text:"#fff", label:"RS↔" },
-  "RS:Y": { bg:"#2E8B57", text:"#fff", label:"RS↕" },
-  "RS:XY": { bg:"#2E8B57", text:"#fff", label:"RS✦" },
-  Start: { bg:"#333", text:"#fff", label:"≡" },
-  Back: { bg:"#333", text:"#fff", label:"⧉" },
-  "▲": { bg:"#222", text:"#fff", label:"▲" },
-  "▼": { bg:"#222", text:"#fff", label:"▼" },
-  "▶": { bg:"#222", text:"#fff", label:"▶" },
-  "◀": { bg:"#222", text:"#fff", label:"◀" },
-  "▲▶": { bg:"#222", text:"#fff", label:"▲▶" },
-  "▼▶": { bg:"#222", text:"#fff", label:"▼▶" },
-  "◀▼": { bg:"#222", text:"#fff", label:"◀▼" },
-  "◀▲": { bg:"#222", text:"#fff", label:"◀▲" },
-  LP1: { bg:"#4B0082", text:"#fff", label:"LP1" },
-  LP2: { bg:"#4B0082", text:"#fff", label:"LP2" },
-  RP1: { bg:"#5D4037", text:"#fff", label:"RP1" },
-  RP2: { bg:"#5D4037", text:"#fff", label:"RP2" },
-  "/": { bg:"#1a1a1a", text:"#fff", label:"🎮" },
-};
-
-const GAMEPAD_BUTTON_MAP = {
-  0:"A", 1:"B", 2:"X", 3:"Y", 4:"LB", 5:"RB", 6:"LT", 7:"RT",
-  8:"Back", 9:"Start", 10:"LS", 11:"RS", 12:"▲", 13:"▼", 14:"◀", 15:"▶",
-};
-const AXIS_THRESHOLD = 0.5;
-const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY"]);
-const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY"]);
-
-function getTypeLabels() { return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak"), colbreak:t("type.colbreak") }; }
-const TYPE_COLORS = { category:"#f59e0b", mapping:"#60a5fa", separator:"#888", pagebreak:"#c084fc", colbreak:"#34d399" };
-
-// ═══════════════════════════════════════════════════════════════════════════
-// UTILITY
-// ═══════════════════════════════════════════════════════════════════════════
-
-function genId() { return nextId++; }
-function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-function parseMappingString(str) {
-  if (!str) return [];
-  return str.split("+").map(s => s.replace(/^\[|\]$/g,"").trim()).filter(Boolean);
-}
-function toMappingString(buttons) {
-  return buttons.map(b => `[${b}]`).join("+");
-}
-
-function badgeHTML(name) {
-  const s = BUTTON_STYLES[name] || { bg:"#555", text:"#fff", label:name };
-  return `<span class="btn-badge" style="background:${s.bg};color:${s.text}">${esc(s.label)}</span>`;
-}
-function mappingBadgesHTML(mapping) {
-  const btns = parseMappingString(mapping);
-  if (btns.length === 0) return '';
-  return btns.map((b,i) => (i > 0 ? '<span class="btn-plus">+</span>' : '') + badgeHTML(b)).join('');
-}
-
-function csvEscape(val) {
-  const s = String(val ?? "");
-  if (s.includes(",") || s.includes('"') || s.includes("\n")) return '"' + s.replace(/"/g,'""') + '"';
-  return s;
-}
-function csvParseLine(line) {
-  const result = []; let current = "", inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (inQ) { if (ch==='"' && line[i+1]==='"'){current+='"';i++;} else if(ch==='"'){inQ=false;} else{current+=ch;} }
-    else { if(ch==='"'){inQ=true;} else if(ch===','){result.push(current);current="";} else{current+=ch;} }
-  }
-  result.push(current);
-  return result;
-}
-function itemsToCSV() {
-  const header = "id,parentId,type,name,mapping";
-  const rows = items.map(it => [it.id, it.parentId??"", it.type, csvEscape(it.name), csvEscape(it.mapping)].join(","));
-  return [header, ...rows].join("\n");
-}
-function csvToItems(text) {
-  const lines = text.split(/\r?\n/).filter(l=>l.trim());
-  if (lines.length < 1) return [];
-  const dataLines = lines[0].startsWith("id,") ? lines.slice(1) : lines;
-  let maxId = 0;
-  const result = dataLines.map(line => {
-    const f = csvParseLine(line);
-    const id = parseInt(f[0]) || genId();
-    if (id > maxId) maxId = id;
-    return { id, parentId: f[1] ? parseInt(f[1]) || null : null, type: f[2]||"mapping", name: f[3]||"", mapping: f[4]||"" };
-  });
-  nextId = maxId + 1;
-  return result;
-}
-
-function getDepth(item) {
-  let d = 0, cur = item;
-  while (cur.parentId) { cur = items.find(it=>it.id===cur.parentId); if(!cur) break; d++; }
-  return d;
-}
-function getOrderedItems() {
-  const result = [], inResult = new Set();
-  function add(item, skipChildren) {
-    result.push(item);
-    inResult.add(item.id);
-    if (!skipChildren) {
-      items.filter(it=>it.parentId===item.id).forEach(child => add(child, collapsedIds.has(child.id)));
-    }
-  }
-  items.filter(it=>!it.parentId).forEach(item => add(item, collapsedIds.has(item.id)));
-  // Add any orphans
-  items.forEach(it => { if(!inResult.has(it.id)) result.push(it); });
-  return result;
-}
-
-function toggleCollapse(id, e) {
-  if (e) e.stopPropagation();
-  if (collapsedIds.has(id)) collapsedIds.delete(id);
-  else collapsedIds.add(id);
-  render();
-}
-
-function hasChildren(id) {
-  return items.some(it => it.parentId === id);
-}
-function getNextMappingItem(afterId) {
-  const ordered = getOrderedItems();
-  const idx = ordered.findIndex(it=>it.id===afterId);
-  for (let i=idx+1; i<ordered.length; i++) { if(ordered[i].type==="mapping") return ordered[i].id; }
-  return null;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// UNDO
-// ═══════════════════════════════════════════════════════════════════════════
-
-function pushUndo() {
-  undoStack.push(JSON.stringify(items));
-  if (undoStack.length > 30) undoStack.shift();
-  document.getElementById("undoBtn").disabled = false;
-}
-function undo() {
-  if (undoStack.length === 0) return;
-  items = JSON.parse(undoStack.pop());
-  document.getElementById("undoBtn").disabled = undoStack.length === 0;
-  render();
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// RENDERING
-// ═══════════════════════════════════════════════════════════════════════════
-
-function render() {
-  const list = document.getElementById("item-list");
-  const ordered = getOrderedItems();
-  const categories = items.filter(it=>it.type==="category");
-  const catOptions = categories.map(c => `<option value="${c.id}" style="background:#252536">${esc(c.name||'ID:'+c.id)}</option>`).join("");
-
-  let html = "";
-  if (ordered.length === 0) {
-    html = `<div style="text-align:center;padding:40px;color:#555;font-size:13px">${t("list.empty")}</div>`;
-  }
-
-  for (const item of ordered) {
-    const depth = getDepth(item);
-    const pl = 8 + depth * 20;
-    const sel = item.id === selectedId ? " selected" : "";
-    const isCat = item.type === "category";
-    const isMap = item.type === "mapping";
-    const isDeco = item.type === "separator" || item.type === "pagebreak" || item.type === "colbreak";
-
-    html += `<div class="item-row${sel}" data-id="${item.id}" style="padding-left:${pl}px"
-      onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
-      ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
-      ondragleave="onDragLeave(event, ${item.id})">`;
-
-    // Drag handle
-    html += `<div class="drag-handle" draggable="true"
-      ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
-      title="${t("drag.tooltip")}">⠿</div>`;
-    // Type selector
-    html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'#aaa'}"
-      onchange="updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
-    for (const [k,v] of Object.entries(getTypeLabels())) {
-      html += `<option value="${k}" ${k===item.type?"selected":""} style="background:#252536;color:${TYPE_COLORS[k]}">${v}</option>`;
-    }
-    html += `</select></div>`;
-
-    if (isDeco) {
-      // Decorative items
-      if (item.type === "separator") html += `<div class="deco-line"></div>`;
-      else if (item.type === "pagebreak") html += `<div class="deco-pagebreak"><span>${t("deco.pagebreak")}</span></div>`;
-      else html += `<div class="deco-colbreak"><span>${t("deco.colbreak")}</span></div>`;
-    } else {
-      // Name
-      html += `<div class="col-name">`;
-      if (isCat) {
-        const hasKids = hasChildren(item.id);
-        const isCollapsed = collapsedIds.has(item.id);
-        if (hasKids) {
-          html += `<span class="collapse-toggle${isCollapsed?' collapsed':''}" onclick="toggleCollapse(${item.id}, event)">${isCollapsed ? '▶' : '▼'}</span>`;
-        } else {
-          html += `<span style="display:inline-block;width:16px;margin-right:2px"></span>`;
-        }
-        html += `<span style="color:#f59e0b;margin-right:4px;font-size:12px">📁</span>`;
-      }
-      html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
-        placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
-        onchange="updateItem(${item.id}, 'name', this.value)" onclick="event.stopPropagation()">`;
-      html += `</div>`;
-
-      // Mapping
-      if (isMap) {
-        const badges = mappingBadgesHTML(item.mapping);
-        html += `<div class="col-mapping">`;
-        html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
-          onclick="startMappingEdit(${item.id}); event.stopPropagation()">`;
-        html += badges || t('mapping.clickToEdit');
-        html += `</div>`;
-        html += `<button class="gamepad-btn" onclick="openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
-        html += `</div>`;
-      } else {
-        html += `<div class="col-mapping"></div>`;
-      }
-
-      // Parent
-      html += `<div class="col-parent"><select class="parent-select"
-        onchange="updateItem(${item.id}, 'parentId', this.value ? parseInt(this.value) : null); event.stopPropagation()">`;
-      html += `<option value="" style="background:#252536">${t('parent.root')}</option>`;
-      for (const c of categories) {
-        if (c.id === item.id) continue;
-        html += `<option value="${c.id}" ${item.parentId===c.id?"selected":""} style="background:#252536">${esc(c.name||'ID:'+c.id)}</option>`;
-      }
-      html += `</select></div>`;
-    }
-
-    // Delete button
-    html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="${t('delete.tooltip')}">×</button>`;
-
-    html += `</div>`;
-  }
-  list.innerHTML = html;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// ITEM OPERATIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function updateItem(id, field, value) {
-  pushUndo();
-  const item = items.find(it=>it.id===id);
-  if (item) { item[field] = value; render(); }
-}
-function selectItem(id) { selectedId = id; render(); }
-
-function addItem(type, afterId) {
-  pushUndo();
-  const newItem = { id:genId(), parentId:null, type, name:"", mapping:"" };
-  if (afterId !== undefined) {
-    const idx = items.findIndex(it=>it.id===afterId);
-    const target = items[idx];
-    if (target && target.type === "category") newItem.parentId = target.id;
-    else if (target) newItem.parentId = target.parentId;
-    items.splice(idx+1, 0, newItem);
-  } else {
-    items.push(newItem);
-  }
-  selectedId = newItem.id;
-  render();
-}
-function insertItemBefore(id) {
-  pushUndo();
-  const idx = items.findIndex(it=>it.id===id);
-  const target = items[idx];
-  const newItem = { id:genId(), parentId:target?.parentId||null, type:"mapping", name:"", mapping:"" };
-  items.splice(idx, 0, newItem);
-  selectedId = newItem.id;
-  render();
-}
-function deleteItem(id) {
-  pushUndo();
-  const toDelete = getDescendantIds(id);
-  toDelete.add(id);
-  items = items.filter(it => !toDelete.has(it.id));
-  if (toDelete.has(selectedId)) selectedId = null;
-  render();
-}
-
-// Get all descendant IDs of an item
-function getDescendantIds(id) {
-  const result = new Set();
-  let changed = true;
-  const seeds = new Set([id]);
-  while (changed) {
-    changed = false;
-    items.forEach(it => {
-      if (it.parentId && (seeds.has(it.parentId) || result.has(it.parentId)) && !result.has(it.id)) {
-        result.add(it.id); changed = true;
-      }
-    });
-  }
-  return result;
-}
-
-// Collect an item and all its descendants as a subtree snapshot
-function collectSubtree(id) {
-  const root = items.find(it=>it.id===id);
-  if (!root) return [];
-  const descIds = getDescendantIds(id);
-  const subtreeItems = [root, ...items.filter(it=>descIds.has(it.id))];
-  return subtreeItems.map(it => ({...it})); // deep copy
-}
-
-// Paste a subtree: assign new IDs, remap internal parent pointers, set root's parent
-function pasteSubtree(subtree, newParentId, insertIdx) {
-  if (subtree.length === 0) return;
-  const idMap = {};
-  const rootOldId = subtree[0].id;
-  // Generate new IDs
-  subtree.forEach(it => { idMap[it.id] = genId(); });
-  const newItems = subtree.map(it => ({
-    ...it,
-    id: idMap[it.id],
-    parentId: it.id === rootOldId ? newParentId : (idMap[it.parentId] ?? it.parentId),
-  }));
-  // Insert into items array at position
-  items.splice(insertIdx, 0, ...newItems);
-}
-
-function moveUp(id) {
-  pushUndo();
-  const item = items.find(it=>it.id===id);
-  if (!item) return;
-  // Get siblings in array order
-  const siblings = items.filter(it=>it.parentId===item.parentId);
-  const sibIdx = siblings.findIndex(it=>it.id===id);
-  if (sibIdx <= 0) return;
-  const prevSibling = siblings[sibIdx - 1];
-  // Swap positions in the items array
-  const aIdx = items.findIndex(it=>it.id===id);
-  const bIdx = items.findIndex(it=>it.id===prevSibling.id);
-  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
-  render();
-}
-function moveDown(id) {
-  pushUndo();
-  const item = items.find(it=>it.id===id);
-  if (!item) return;
-  const siblings = items.filter(it=>it.parentId===item.parentId);
-  const sibIdx = siblings.findIndex(it=>it.id===id);
-  if (sibIdx < 0 || sibIdx >= siblings.length - 1) return;
-  const nextSibling = siblings[sibIdx + 1];
-  const aIdx = items.findIndex(it=>it.id===id);
-  const bIdx = items.findIndex(it=>it.id===nextSibling.id);
-  [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
-  render();
-}
-
-function copyItem(id) {
-  clipboard = collectSubtree(id);
-  clipboardCut = false;
-}
-function cutItem(id) {
-  clipboard = collectSubtree(id);
-  clipboardCut = true;
-  clipboardCutRootId = id;
-}
-
-function pasteAbove(targetId) {
-  if (!clipboard || clipboard.length === 0) return;
-  pushUndo();
-  if (clipboardCut) {
-    const cutIds = new Set(clipboard.map(it=>it.id));
-    items = items.filter(it => !cutIds.has(it.id));
-  }
-  const idx = items.findIndex(it=>it.id===targetId);
-  const target = items[idx];
-  pasteSubtree(clipboard, target?.parentId ?? null, idx < 0 ? items.length : idx);
-  if (clipboardCut) { clipboard = null; clipboardCut = false; }
-  render();
-}
-function pasteBelow(targetId) {
-  if (!clipboard || clipboard.length === 0) return;
-  pushUndo();
-  if (clipboardCut) {
-    const cutIds = new Set(clipboard.map(it=>it.id));
-    items = items.filter(it => !cutIds.has(it.id));
-  }
-  const idx = items.findIndex(it=>it.id===targetId);
-  const target = items[idx];
-  pasteSubtree(clipboard, target?.parentId ?? null, idx < 0 ? items.length : idx + 1);
-  if (clipboardCut) { clipboard = null; clipboardCut = false; }
-  render();
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DRAG AND DROP REORDER
-// ═══════════════════════════════════════════════════════════════════════════
-
-let dragItemId = null;
-let currentDropZone = null; // "above" | "child" | "below"
-
-function isDescendantOf(itemId, ancestorId) {
-  // Check if itemId is a descendant of ancestorId
-  let cur = items.find(it=>it.id===itemId);
-  while (cur && cur.parentId) {
-    if (cur.parentId === ancestorId) return true;
-    cur = items.find(it=>it.id===cur.parentId);
-  }
-  return false;
-}
-
-// Find the last index (in items array) of an item's subtree
-function getSubtreeLastIndex(id) {
-  const descIds = getDescendantIds(id);
-  let lastIdx = items.findIndex(it=>it.id===id);
-  items.forEach((it, idx) => {
-    if (descIds.has(it.id) && idx > lastIdx) lastIdx = idx;
-  });
-  return lastIdx;
-}
-
-function getDropZone(e, targetId) {
-  const row = e.currentTarget;
-  const rect = row.getBoundingClientRect();
-  const y = e.clientY - rect.top;
-  const h = rect.height;
-  const target = items.find(it=>it.id===targetId);
-  const isCat = target && target.type === "category";
-
-  if (isCat) {
-    // 3 zones for categories: top 25% | middle 50% | bottom 25%
-    if (y < h * 0.25) return "above";
-    if (y > h * 0.75) return "below";
-    return "child";
-  } else {
-    // 2 zones for non-categories: top 50% | bottom 50%
-    return y < h * 0.5 ? "above" : "below";
-  }
-}
-
-function clearDropIndicators() {
-  document.querySelectorAll(".item-row").forEach(r => {
-    r.style.borderTop = "";
-    r.style.borderBottom = "";
-    r.classList.remove("drop-child");
-  });
-}
-
-function onDragStart(e, id) {
-  dragItemId = id;
-  e.dataTransfer.effectAllowed = "move";
-  e.dataTransfer.setData("text/plain", String(id));
-  setTimeout(() => {
-    const el = document.querySelector(`.item-row[data-id="${id}"]`);
-    if (el) el.style.opacity = "0.3";
-  }, 0);
-}
-
-function onDragEnd(e) {
-  const el = document.querySelector(`.item-row[data-id="${dragItemId}"]`);
-  if (el) el.style.opacity = "";
-  dragItemId = null;
-  currentDropZone = null;
-  clearDropIndicators();
-}
-
-function onDragOver(e, targetId) {
-  if (dragItemId === null || dragItemId === targetId) return;
-  // Prevent dropping onto own descendant
-  if (isDescendantOf(targetId, dragItemId)) return;
-  e.preventDefault();
-  e.dataTransfer.dropEffect = "move";
-
-  const zone = getDropZone(e, targetId);
-  currentDropZone = zone;
-
-  clearDropIndicators();
-  const row = e.currentTarget;
-  if (zone === "above") {
-    row.style.borderTop = "2px solid #60a5fa";
-  } else if (zone === "below") {
-    row.style.borderBottom = "2px solid #60a5fa";
-  } else {
-    row.classList.add("drop-child");
-  }
-}
-
-function onDragLeave(e, targetId) {
-  const row = e.currentTarget;
-  // Only clear if actually leaving (not entering a child element)
-  const related = e.relatedTarget;
-  if (related && row.contains(related)) return;
-  row.style.borderTop = "";
-  row.style.borderBottom = "";
-  row.classList.remove("drop-child");
-}
-
-function onDrop(e, targetId) {
-  e.preventDefault();
-  if (dragItemId === null || dragItemId === targetId) return;
-  if (isDescendantOf(targetId, dragItemId)) return;
-
-  const zone = getDropZone(e, targetId);
-  const target = items.find(it=>it.id===targetId);
-  const dragItem = items.find(it=>it.id===dragItemId);
-  if (!target || !dragItem) return;
-
-  pushUndo();
-
-  // Collect the subtree to move (for categories, includes all descendants)
-  const dragDescIds = getDescendantIds(dragItemId);
-  const allDragIds = new Set([dragItemId, ...dragDescIds]);
-  const subtree = items.filter(it => allDragIds.has(it.id));
-
-  // Remove subtree from items
-  items = items.filter(it => !allDragIds.has(it.id));
-
-  if (zone === "child") {
-    // Make child of target category
-    dragItem.parentId = targetId;
-    // Insert after target's last descendant
-    const lastIdx = getSubtreeLastIndex(targetId);
-    items.splice(lastIdx + 1, 0, ...subtree);
-  } else if (zone === "above") {
-    // Insert as sibling before target
-    dragItem.parentId = target.parentId;
-    const targetIdx = items.findIndex(it=>it.id===targetId);
-    items.splice(targetIdx, 0, ...subtree);
-  } else {
-    // Insert as sibling after target (and its subtree)
-    dragItem.parentId = target.parentId;
-    const lastIdx = getSubtreeLastIndex(targetId);
-    items.splice(lastIdx + 1, 0, ...subtree);
-  }
-
-  clearDropIndicators();
-  dragItemId = null;
-  currentDropZone = null;
-  render();
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INLINE MAPPING EDIT
-// ═══════════════════════════════════════════════════════════════════════════
-
-function startMappingEdit(id) {
-  const item = items.find(it=>it.id===id);
-  if (!item) return;
-  const box = document.querySelector(`.mapping-box[data-item-id="${id}"]`);
-  if (!box) return;
-  box.innerHTML = `<input class="mapping-edit-input" value="${esc(item.mapping)}"
-    onblur="finishMappingEdit(${id}, this.value)"
-    onkeydown="if(event.key==='Enter'||event.key==='Escape') this.blur()">`;
-  const input = box.querySelector("input");
-  input.focus(); input.select();
-  input.onclick = function(e) { e.stopPropagation(); };
-}
-function finishMappingEdit(id, value) {
-  updateItem(id, "mapping", value);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CONTEXT MENU
-// ═══════════════════════════════════════════════════════════════════════════
-
-function showContextMenu(e, id) {
-  e.preventDefault(); e.stopPropagation();
-  selectedId = id;
-  const menu = document.getElementById("ctx-menu");
-  const hasClip = !!clipboard;
-  menu.innerHTML = `
-    <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">${t("ctx.insertAbove")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">${t("ctx.insertBelow")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">${t("ctx.moveUp")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">${t("ctx.moveDown")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">${t("ctx.copy")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">${t("ctx.cut")}</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">${t("ctx.pasteAbove")}</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">${t("ctx.pasteBelow")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
-  `;
-  menu.style.left = e.clientX + "px";
-  menu.style.top = e.clientY + "px";
-  menu.classList.add("show");
-  render();
-}
-function hideContextMenu() { document.getElementById("ctx-menu").classList.remove("show"); }
-document.addEventListener("mousedown", e => {
-  const menu = document.getElementById("ctx-menu");
-  if (!menu.contains(e.target)) hideContextMenu();
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// FILE OPERATIONS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function setFileName(name) {
-  fileName = name;
-  document.getElementById("filenameDisplay").textContent = name;
-}
-function startFileNameEdit() {
-  const display = document.getElementById("filenameDisplay");
-  const edit = document.getElementById("filenameEdit");
-  edit.value = fileName;
-  display.style.display = "none";
-  edit.style.display = "";
-  edit.focus();
-  // .csv の前にカーソルを置く
-  const dotIdx = edit.value.lastIndexOf(".");
-  if (dotIdx > 0) edit.setSelectionRange(0, dotIdx);
-  else edit.select();
-}
-function finishFileNameEdit() {
-  const edit = document.getElementById("filenameEdit");
-  const display = document.getElementById("filenameDisplay");
-  let val = edit.value.trim();
-  if (val && !val.endsWith(".csv")) val += ".csv";
-  if (val) setFileName(val);
-  edit.style.display = "none";
-  display.style.display = "";
-}
-function handleNew() {
-  if (items.length > 0 && !confirm(t("confirm.new"))) return;
-  nextId = 1; items = []; undoStack = []; selectedId = null;
-  setFileName("new_mapping.csv");
-  document.getElementById("undoBtn").disabled = true;
-  render();
-}
-function openCSV() { document.getElementById("csvInput").click(); }
-function handleOpenCSV(e) {
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => { items = csvToItems(ev.target.result); undoStack=[]; setFileName(file.name); render(); };
-  reader.readAsText(file); e.target.value = "";
-}
-function saveCSV() {
-  const csv = itemsToCSV();
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// GAMEPAD MODAL
-// ═══════════════════════════════════════════════════════════════════════════
-
-function updateGamepadItemName() {
-  const el = document.getElementById("gamepadItemName");
-  const mapEl = document.getElementById("gamepadCurrentMapping");
-  const item = items.find(it=>it.id===gamepadTargetId);
-  el.textContent = item ? (item.name || t("gp.nameEmpty")) : "";
-  if (item && item.mapping) {
-    mapEl.innerHTML = mappingBadgesHTML(item.mapping);
-  } else {
-    mapEl.innerHTML = `<span style="color:#555;font-size:12px">${t("gp.none")}</span>`;
-  }
-}
-function gamepadSkipNext() {
-  if (gamepadTargetId !== null) {
-    const next = getNextMappingItem(gamepadTargetId);
-    if (next) { gamepadTargetId = next; gamepadPressedButtons = []; gamepadIsIdle = true; gamepadPrevPressed = new Set(); updateGamepadItemName(); renderGamepadDisplay(); return; }
-  }
-  closeGamepadModal();
-}
-function gamepadModalKeyHandler(e) {
-  if (e.key === "Escape") { e.preventDefault(); gamepadCancel(); }
-  else if (e.key === "Enter") { e.preventDefault(); gamepadApply(); }
-  else if (e.key === " ") { e.preventDefault(); gamepadApplyNext(); }
-  else if (e.key === "Tab") { e.preventDefault(); gamepadSkipNext(); }
-}
-function openGamepadModal(id) {
-  gamepadTargetId = id;
-  gamepadPressedButtons = [];
-  gamepadIsIdle = true;
-  gamepadPrevPressed = new Set();
-  document.getElementById("gamepadModal").classList.add("show");
-  document.addEventListener("keydown", gamepadModalKeyHandler);
-  updateGamepadItemName();
-  renderGamepadDisplay();
-  pollGamepad();
-}
-function closeGamepadModal() {
-  cancelAnimationFrame(gamepadRAF);
-  document.getElementById("gamepadModal").classList.remove("show");
-  document.removeEventListener("keydown", gamepadModalKeyHandler);
-  gamepadTargetId = null;
-}
-function gamepadCancel() {
-  closeGamepadModal();
-}
-function gamepadApply() {
-  if (gamepadTargetId !== null) updateItem(gamepadTargetId, "mapping", toMappingString(gamepadPressedButtons));
-  closeGamepadModal();
-}
-function gamepadApplyNext() {
-  if (gamepadTargetId !== null) {
-    updateItem(gamepadTargetId, "mapping", toMappingString(gamepadPressedButtons));
-    const next = getNextMappingItem(gamepadTargetId);
-    if (next) { gamepadTargetId = next; gamepadPressedButtons = []; gamepadIsIdle = true; gamepadPrevPressed = new Set(); updateGamepadItemName(); renderGamepadDisplay(); return; }
-  }
-  closeGamepadModal();
-}
-
-function renderGamepadDisplay() {
-  const el = document.getElementById("gamepadDisplay");
-  if (gamepadPressedButtons.length === 0) {
-    el.innerHTML = `<span style="color:#555;font-size:13px">${t("gp.noInput")}</span>`;
-  } else {
-    el.innerHTML = gamepadPressedButtons.map((b,i) =>
-      (i > 0 ? '<span style="color:#666;margin:0 4px;font-size:14px">+</span>' : '') + badgeHTML(b)
-    ).join('');
-  }
-}
-
-function mergeStick(prevBtns, currentX, currentY, stickSet, prefix) {
-  const prevEntry = prevBtns.find(b => stickSet.has(b));
-  const hadX = prevEntry === `${prefix}:X` || prevEntry === `${prefix}:XY`;
-  const hadY = prevEntry === `${prefix}:Y` || prevEntry === `${prefix}:XY`;
-  const mergedX = currentX || hadX;
-  const mergedY = currentY || hadY;
-  let result = null;
-  if (mergedX && mergedY) result = `${prefix}:XY`;
-  else if (mergedX) result = `${prefix}:X`;
-  else if (mergedY) result = `${prefix}:Y`;
-  const filtered = prevBtns.filter(b => !stickSet.has(b));
-  return { filtered, value: result };
-}
-
-function pollGamepad() {
-  const gps = navigator.getGamepads ? navigator.getGamepads() : [];
-  const gp = gps[0]||gps[1]||gps[2]||gps[3];
-  if (!gp) { gamepadRAF = requestAnimationFrame(pollGamepad); return; }
-
-  const currentlyPressed = new Set();
-  gp.buttons.forEach((btn, idx) => { if(btn.pressed && GAMEPAD_BUTTON_MAP[idx]) currentlyPressed.add(GAMEPAD_BUTTON_MAP[idx]); });
-
-  let lsX = false, lsY = false;
-  if (gp.axes.length >= 2) { lsX = Math.abs(gp.axes[0]) > AXIS_THRESHOLD; lsY = Math.abs(gp.axes[1]) > AXIS_THRESHOLD; }
-  let rsX = false, rsY = false;
-  if (gp.axes.length >= 4) { rsX = Math.abs(gp.axes[2]) > AXIS_THRESHOLD; rsY = Math.abs(gp.axes[3]) > AXIS_THRESHOLD; }
-  const hasLs = lsX || lsY, hasRs = rsX || rsY;
-  if (hasLs) currentlyPressed.add("__LS__");
-  if (hasRs) currentlyPressed.add("__RS__");
-
-  const wasIdle = gamepadPrevPressed.size === 0;
-  const nowHasInput = currentlyPressed.size > 0;
-
-  if (wasIdle && nowHasInput) {
-    let fresh = [...currentlyPressed].filter(b=>b!=="__LS__"&&b!=="__RS__");
-    if (hasLs) { if(lsX&&lsY) fresh.push("LS:XY"); else if(lsX) fresh.push("LS:X"); else fresh.push("LS:Y"); }
-    if (hasRs) { if(rsX&&rsY) fresh.push("RS:XY"); else if(rsX) fresh.push("RS:X"); else fresh.push("RS:Y"); }
-    gamepadPressedButtons = fresh;
-    gamepadIsIdle = false;
-    renderGamepadDisplay();
-  } else if (nowHasInput) {
-    let newBtns = [...gamepadPressedButtons];
-    if (hasLs) { const m = mergeStick(newBtns, lsX, lsY, LS_INPUTS, "LS"); newBtns = m.filtered; if(m.value) newBtns.push(m.value); }
-    if (hasRs) { const m = mergeStick(newBtns, rsX, rsY, RS_INPUTS, "RS"); newBtns = m.filtered; if(m.value) newBtns.push(m.value); }
-    for (const btn of currentlyPressed) { if(btn==="__LS__"||btn==="__RS__") continue; if(!newBtns.includes(btn)) newBtns.push(btn); }
-    if (newBtns.length !== gamepadPressedButtons.length || newBtns.some((b,i)=>b!==gamepadPressedButtons[i])) {
-      gamepadPressedButtons = newBtns;
-      renderGamepadDisplay();
-    }
-  }
-
-  if (currentlyPressed.size === 0 && gamepadPrevPressed.size > 0) gamepadIsIdle = true;
-  gamepadPrevPressed = currentlyPressed;
-  gamepadRAF = requestAnimationFrame(pollGamepad);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// CHEATSHEET EXPORT
-// ═══════════════════════════════════════════════════════════════════════════
-
-const GHPAGES_BASE_URL = "https://crowell7144.github.io/MappingManager";
-
-const PF_CLASSES = {
-  A:{cls:"pf-xbox-a",color:"pf-color-green"},B:{cls:"pf-xbox-b",color:"pf-color-red"},
-  X:{cls:"pf-xbox-x",color:"pf-color-blue"},Y:{cls:"pf-xbox-y",color:"pf-color-yellow"},
-  LB:{cls:"pf-xbox-left-shoulder",color:"pf-color-red-gradient"},RB:{cls:"pf-xbox-right-shoulder",color:"pf-color-green-gradient"},
-  LT:{cls:"pf-xbox-left-trigger",color:"pf-color-red-gradient"},RT:{cls:"pf-xbox-right-trigger",color:"pf-color-green-gradient"},
-  LS:{cls:"pf-analog-l-click",color:"pf-color-analog-l"},RS:{cls:"pf-analog-r-click",color:"pf-color-analog-r"},
-  "LS:X":{cls:"pf-analog-l-left-right",color:"pf-color-analog-l"},"LS:Y":{cls:"pf-analog-l-up-down",color:"pf-color-analog-l"},
-  "LS:XY":{cls:"pf-analog-l-any",color:"pf-color-analog-l"},"RS:X":{cls:"pf-analog-r-left-right",color:"pf-color-analog-r"},
-  "RS:Y":{cls:"pf-analog-r-up-down",color:"pf-color-analog-r"},"RS:XY":{cls:"pf-analog-r-any",color:"pf-color-analog-r"},
-  Start:{cls:"pf-xbox-menu",color:"pf-color-black"},Back:{cls:"pf-xbox-view",color:"pf-color-black"},
-  "▲":{cls:"pf-dpad-up",color:"pf-color-black"},"▼":{cls:"pf-dpad-down",color:"pf-color-black"},
-  "▶":{cls:"pf-dpad-right",color:"pf-color-black"},"◀":{cls:"pf-dpad-left",color:"pf-color-black"},
-  "▲▶":{cls:"pf-gamepad-up-right",color:"pf-color-black"},"▼▶":{cls:"pf-dpad-right-down",color:"pf-color-black"},
-  "◀▼":{cls:"pf-dpad-left-down",color:"pf-color-black"},"◀▲":{cls:"pf-dupad-left-up",color:"pf-color-black"},
-  LP1:{cls:"pf-gamepad-l4",color:"pf-color-dark-purple"},LP2:{cls:"pf-gamepad-l5",color:"pf-color-dark-purple"},
-  RP1:{cls:"pf-gamepad-r4",color:"pf-color-dark-brown"},RP2:{cls:"pf-gamepad-r5",color:"pf-color-dark-brown"},
-  "/":{cls:"pf-device-x360",color:"pf-color-black"},
-};
-
-// Badge colors for text badge mode (used in both editor and badge-mode export)
-const BADGE_COLORS = {
-  A:"#107C10", B:"#E81123", X:"#0078D7", Y:"#FFC300",
-  LB:"#555", RB:"#555", LT:"#666", RT:"#666",
-  LS:"#C23B22", RS:"#2E8B57",
-  "LS:X":"#C23B22", "LS:Y":"#C23B22", "LS:XY":"#C23B22",
-  "RS:X":"#2E8B57", "RS:Y":"#2E8B57", "RS:XY":"#2E8B57",
-  Start:"#333", Back:"#333",
-  "▲":"#222", "▼":"#222", "▶":"#222", "◀":"#222",
-  "▲▶":"#222", "▼▶":"#222", "◀▼":"#222", "◀▲":"#222",
-  LP1:"#4B0082", LP2:"#4B0082", RP1:"#5D4037", RP2:"#5D4037",
-  "/":"#1a1a1a",
-};
-const BADGE_TEXT_COLORS = { Y:"#1a1a1a" }; // dark text for yellow
-
-function pfButtonHTML(mapping) {
-  return parseMappingString(mapping).map(b => {
-    const info = PF_CLASSES[b];
-    if (info) return `<span class="pf ${info.cls} ${info.color}"></span>`;
-    // Unknown button fallback: text badge in PromptFont mode too
-    return `<span class="btn-b" style="background:#555;color:#fff">${esc(b)}</span>`;
-  }).join("");
-}
-
-function badgeButtonHTML(mapping, fs) {
-  const btns = parseMappingString(mapping);
-  if (btns.length === 0) return "";
-  return btns.map((b, i) => {
-    const bg = BADGE_COLORS[b] || "#555";
-    const tc = BADGE_TEXT_COLORS[b] || "#fff";
-    const label = BUTTON_STYLES[b]?.label || b;
-    const prefix = i > 0 ? `<span style="color:#888;font-size:${Math.max(fs-2,4)}pt;margin:0 1px">+</span>` : "";
-    return `${prefix}<span class="btn-b" style="background:${bg};color:${tc}">${esc(label)}</span>`;
-  }).join("");
-}
-
-function getExportSettings() {
-  const mode = document.getElementById("exportRenderMode").value;
-  return {
-    cols: parseInt(document.getElementById("exportCols").value),
-    fs: parseFloat(document.getElementById("exportFontSize").value),
-    mode,
-    fontSource: mode === "promptfont" ? document.getElementById("exportFontSource").value : null,
-  };
-}
-
-function generateCheatsheetHTML(cols, fs, mode, fontSource) {
-  function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
-  function getChildren(pid) { return items.filter(it=>it.parentId===pid); }
-
-  const btnFn = mode === "badge" ? (m) => badgeButtonHTML(m, fs) : pfButtonHTML;
-
-  function renderCat(cat) {
-    const children = getChildren(cat.id);
-    const subs = children.filter(c=>c.type==="category");
-    const maps = children.filter(c=>c.type==="mapping");
-    let h = `<div class="category-section"><div class="category-header">${e(cat.name)}</div>`;
-    h += `<table><colgroup><col style="width:68%"><col style="width:32%"></colgroup>`;
-    for (const m of maps) h += `<tr><td>${e(m.name)}</td><td>${btnFn(m.mapping)}</td></tr>`;
-    for (const sub of subs) {
-      const subMaps = getChildren(sub.id).filter(c=>c.type==="mapping");
-      h += `<tr><td colspan="2" style="background:#88aadd;color:#fff;font-weight:bold;text-align:center">${e(sub.name)}</td></tr>`;
-      for (const m of subMaps) h += `<tr><td>${e(m.name)}</td><td>${btnFn(m.mapping)}</td></tr>`;
-    }
-    h += `</table></div>`;
-    return h;
-  }
-
-  let body = "";
-  const topLevel = items.filter(it=>!it.parentId);
-  for (const item of topLevel) {
-    if (item.type==="category") body += renderCat(item);
-    else if (item.type==="separator") body += `<div style="border-top:2px solid #333;margin:4px 0;break-inside:avoid"></div>`;
-    else if (item.type==="pagebreak") body += `</div><div style="page-break-after:always"></div><div class="container">`;
-    else if (item.type==="colbreak") body += `<div style="break-after:column"></div>`;
-  }
-
-  // PromptFont CSS reference (only for promptfont mode)
-  let pfLink = "";
-  if (mode === "promptfont") {
-    const cssUrl = fontSource === "ghpages" ? `${GHPAGES_BASE_URL}/promptfont.css` : "promptfont.css";
-    pfLink = `<link rel="stylesheet" href="${cssUrl}">`; 
-  }
-
-  // Badge styles (always included as fallback for unknown buttons, and as primary for badge mode)
-  const badgeCSS = `.btn-b{display:inline-block;padding:0 3px;border-radius:2px;font-size:${Math.max(fs-1,4)}pt;font-weight:bold;font-family:Arial,sans-serif;line-height:${fs+2}pt;margin:0 0.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}`;
-
-  const pfColorCSS = mode === "promptfont" ? `
-.pf{font-size:${fs}pt;margin:0 1px}
-.pf-color-green{background:linear-gradient(to bottom right,#0F0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-red{background:linear-gradient(to bottom right,#F00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-blue{background:linear-gradient(to bottom right,#33F,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-yellow{background:linear-gradient(to bottom right,#FA0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-black{color:black}
-.pf-color-red-gradient{background:linear-gradient(to bottom,#F00,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-green-gradient{background:linear-gradient(to bottom,#0F0,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-analog-l{background:radial-gradient(#F00,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-analog-r{background:radial-gradient(#0F0,#000,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-dark-purple{background:linear-gradient(to right,#4B0082,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.pf-color-dark-brown{background:linear-gradient(to right,#5D4037,#000);-webkit-background-clip:text;-webkit-text-fill-color:transparent}` : "";
-
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Controller Mapping Cheat Sheet</title>
-${pfLink}
-<style>
-@page{size:A4 auto;margin:3mm}
-body{font-family:メイリオ,Arial,sans-serif;font-size:${fs}pt;line-height:1;background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.container{column-count:${cols};column-gap:3px}
-.category-section{background:#fff;border:1px solid #e0e0e0;margin-bottom:3px;break-inside:avoid;padding:2px;border-radius:2px}
-.category-header{font-weight:bold;background:#1c1c1c;color:#fff;padding:2px;text-align:left;margin-bottom:2px}
-table{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:2px}
-td{padding:0 1px;border:1px solid #d0d0d0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-td:nth-child(1){font-size:${fs-2}pt;text-align:right;padding-right:3px}
-td:nth-child(2){font-size:${fs}pt;text-align:left;padding-left:2px}
-${badgeCSS}
-${pfColorCSS}
-</style></head><body><div class="container">${body}</div></body></html>`;
-}
-
-function showExportModal() {
-  document.getElementById("exportModal").classList.add("show");
-  updateExportPreview();
-}
-function closeExportModal() { document.getElementById("exportModal").classList.remove("show"); }
-
-function updateExportPreview() {
-  const {cols, fs, mode, fontSource} = getExportSettings();
-  const html = generateCheatsheetHTML(cols, fs, mode, fontSource);
-  document.getElementById("exportPreview").srcdoc = html;
-  // Toggle font source row visibility
-  document.getElementById("fontSourceRow").style.display = mode === "promptfont" ? "flex" : "none";
-  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
-  let hint = `${t("exp.hintFile")} ${baseName}.html`;
-  if (mode === "promptfont") {
-    if (fontSource === "ghpages") hint += ` ${t("exp.hintGhpages")}`;
-    else hint += ` ${t("exp.hintLocal")}`;
-  } else {
-    hint += ` ${t("exp.hintBadge")}`;
-  }
-  document.getElementById("exportFilenameHint").textContent = hint;
-}
-
-function getExportHTML() {
-  const {cols, fs, mode, fontSource} = getExportSettings();
-  return generateCheatsheetHTML(cols, fs, mode, fontSource);
-}
-
-function downloadHTML() {
-  const html = getExportHTML();
-  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
-  const blob = new Blob([html], {type:"text/html;charset=utf-8"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob); a.download = baseName + ".html"; a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function openInNewTab() {
-  const html = getExportHTML();
-  const w = window.open("", "_blank");
-  if (w) { w.document.write(html); w.document.close(); }
-}
-
-function printCheatsheet() {
-  const html = getExportHTML();
-  const w = window.open("", "_blank");
-  if (w) {
-    w.document.write(html);
-    w.document.close();
-    w.onload = () => { w.print(); };
-    // fallback if onload doesn't fire
-    setTimeout(() => { try { w.print(); } catch(e) {} }, 500);
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// GAMEPAD STATUS
-// ═══════════════════════════════════════════════════════════════════════════
-
-setInterval(() => {
-  updateGamepadStatusText();
-}, 1000);
-
-// ═══════════════════════════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS
-// ═══════════════════════════════════════════════════════════════════════════
-
-document.addEventListener("keydown", e => {
-  if (e.ctrlKey && e.key === "z") { e.preventDefault(); undo(); }
-  if (e.ctrlKey && e.key === "s") { e.preventDefault(); saveCSV(); }
-  if (e.key === "Delete" && selectedId && (e.target === document.body || e.target.tagName === "DIV")) { deleteItem(selectedId); }
-});
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════════════════════════════
-
-currentLang = detectLang();
-document.documentElement.lang = currentLang;
-translatePage();
-updateLangButton();
-render();
-
-function updateLangButton() {
-  const btn = document.getElementById("langBtn");
-  if (btn) btn.textContent = currentLang === "ja" ? "🌐 EN" : "🌐 日本語";
-}
-</script>
+<script src="app.js"></script>
 </body>
 </html>

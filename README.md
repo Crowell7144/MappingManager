@@ -1,181 +1,111 @@
 # Mapping Manager
 
-コントローラーのボタンマッピングを管理し、チートシート形式のHTMLを出力するツールです。
+ゲームのコントローラーマッピングを管理・チートシート出力するWebアプリです。
 
-ブラウザ上で動作する単体HTMLアプリケーションで、Python等の実行環境は不要です。
+**GitHub Pages**: https://crowell7144.github.io/MappingManager/
 
-<!-- スクリーンショットがあればここに追加 -->
-<!-- ![screenshot](screenshot.png) -->
+---
 
-## 主な機能
+## 機能
 
-- **GUIでのマッピング編集** — カテゴリ・マッピング・セパレーター等をリストで管理
-- **コントローラー直接入力** — Gamepad APIによるボタン入力で、同時押しを順番通りに記録
-- **ドラッグ&ドロップ** — アイテムの並べ替え、カテゴリ間の移動
-- **チートシート出力** — PromptFontまたはテキストバッジでボタンアイコン付きHTMLを生成（印刷・サブ画面表示用）
-- **CSV入出力** — データをCSVファイルで保存・読み込み
+- カテゴリ・サブカテゴリによるマッピング整理
+- Xbox / PS4 / PS5 / Nintendo Switch ボタン表示切替
+- コントローラー入力 / キーボード入力による割り当て
+- CSV形式での保存・読込
+- チートシートHTMLエクスポート（印刷対応）
+- 編集内容のLocalStorage自動保存
+- 日本語 / English 対応
 
-## クイックスタート
+---
 
-### オンライン（GitHub Pages）
+## ローカルでのテスト方法
 
-ダウンロード不要で、ブラウザからすぐに使えます:
+このアプリはサンプルCSVの読み込みに `fetch()` を使用しているため、`file://` プロトコルでは動作しません。  
+ローカルでテストする場合は、Webサーバーを起動してください。
 
-👉 **https://crowell7144.github.io/MappingManager/**
+### Python（推奨）
 
-### ローカル
+リポジトリに含まれる `serve.py` を使うとキャッシュが無効化されて開発しやすくなります：
 
-1. [Releases](https://github.com/Crowell7144/MappingManager/releases) からZIPをダウンロードして展開
-2. `index.html` をブラウザで開く
-3. 「+ マッピング」「+ カテゴリ」ボタンでアイテムを追加
-4. 🎮 アイコンをクリックしてコントローラーからボタンを入力、またはマッピング欄をクリックして文字列を直接編集
-5. 「CSV保存」でデータを保存、「チートシート出力」でHTMLを出力
+```bash
+python serve.py
+```
+
+通常の `http.server` を使う場合（ブラウザ側でキャッシュが残ることがあります）：
+
+```bash
+python -m http.server 8080
+```
+
+起動後、ブラウザで http://localhost:8080 を開いてください。
+
+### Node.js
+
+```bash
+npx serve .
+```
+
+---
 
 ## ファイル構成
 
 ```
-index.html               ← メインアプリケーション（ブラウザで開く）
-sample_msfs2024.csv      ← サンプルcsv
-LICENSE                  ← 当プロジェクトのライセンス
-promptfont.css           ← PromptFontスタイルシート（チートシート出力に必要）
-promptfont.ttf           ← PromptFontフォント（チートシート出力に必要）
-PromptFont_LICENSE.txt   ← PromptFontのライセンス
-legacy/tsv2csv.py        ← 旧形式TSVから新形式CSVへの変換ツール
+/
+├── index.html            # HTML構造
+├── style.css             # スタイルシート
+├── app.js                # アプリケーションロジック・国際化
+├── promptfont.css        # PromptFont アイコンフォント CSS
+├── promptfont.ttf        # PromptFont フォントファイル
+├── samples/
+│   ├── samples_index.json  # サンプル一覧
+│   ├── tutorial.csv        # チュートリアル（初回表示）
+│   └── msfs2024.csv        # MSFS 2024 サンプル
+└── README.md
 ```
 
-## 使い方
+---
 
-### マッピングの編集
+## サンプルの追加方法
 
-| 操作 | 説明 |
-|------|------|
-| マッピング欄をクリック | `[LB]+[A]+[B]` 形式でテキスト編集 |
-| 🎮 アイコンをクリック | コントローラー入力待機モーダルを表示 |
-| 右クリック | 挿入・移動・コピー・削除メニュー |
-| ドラッグハンドル (⠿) | アイテムの並べ替え・カテゴリ間移動 |
-| カテゴリの ▼/▶ | 子アイテムの折りたたみ |
-| 行右端の × | アイテムの削除 |
+1. `samples/` フォルダにCSVファイルを追加
+2. `samples/samples_index.json` にエントリを追加
 
-### コントローラー入力モーダル
-
-コントローラーを接続した状態で 🎮 アイコンをクリックすると、入力待機モーダルが開きます。
-
-| キー | 動作 |
-|------|------|
-| Enter | 適用して閉じる |
-| Space | 適用して次のマッピングへ |
-| Tab | 変更せずに次のマッピングへ |
-| Esc | キャンセル |
-
-> **⚠️ パドル入力（LP1, LP2, RP1, RP2）について**
->
-> Gamepad APIの制約により、エリートコントローラー等のパドルボタンはコントローラー入力モーダルから取得できません。マッピング欄をクリックして `[LP1]` 等と直接入力してください。
-> 定義されていないボタン名も `[任意の名前]` として入力可能で、グレーのバッジとして表示されます。
-
-### キーボードショートカット
-
-| ショートカット | 動作 |
-|----------------|------|
-| Ctrl + S | CSV保存 |
-| Ctrl + Z | 元に戻す |
-| Delete | 選択アイテムを削除 |
-
-### チートシート出力
-
-「チートシート出力」ボタンからHTMLを生成できます。
-
-- カラム数（1〜4）とフォントサイズを指定可能
-- **ボタン表示モード** を選択可能:
-
-| モード | 説明 |
-|--------|------|
-| PromptFont（グリフ） | フォントのグリフでボタンアイコンを表示。印刷品質が高い |
-| テキストバッジ（CSS） | 背景色付きテキストでボタンを表示。外部ファイル不要で単体動作する |
-
-- PromptFontモードでは**フォント参照先**を選択可能:
-
-| 参照先 | 説明 |
-|--------|------|
-| ローカル（同フォルダ） | 相対パスで参照。出力HTMLと同フォルダに `promptfont.css`, `promptfont.ttf` の配置が必要 |
-| GitHub Pages（URL参照） | GitHub Pages上のフォントを参照。出力HTML単体で動作する（インターネット接続が必要） |
-
-- **🔗 別タブで開く** — 生成結果をブラウザの別タブで表示
-- **🖨 印刷** — 別タブで開いてブラウザの印刷ダイアログを呼び出し
-- **💾 HTMLを保存** — HTMLファイルとしてダウンロード
-
-### マッピング文字列の書式
-
-内部ではマッピングを `[ボタン名]` の `+` 区切りで管理します。
-
-```
-[LB]+[A]+[B]       ← LB, A, B の同時押し
-[B]+[▲]             ← B + 十字キー上
-[LS:XY]             ← 左スティック全方向
+```json
+{
+  "samples": [
+    {
+      "id": "my_sample",
+      "name_ja": "マイサンプル",
+      "name_en": "My Sample",
+      "file": "samples/my_sample.csv"
+    }
+  ]
+}
 ```
 
-#### 認識するボタン文字列
+---
+
+## CSV形式
 
 ```
-A, B, X, Y
-LB, RB, LT, RT
-LS, LS:X, LS:Y, LS:XY
-RS, RS:X, RS:Y, RS:XY
-Start, Back
-▲, ▼, ▶, ◀
-▲▶, ▼▶, ◀▼, ◀▲  （方向キー斜め）
-LP1, LP2            （エリコン左パドル）
-RP1, RP2            （エリコン右パドル）
-/                    （コントローラーアイコン）
+id,parentId,type,name,mapping,exclude
+1,,category,カテゴリ名,,0
+2,1,mapping,アクション名,[A],0
 ```
 
-上記以外の任意の文字列も `[任意の名前]` として入力可能です。未定義のボタン名はグレーのバッジとして表示されます。
+| フィールド | 説明 |
+|-----------|------|
+| `id` | 一意の整数ID |
+| `parentId` | 親カテゴリのID（ルートは空） |
+| `type` | `category` / `mapping` / `separator` / `pagebreak` / `colbreak` |
+| `name` | 表示名 |
+| `mapping` | `[ボタン名]` または `{キー名}` の組み合わせ |
+| `exclude` | `1` で出力から除外 |
 
-### アイテム種類
-
-| 種別 | 説明 |
-|------|------|
-| マッピング | ボタンと機能の対応を保持 |
-| カテゴリ | グループ化用。ネスト可能 |
-| セパレーター | 水平線による区切り |
-| 改ページ | チートシート出力時に強制改ページ |
-| 改カラム | チートシート出力時に強制カラム分割 |
-
-## GitHub Pages
-
-本リポジトリは GitHub Pages で公開されています。ルートの `index.html` がそのまま配信されます。
-
-### 有効化手順（リポジトリ管理者向け）
-
-1. リポジトリの Settings → Pages を開く
-2. Source を「Deploy from a branch」に設定
-3. Branch を `main`、フォルダを `/ (root)` に設定して Save
-
-## 旧バージョンからの移行
-
-旧バージョン（ControllerMappingCheatSheetGenerator）のTSVファイル（`paste.tsv` / `paste.txt`）は、legacy内の変換スクリプトで新形式のCSVに変換できます。
-
-```bash
-python tsv2csv.py paste.tsv
-```
-
-出力された `.csv` ファイルをマネージャーの「CSV読込」で開いてください。
-
-変換スクリプトのオプション:
-
-```bash
-python tsv2csv.py paste.tsv -o output.csv    # 出力先を指定
-```
+---
 
 ## ライセンス
 
-本プロジェクトのコードは [MIT License](LICENSE) の下で公開しています。
+MIT License — see [LICENSE](LICENSE)
 
-### PromptFont について
-
-ボタンアイコンの表示に [PromptFont](https://shinmera.com/promptfont) を使用しています。
-
-> PromptFont by Yukari "Shinmera" Hafner, available at https://shinmera.com/promptfont
-
-PromptFont は [SIL Open Font License 1.1](PromptFont_LICENSE.txt) の下で提供されています。
-
-本リポジトリを再配布する際は、`promptfont.ttf`、`promptfont.css` を含める場合、上記のライセンス表記と `PromptFont_LICENSE.txt` を必ず含めてください。
+PromptFont by Yukari "Shinmera" Hafner — [SIL Open Font License 1.1](PromptFont_LICENSE.txt)
