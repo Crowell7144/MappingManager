@@ -104,12 +104,26 @@ def parse_xml(filepath: str, include_unassigned: bool) -> dict:
             else:
                 keys = []
 
-            assigned = bool(keys)
+            secondary = action.find('Secondary')
+            if secondary is not None:
+                sec_keys = [k.get('Information', '') for k in secondary.findall('KEY')]
+                sec_keys = [k for k in sec_keys if k]  # 空文字除去
+            else:
+                sec_keys = []
+
+            assigned = bool(keys) or bool(sec_keys)
 
             if not assigned and not include_unassigned:
                 continue
 
-            mapping = keys_to_mapping(keys) if assigned else ''
+            if keys and sec_keys:
+                mapping = keys_to_mapping(keys) + ' or ' + keys_to_mapping(sec_keys)
+            elif keys:
+                mapping = keys_to_mapping(keys)
+            elif sec_keys:
+                mapping = keys_to_mapping(sec_keys)
+            else:
+                mapping = ''
             actions.append({
                 'name': action_name,
                 'mapping': mapping,
@@ -123,7 +137,7 @@ def parse_xml(filepath: str, include_unassigned: bool) -> dict:
     return {'profile_name': profile_name, 'contexts': contexts}
 
 
-def build_csv(profiles: list[dict]) -> str:
+def build_csv(profiles: list[dict], xml_files: list[str] | None = None) -> str:
     """パース済みプロファイルのリストからCSV文字列を生成する"""
     rows = ['id,parentId,type,name,mapping,exclude']
     id_counter = [1]
@@ -133,13 +147,20 @@ def build_csv(profiles: list[dict]) -> str:
         id_counter[0] += 1
         return cid
 
-    def add_row(row_type: str, name: str, mapping: str, parent_id=None) -> int:
+    def add_row(row_type: str, name: str, mapping: str, parent_id=None, exclude: int = 0) -> int:
         cid = next_id()
         pid = str(parent_id) if parent_id is not None else ''
         # name にカンマが含まれる場合はクォート
         safe_name = f'"{name}"' if ',' in name else name
-        rows.append(f'{cid},{pid},{row_type},{safe_name},{mapping},0')
+        rows.append(f'{cid},{pid},{row_type},{safe_name},{mapping},{exclude}')
         return cid
+
+    # ヘッダーカテゴリ: MSFS2024 Controls
+    header_cat_id = add_row('category', 'MSFS2024 Controls', '')
+    # ソースファイル名をまとめて1行のmappingとして追加 (exclude=1で出力対象外)
+    if xml_files:
+        source_names = ' + '.join(Path(f).name for f in xml_files)
+        add_row('mapping', source_names, '', parent_id=header_cat_id, exclude=1)
 
     for profile in profiles:
         for ctx_name, actions in profile['contexts'].items():
@@ -214,7 +235,7 @@ def main():
         )
 
     # CSV生成・書き出し
-    csv_content = build_csv(profiles)
+    csv_content = build_csv(profiles, xml_files=args.xml_files)
     with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(csv_content)
 
