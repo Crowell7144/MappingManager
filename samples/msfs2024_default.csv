@@ -3,8 +3,8 @@ id,parentId,type,name,mapping,exclude
 334,333,mapping,Converted from Gamepad 2024 Planes + Transversal XML,,1
 1,,category,AIRCRAFT,,0
 2,1,mapping,Autopilot Disengage Toggle,[RB][▲],0
-3,1,mapping,Elev Trim Dn,[RB][RS:Y],0
-4,1,mapping,Elev Trim Up,[RB][RS:Y],0
+3,1,mapping,Elev Trim Dn,[RB][RS:Up],0
+4,1,mapping,Elev Trim Up,[RB][RS:Down],0
 5,1,mapping,Flaps Decr,[▲],0
 6,1,mapping,Flaps Incr,[▼],0
 7,1,mapping,Gear Toggle,[▶],0
@@ -47,17 +47,17 @@ id,parentId,type,name,mapping,exclude
 44,42,mapping,Cockpit Quickview3,[LB][▶],0
 45,42,mapping,Cockpit Quickview4,[LB][◀],0
 46,,category,COCKPIT_GLOBAL_CAMERA,,0
-47,46,mapping,Cockpit Look Down,[RS:Y],0
-48,46,mapping,Cockpit Look Left,[RS:X],0
-49,46,mapping,Cockpit Look Right,[RS:X],0
-50,46,mapping,Cockpit Look Up,[RS:Y],0
+47,46,mapping,Cockpit Look Down,[RS:Down],0
+48,46,mapping,Cockpit Look Left,[RS:Left],0
+49,46,mapping,Cockpit Look Right,[RS:Right],0
+50,46,mapping,Cockpit Look Up,[RS:Up],0
 51,,category,COCKPIT_GLOBAL_CAMERA_TRANSLATE,,0
 52,51,mapping,Cockpit Camera Height Dec Lockable,[LT],0
 53,51,mapping,Cockpit Camera Height Inc Lockable,[RT],0
-54,51,mapping,Cockpit Camera Slide Back Lockable,[LS:Y],0
-55,51,mapping,Cockpit Camera Slide Front Lockable,[LS:Y],0
-56,51,mapping,Cockpit Camera Slide Left Lockable,[LS:X],0
-57,51,mapping,Cockpit Camera Slide Right Lockable,[LS:X],0
+54,51,mapping,Cockpit Camera Slide Back Lockable,[LS:Down],0
+55,51,mapping,Cockpit Camera Slide Front Lockable,[LS:Up],0
+56,51,mapping,Cockpit Camera Slide Left Lockable,[LS:Left],0
+57,51,mapping,Cockpit Camera Slide Right Lockable,[LS:Right],0
 58,,category,COCKPIT_INTERACTIONS_LOCK,,0
 59,58,mapping,Cockpit Interaction Decrease Lockable,[LT],0
 60,58,mapping,Cockpit Interaction Increase Lockable,[RT],0
@@ -67,10 +67,10 @@ id,parentId,type,name,mapping,exclude
 64,58,mapping,Cockpit Interaction X Axis Lockable,[RS:X],0
 65,58,mapping,Cockpit Interaction Y Axis Lockable,[RS:Y],0
 66,,category,CURSOR,,0
-67,66,mapping,Cursor Down,[LS:Y],0
-68,66,mapping,Cursor Left,[LS:X],0
-69,66,mapping,Cursor Right,[LS:X],0
-70,66,mapping,Cursor Up,[LS:Y],0
+67,66,mapping,Cursor Down,[LS:Down],0
+68,66,mapping,Cursor Left,[LS:Left],0
+69,66,mapping,Cursor Right,[LS:Right],0
+70,66,mapping,Cursor Up,[LS:Up],0
 71,,category,CURSOR_MODE_SWITCHES,,0
 72,71,mapping,Cursor Toggle,[RB][LS],0
 73,,category,DEBUG,,0
@@ -85,18 +85,18 @@ id,parentId,type,name,mapping,exclude
 82,73,mapping,Debug Pad Left Button,[LB],0
 83,73,mapping,Debug Pad Left Stick,[LS],0
 84,73,mapping,Debug Pad Left Trigger,[LT],0
-85,73,mapping,Debug Pad Lstick Down,[LS:Y],0
-86,73,mapping,Debug Pad Lstick Left,[LS:X],0
-87,73,mapping,Debug Pad Lstick Right,[LS:X],0
-88,73,mapping,Debug Pad Lstick Up,[LS:Y],0
+85,73,mapping,Debug Pad Lstick Down,[LS:Down],0
+86,73,mapping,Debug Pad Lstick Left,[LS:Left],0
+87,73,mapping,Debug Pad Lstick Right,[LS:Right],0
+88,73,mapping,Debug Pad Lstick Up,[LS:Up],0
 89,73,mapping,Debug Pad Right,[▶],0
 90,73,mapping,Debug Pad Right Button,[RB],0
 91,73,mapping,Debug Pad Right Stick,[RS],0
 92,73,mapping,Debug Pad Right Trigger,[RT],0
-93,73,mapping,Debug Pad Rstick Down,[RS:Y],0
-94,73,mapping,Debug Pad Rstick Left,[RS:X],0
-95,73,mapping,Debug Pad Rstick Right,[RS:X],0
-96,73,mapping,Debug Pad Rstick Up,[RS:Y],0
+93,73,mapping,Debug Pad Rstick Down,[RS:Down],0
+94,73,mapping,Debug Pad Rstick Left,[RS:Left],0
+95,73,mapping,Debug Pad Rstick Right,[RS:Right],0
+96,73,mapping,Debug Pad Rstick Up,[RS:Up],0
 97,73,mapping,Debug Pad Start,[Start],0
 98,73,mapping,Debug Pad Up,[▲],0
 99,,category,DRONE,,0
@@ -135,10 +135,10 @@ id,parentId,type,name,mapping,exclude
 132,128,mapping,Efb Nav Tabs Next,[RB],0
 133,128,mapping,Efb Nav Tabs Prev,[LB],0
 134,128,mapping,Efb Notifications Menu,[RS],0
-135,128,mapping,Efb Scroll Down,[RS:Y],0
-136,128,mapping,Efb Scroll Left,[RS:X],0
-137,128,mapping,Efb Scroll Right,[RS:X],0
-138,128,mapping,Efb Scroll Up,[RS:Y],0
+135,128,mapping,Efb Scroll Down,[RS:Down],0
+136,128,mapping,Efb Scroll Left,[RS:Left],0
+137,128,mapping,Efb Scroll Right,[RS:Right],0
+138,128,mapping,Efb Scroll Up,[RS:Up],0
 139,128,mapping,Efb Secondary,[X],0
 140,128,mapping,Efb Tertiary,[Y],0
 141,128,mapping,Efb Up,[▲],0
@@ -154,10 +154,10 @@ id,parentId,type,name,mapping,exclude
 151,145,mapping,Efb Valid Text,[A],0
 152,,category,EXTERNAL_CAMERA,,0
 153,152,mapping,Camerachase Reset,[RS],0
-154,152,mapping,Chase Look Down,[RS:Y],0
-155,152,mapping,Chase Look Left,[RS:X],0
-156,152,mapping,Chase Look Right,[RS:X],0
-157,152,mapping,Chase Look Up,[RS:Y],0
+154,152,mapping,Chase Look Down,[RS:Up],0
+155,152,mapping,Chase Look Left,[RS:Right],0
+156,152,mapping,Chase Look Right,[RS:Left],0
+157,152,mapping,Chase Look Up,[RS:Down],0
 158,152,mapping,Chase Quickview1,[LB][▶],0
 159,152,mapping,Chase Quickview2,[LB][▲],0
 160,152,mapping,Chase Quickview3,[LB][◀],0
@@ -180,24 +180,24 @@ id,parentId,type,name,mapping,exclude
 177,174,mapping,Menu Sr Aircraft Selection,[Y],0
 178,174,mapping,Menu Sr Album Fly There,[Y],0
 179,174,mapping,Menu Sr Album Save Console,[Start],0
-180,174,mapping,Menu Sr Bottom Move Down,[LB][RS:Y],0
-181,174,mapping,Menu Sr Bottom Move Up,[LB][RS:Y],0
+180,174,mapping,Menu Sr Bottom Move Down,[LB][RS:Down],0
+181,174,mapping,Menu Sr Bottom Move Up,[LB][RS:Up],0
 182,174,mapping,Menu Sr Career Reset,[Start][Back],0
-183,174,mapping,Menu Sr Carousel Down,[LS:Y],0
-184,174,mapping,Menu Sr Carousel Left,[LS:X],0
-185,174,mapping,Menu Sr Carousel Right,[LS:X],0
-186,174,mapping,Menu Sr Carousel Up,[LS:Y],0
+183,174,mapping,Menu Sr Carousel Down,[LS:Down],0
+184,174,mapping,Menu Sr Carousel Left,[LS:Left],0
+185,174,mapping,Menu Sr Carousel Right,[LS:Right],0
+186,174,mapping,Menu Sr Carousel Up,[LS:Up],0
 187,174,mapping,Menu Sr Certif Tree Zoom Decr,[LT],0
 188,174,mapping,Menu Sr Certif Tree Zoom Incr,[RT],0
-189,174,mapping,Menu Sr Character Rotate Left,[RS:X],0
-190,174,mapping,Menu Sr Character Rotate Right,[RS:X],0
-191,174,mapping,Menu Sr Down,[LS:Y],0
+189,174,mapping,Menu Sr Character Rotate Left,[RS:Left],0
+190,174,mapping,Menu Sr Character Rotate Right,[RS:Right],0
+191,174,mapping,Menu Sr Down,[LS:Down],0
 192,174,mapping,Menu Sr Erase Mapping,[X],0
 193,174,mapping,Menu Sr Explore Fp,[Y],0
 194,174,mapping,Menu Sr Explore Wm,Hold [Y],0
 195,174,mapping,Menu Sr Favorites,[X],0
 196,174,mapping,Menu Sr Fp Cloud Toggle,[X],0
-197,174,mapping,Menu Sr Left,[LS:X],0
+197,174,mapping,Menu Sr Left,[LS:Left],0
 198,174,mapping,Menu Sr Manage Flight Plan,[LS],0
 199,174,mapping,Menu Sr Market Options,[Start],0
 200,174,mapping,Menu Sr Market Uninstall,[X],0
@@ -205,24 +205,24 @@ id,parentId,type,name,mapping,exclude
 202,174,mapping,Menu Sr Preflight,[Start],0
 203,174,mapping,Menu Sr Release Notes,[Y],0
 204,174,mapping,Menu Sr Reset To Default,[X],0
-205,174,mapping,Menu Sr Right,[LS:X],0
+205,174,mapping,Menu Sr Right,[LS:Right],0
 206,174,mapping,Menu Sr Screen Narrator Toggle,[LS],0
 207,174,mapping,Menu Sr Scroll To Top,[Y],0
 208,174,mapping,Menu Sr Sub Next,[RT],0
 209,174,mapping,Menu Sr Sub Prev,[LT],0
-210,174,mapping,Menu Sr Top Move Down,[RB][RS:Y],0
-211,174,mapping,Menu Sr Top Move Up,[RB][RS:Y],0
-212,174,mapping,Menu Sr Up,[LS:Y],0
+210,174,mapping,Menu Sr Top Move Down,[RB][RS:Down],0
+211,174,mapping,Menu Sr Top Move Up,[RB][RS:Up],0
+212,174,mapping,Menu Sr Up,[LS:Up],0
 213,174,mapping,Menu Sr Wrap Toggle,[Y],0
 214,,category,MENU_CORE,,0
 215,214,mapping,Menu Sr Back,[B],0
 216,214,mapping,Menu Sr More Details,[X],0
 217,214,mapping,Menu Sr Next,[RB],0
 218,214,mapping,Menu Sr Prev,[LB],0
-219,214,mapping,Menu Sr Scroll Down,[RS:Y],0
-220,214,mapping,Menu Sr Scroll Left,[RS:X],0
-221,214,mapping,Menu Sr Scroll Right,[RS:X],0
-222,214,mapping,Menu Sr Scroll Up,[RS:Y],0
+219,214,mapping,Menu Sr Scroll Down,[RS:Down],0
+220,214,mapping,Menu Sr Scroll Left,[RS:Left],0
+221,214,mapping,Menu Sr Scroll Right,[RS:Right],0
+222,214,mapping,Menu Sr Scroll Up,[RS:Up],0
 223,214,mapping,Menu Sr Textbox Down,[▼],0
 224,214,mapping,Menu Sr Textbox Left,[◀],0
 225,214,mapping,Menu Sr Textbox Right,[▶],0
@@ -287,10 +287,10 @@ id,parentId,type,name,mapping,exclude
 284,283,mapping,Pc Interact,[A],0
 285,,category,PLAYER_CHARACTER_MOVEMENT,,0
 286,285,mapping,Pc Crouch Toggle,[X],0
-287,285,mapping,Pc Move Backward,[LS:Y],0
-288,285,mapping,Pc Move Forward,[LS:Y],0
-289,285,mapping,Pc Move Left,[LS:X],0
-290,285,mapping,Pc Move Right,[LS:X],0
+287,285,mapping,Pc Move Backward,[LS:Down],0
+288,285,mapping,Pc Move Forward,[LS:Up],0
+289,285,mapping,Pc Move Left,[LS:Left],0
+290,285,mapping,Pc Move Right,[LS:Right],0
 291,285,mapping,Pc Run Set,[RT],0
 292,,category,RTC,,0
 293,292,mapping,Skip Rtc,[Start],0
@@ -298,19 +298,19 @@ id,parentId,type,name,mapping,exclude
 295,294,mapping,Back On Track,[RB][Back],0
 296,294,mapping,Back To Fly,[RB][Back],0
 297,,category,SLEW,,0
-298,297,mapping,Slew Ahead Minus,[LS:Y],0
-299,297,mapping,Slew Ahead Plus,[LS:Y],0
+298,297,mapping,Slew Ahead Minus,[LS:Down],0
+299,297,mapping,Slew Ahead Plus,[LS:Up],0
 300,297,mapping,Slew Altit Minus,[LT],0
 301,297,mapping,Slew Altit Plus,[RT],0
-302,297,mapping,Slew Bank Minus,[LB][RS:X],0
-303,297,mapping,Slew Bank Plus,[LB][RS:X],0
-304,297,mapping,Slew Heading Minus,[RS:X],0
-305,297,mapping,Slew Heading Plus,[RS:X],0
-306,297,mapping,Slew Left,[LS:X],0
-307,297,mapping,Slew Pitch Minus,[RS:Y],0
-308,297,mapping,Slew Pitch Plus,[RS:Y],0
+302,297,mapping,Slew Bank Minus,[LB][RS:Left],0
+303,297,mapping,Slew Bank Plus,[LB][RS:Right],0
+304,297,mapping,Slew Heading Minus,[RS:Left],0
+305,297,mapping,Slew Heading Plus,[RS:Right],0
+306,297,mapping,Slew Left,[LS:Left],0
+307,297,mapping,Slew Pitch Minus,[RS:Down],0
+308,297,mapping,Slew Pitch Plus,[RS:Up],0
 309,297,mapping,Slew Reset,[RS],0
-310,297,mapping,Slew Right,[LS:X],0
+310,297,mapping,Slew Right,[LS:Right],0
 311,,category,SMART_CAMERA,,0
 312,311,mapping,Smart Camera Next,[LB][X],0
 313,311,mapping,Toggle Smart Camera,[LB][A],0
@@ -328,8 +328,8 @@ id,parentId,type,name,mapping,exclude
 325,323,mapping,Menu Sr Wm Filters,[X],0
 326,,category,WORLDMAP_PAD,,0
 327,326,mapping,Menu Sr Load And Save,[Start],0
-328,326,mapping,Menu Sr Wm Down,[LS:Y],0
-329,326,mapping,Menu Sr Wm Left,[LS:X],0
-330,326,mapping,Menu Sr Wm Right,[LS:X],0
-331,326,mapping,Menu Sr Wm Up,[LS:Y],0
+328,326,mapping,Menu Sr Wm Down,[LS:Down],0
+329,326,mapping,Menu Sr Wm Left,[LS:Left],0
+330,326,mapping,Menu Sr Wm Right,[LS:Right],0
+331,326,mapping,Menu Sr Wm Up,[LS:Up],0
 332,326,mapping,Menu Wm Select Up,[Y],0

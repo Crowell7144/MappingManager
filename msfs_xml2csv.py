@@ -29,11 +29,11 @@ BTN_MAP = {
     'Menu Button': 'Start',  # Xbox の Menu ボタン = Start に対応
     'LS': 'LS', 'RS': 'RS',
     'LS X': 'LS:X', 'LS Y': 'LS:Y',
-    'LS Up': 'LS:Y', 'LS Down': 'LS:Y',
-    'LS Left': 'LS:X', 'LS Right': 'LS:X',
+    'LS Up': 'LS:Up', 'LS Down': 'LS:Down',
+    'LS Left': 'LS:Left', 'LS Right': 'LS:Right',
     'RS X': 'RS:X', 'RS Y': 'RS:Y',
-    'RS Up': 'RS:Y', 'RS Down': 'RS:Y',
-    'RS Left': 'RS:X', 'RS Right': 'RS:X',
+    'RS Up': 'RS:Up', 'RS Down': 'RS:Down',
+    'RS Left': 'RS:Left', 'RS Right': 'RS:Right',
     'D-PAD Up': '▲', 'D-PAD Down': '▼',
     'D-PAD Left': '◀', 'D-PAD Right': '▶',
 }
