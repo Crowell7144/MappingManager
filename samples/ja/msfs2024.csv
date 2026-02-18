@@ -1,4 +1,8 @@
 id,parentId,type,name,mapping,exclude
+184,,category,MSFS2024 Controller Mappings,,0
+185,184,mapping,Cheatsheet Version,2024/11/28,1
+186,184,mapping,Edited by,Crowell,1
+187,184,mapping,use 3 columns and font size 9 pt to print all in one page,,1
 1,,category,Flight Control Surfaces,,0
 2,1,mapping,Ailerons Axis,[LS:X],0
 3,1,mapping,Elevator Axis,[LS:Y],0
@@ -172,5 +176,3 @@ id,parentId,type,name,mapping,exclude
 171,167,mapping,Toggle Auto Focus,[X]+[▶],0
 172,167,mapping,Focus Decrease,[LB]+[◀],0
 173,167,mapping,Focus Increase,[LB]+[▶],0
-174,,category,MSFS2024 Controller Mappings,,0
-175,174,mapping,Ver.2024/11/28,[/],0
