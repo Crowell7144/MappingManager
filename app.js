@@ -214,7 +214,7 @@ function setLang(lang) {
   history.replaceState(null, "", url);
   document.documentElement.lang = lang;
   translatePage();
-  buildSampleDropdown();
+  loadSamplesIndex(); // reload index for the new language
   if (typeof updateLangButton === "function") updateLangButton();
   render();
 }
@@ -1168,7 +1168,7 @@ let samplesIndex = [];
 
 async function loadSamplesIndex() {
   try {
-    const res = await fetch('samples/samples_index.json');
+    const res = await fetch(`samples/${currentLang}/samples_index.json`);
     if (!res.ok) return;
     const data = await res.json();
     samplesIndex = data.samples || [];
@@ -1186,7 +1186,7 @@ function buildSampleDropdown() {
   for (const s of samplesIndex) {
     const opt = document.createElement('option');
     opt.value = s.file;
-    opt.textContent = currentLang === 'ja' ? s.name_ja : s.name_en;
+    opt.textContent = s.name;
     sel.appendChild(opt);
   }
 }
@@ -1218,8 +1218,7 @@ async function loadSampleFile(fileUrl) {
 
 async function loadTutorialIfEmpty() {
   // Load language-appropriate tutorial when there is no saved data
-  const langId = currentLang === 'ja' ? 'tutorial_ja' : 'tutorial_en';
-  const tutorialEntry = samplesIndex.find(s => s.id === langId);
+  const tutorialEntry = samplesIndex.find(s => s.id === 'tutorial');
   if (!tutorialEntry) return;
   try {
     const res = await fetch(tutorialEntry.file);

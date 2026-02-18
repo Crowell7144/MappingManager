@@ -1,0 +1,14 @@
+{
+  "samples": [
+    {
+      "id": "tutorial",
+      "name": "チュートリアル（機能紹介）",
+      "file": "samples/ja/tutorial.csv"
+    },
+    {
+      "id": "msfs2024",
+      "name": "MSFS 2024 サンプル",
+      "file": "samples/ja/msfs2024.csv"
+    }
+  ]
+}

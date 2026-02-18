@@ -7,11 +7,11 @@ id,parentId,type,name,mapping,exclude
 6,5,mapping,カテゴリの中にカテゴリを作れます,,0
 7,5,mapping,ドラッグ＆ドロップで並び替えできます,,0
 8,,category,🎮 ボタン入力,,0
-9,8,mapping,Aボタン（下）,[B],0
-10,8,mapping,Bボタン（右）,[A],0
-11,8,mapping,Xボタン（左）,[Y],0
-12,8,mapping,Yボタン（上）,[X],0
-13,8,mapping,同時押し,[B][A],0
+9,8,mapping,下ボタン（Xbox:A / Switch:B / PS:×）,[A],0
+10,8,mapping,右ボタン（Xbox:B / Switch:A / PS:○）,[B],0
+11,8,mapping,左ボタン（Xbox:X / Switch:Y / PS:□）,[X],0
+12,8,mapping,上ボタン（Xbox:Y / Switch:X / PS:△）,[Y],0
+13,8,mapping,同時押し,[A][B],0
 14,8,mapping,ショルダーボタン,[LB][RB],0
 15,8,mapping,トリガー,[LT][RT],0
 16,8,mapping,スタート・バック,[Start][Back],0
@@ -28,7 +28,7 @@ id,parentId,type,name,mapping,exclude
 27,23,mapping,右,[▶],0
 28,23,mapping,斜め入力,[▲▶],0
 29,,category,⌨️ テキスト表現,,0
-30,29,mapping,ボタン＋テキスト,[B]長押し,0
+30,29,mapping,ボタン＋テキスト,[A]長押し,0
 31,29,mapping,パドルボタン（Gamepad API非対応）,[LP1],0
 32,29,mapping,複数パドル,[LP1][LP2],0
 33,29,mapping,テキストのみ,説明文もそのまま表示,0

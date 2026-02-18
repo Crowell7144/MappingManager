@@ -7,11 +7,11 @@ id,parentId,type,name,mapping,exclude
 6,5,mapping,Categories can be nested,,0
 7,5,mapping,Drag and drop to reorder,,0
 8,,category,🎮 Button Inputs,,0
-9,8,mapping,A Button (bottom),[B],0
-10,8,mapping,B Button (right),[A],0
-11,8,mapping,X Button (left),[Y],0
-12,8,mapping,Y Button (top),[X],0
-13,8,mapping,Simultaneous press,[B][A],0
+9,8,mapping,Bottom button (Xbox:A / Switch:B / PS:×),[A],0
+10,8,mapping,Right button (Xbox:B / Switch:A / PS:○),[B],0
+11,8,mapping,Left button (Xbox:X / Switch:Y / PS:□),[X],0
+12,8,mapping,Top button (Xbox:Y / Switch:X / PS:△),[Y],0
+13,8,mapping,Simultaneous press,[A][B],0
 14,8,mapping,Shoulder buttons,[LB][RB],0
 15,8,mapping,Triggers,[LT][RT],0
 16,8,mapping,Start & Back,[Start][Back],0
@@ -28,7 +28,7 @@ id,parentId,type,name,mapping,exclude
 27,23,mapping,Right,[▶],0
 28,23,mapping,Diagonal,[▲▶],0
 29,,category,⌨️ Text Expressions,,0
-30,29,mapping,Button + Text,[B]Long Press,0
+30,29,mapping,Button + Text,[A]Long Press,0
 31,29,mapping,Paddle (not in Gamepad API),[LP1],0
 32,29,mapping,Multiple paddles,[LP1][LP2],0
 33,29,mapping,Text only,Plain text works too,0

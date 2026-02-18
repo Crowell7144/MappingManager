@@ -47,38 +47,18 @@ npx serve .
 
 ---
 
-## ファイル構成
-
-```
-/
-├── index.html            # HTML構造
-├── style.css             # スタイルシート
-├── app.js                # アプリケーションロジック・国際化
-├── promptfont.css        # PromptFont アイコンフォント CSS
-├── promptfont.ttf        # PromptFont フォントファイル
-├── samples/
-│   ├── samples_index.json  # サンプル一覧
-│   ├── tutorial_ja.csv     # チュートリアル・日本語版（初回表示）
-│   ├── tutorial_en.csv     # チュートリアル・英語版（初回表示）
-│   └── msfs2024.csv        # MSFS 2024 サンプル
-└── README.md
-```
-
----
-
 ## サンプルの追加方法
 
-1. `samples/` フォルダにCSVファイルを追加
-2. `samples/samples_index.json` にエントリを追加
+1. `samples/ja/` および `samples/en/` にCSVファイルを追加
+2. 各フォルダの `samples_index.json` にエントリを追加
 
 ```json
 {
   "samples": [
     {
       "id": "my_sample",
-      "name_ja": "マイサンプル",
-      "name_en": "My Sample",
-      "file": "samples/my_sample.csv"
+      "name": "マイサンプル",
+      "file": "samples/ja/my_sample.csv"
     }
   ]
 }
