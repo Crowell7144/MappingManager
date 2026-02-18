@@ -61,6 +61,7 @@ const I18N = {
     "exp.hintLocal": "（promptfont.css, promptfont.ttf と同じフォルダに配置してください）",
     "exp.hintGhpages": "（フォントをGitHub Pagesから読み込み — 単体で動作します）",
     "exp.hintBadge": "（外部ファイル不要 — 単体で動作します）",
+    "exp.warnDeepNest": "⚠️ カテゴリが3階層以上ネストされています。チートシートでは正しく表示されない場合があります。",
     // Status Bar
     "status.noController": "コントローラー未接続",
     "status.shortcuts": "Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー",
@@ -163,6 +164,7 @@ const I18N = {
     "exp.hintLocal": "(place alongside promptfont.css and promptfont.ttf)",
     "exp.hintGhpages": "(loads font from GitHub Pages — works standalone)",
     "exp.hintBadge": "(no external files needed — works standalone)",
+    "exp.warnDeepNest": "⚠️ Categories are nested 3 or more levels deep. They may not display correctly in the cheat sheet.",
     "status.noController": "No controller connected",
     "status.shortcuts": "Ctrl+S: Save | Ctrl+Z: Undo | Right-click: Menu",
     "ctx.insertAbove": "⬆ Insert Above",
@@ -1782,7 +1784,7 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
     }
     if (child.type === "category") {
       const subChildren = getChildren(child.id);
-      let h = `<tr><td colspan="2" style="background:${T.subCatBg};color:${T.subCatColor};font-weight:bold;text-align:center">${e(child.name)}</td></tr>`;
+      let h = child.name.trim() ? `<tr><td colspan="2" style="background:${T.subCatBg};color:${T.subCatColor};font-weight:bold;text-align:center">${e(child.name)}</td></tr>` : "";
       for (const sc of subChildren) {
         if (sc.type === "mapping") h += `<tr><td>${e(sc.name)}</td><td>${btnFn(sc.mapping)}</td></tr>`;
         else if (sc.type === "separator") h += `<tr><td colspan="2" style="padding:0"><div style="border-top:1px solid ${T.sepColor};margin:2px 0"></div></td></tr>`;
@@ -1816,7 +1818,9 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
         for (const child of children) {
           if (child.type === "pagebreak") {
             if (rowsHtml) {
-              pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div>${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
+              const hdr = item.name.trim() ? `<div class="cat-header">${e(item.name)}</div>` : "";
+              const cls = item.name.trim() ? "cat-section" : "cat-section-anon";
+          pushBlock(`<div class="${cls}">${hdr}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
               rowsHtml = "";
             }
             pushPage();
@@ -1825,10 +1829,12 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
           }
         }
         if (rowsHtml) {
-          pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div>${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
+          const hdr3 = item.name.trim() ? `<div class="cat-header">${e(item.name)}</div>` : "";
+          const cls3 = item.name.trim() ? "cat-section" : "cat-section-anon";
+          pushBlock(`<div class="${cls3}">${hdr3}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
         } else if (children.length === 0) {
           // 子アイテムのないカテゴリ → タイトルのみのブロックとして出力
-          pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div></div>`);
+          if (item.name.trim()) pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div></div>`);
         }
       } else if (item.type === "mapping") {
         pushBlock(`<div class="cat-section">${TABLE_OPEN}<tr><td>${e(item.name)}</td><td>${btnFn(item.mapping)}</td></tr>${TABLE_CLOSE}</div>`);
@@ -1933,6 +1939,11 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
       border-radius: 2px;
       overflow: hidden;
     }
+    /* 名前が空のカテゴリ: 枠・背景なしで子要素のみ表示 */
+    .cat-section-anon {
+      margin-bottom: 3px;
+      break-inside: avoid;
+    }
 
     /* ===== カテゴリヘッダー / Category header ===== */
     .cat-header {
@@ -2012,6 +2023,15 @@ ${pagesHtml}
 
 
 function showExportModal() {
+  // 3階層以上のネストがないかチェック
+  const hasDeepNest = items.some(item => {
+    if (item.type !== "category") return false;
+    const parent = items.find(it => it.id === item.parentId);
+    if (!parent || parent.type !== "category") return false;
+    const grandParent = items.find(it => it.id === parent.parentId);
+    return grandParent && grandParent.type === "category";
+  });
+  if (hasDeepNest) alert(t("exp.warnDeepNest"));
   document.getElementById("exportModal").classList.add("show");
   updateExportPreview();
 }
