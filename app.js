@@ -49,6 +49,9 @@ const I18N = {
     "exp.fontSource": "フォント参照先:",
     "exp.fontLocal": "ローカル（同フォルダ）",
     "exp.fontGhpages": "GitHub Pages（URL参照）",
+    "exp.theme": "スタイル:",
+    "exp.themeMono": "モノクロ",
+    "exp.themeColor": "ネイビー",
     "exp.close": "閉じる",
     "exp.newTab": "🔗 別タブで開く",
     "exp.print": "🖨 印刷",
@@ -147,6 +150,9 @@ const I18N = {
     "exp.fontSource": "Font source:",
     "exp.fontLocal": "Local (same folder)",
     "exp.fontGhpages": "GitHub Pages (URL)",
+    "exp.theme": "Style:",
+    "exp.themeMono": "Monochrome",
+    "exp.themeColor": "Navy",
     "exp.close": "Close",
     "exp.newTab": "🔗 Open in New Tab",
     "exp.print": "🖨 Print",
@@ -1676,10 +1682,11 @@ function getExportSettings() {
     fs: parseFloat(document.getElementById("exportFontSize").value),
     mode,
     fontSource: mode === "promptfont" ? document.getElementById("exportFontSource").value : null,
+    theme: document.getElementById("exportTheme").value,
   };
 }
 
-function generateCheatsheetHTML(cols, fs, mode, fontSource) {
+function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
   function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function isEffectivelyExcluded(item) {
     if (item.exclude) return true;
@@ -1695,6 +1702,32 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
 
   const btnFn = mode === "badge" ? (m) => badgeMappingHTML(m, fs) : (m) => pfMappingHTML(m, fs);
 
+  // ── テーマカラー定義 / Theme color definitions
+  const T = theme === "color" ? {
+    sectionBorder:   "#94a3b8",
+    sectionAccent:   "#1e293b",
+    headerBg:        "#1e293b",
+    headerColor:     "#f1f5f9",
+    zebraRow:        "#f8f9fa",
+    rowBorder:       "#e2e8f0",
+    colDivider:      "#e2e8f0",
+    nameColor:       "#475569",
+    subCatBg:        "#475569",
+    subCatColor:     "#fff",
+    sepColor:        "#cbd5e1",
+  } : {
+    sectionBorder:   "#bbb",
+    sectionAccent:   "#555",
+    headerBg:        "#333",
+    headerColor:     "#fff",
+    zebraRow:        "#f2f2f2",
+    rowBorder:       "#ccc",
+    colDivider:      "#ccc",
+    nameColor:       "#444",
+    subCatBg:        "#666",
+    subCatColor:     "#fff",
+    sepColor:        "#aaa",
+  };
   const TABLE_OPEN  = `<table><colgroup><col style="width:68%"><col style="width:32%"></colgroup>`;
   const TABLE_CLOSE = `</table>`;
 
@@ -1704,15 +1737,15 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
     }
     if (child.type === "category") {
       const subChildren = getChildren(child.id);
-      let h = `<tr><td colspan="2" style="background:#88aadd;color:#fff;font-weight:bold;text-align:center">${e(child.name)}</td></tr>`;
+      let h = `<tr><td colspan="2" style="background:${T.subCatBg};color:${T.subCatColor};font-weight:bold;text-align:center">${e(child.name)}</td></tr>`;
       for (const sc of subChildren) {
         if (sc.type === "mapping") h += `<tr><td>${e(sc.name)}</td><td>${btnFn(sc.mapping)}</td></tr>`;
-        else if (sc.type === "separator") h += `<tr><td colspan="2" style="padding:0"><div style="border-top:1px solid #bbb;margin:2px 0"></div></td></tr>`;
+        else if (sc.type === "separator") h += `<tr><td colspan="2" style="padding:0"><div style="border-top:1px solid ${T.sepColor};margin:2px 0"></div></td></tr>`;
       }
       return h;
     }
     if (child.type === "separator") {
-      return `<tr><td colspan="2" style="padding:0"><div style="border-top:1px solid #bbb;margin:2px 0"></div></td></tr>`;
+      return `<tr><td colspan="2" style="padding:0"><div style="border-top:1px solid ${T.sepColor};margin:2px 0"></div></td></tr>`;
     }
     return "";
   }
@@ -1755,7 +1788,7 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
       } else if (item.type === "mapping") {
         pushBlock(`<div class="cat-section">${TABLE_OPEN}<tr><td>${e(item.name)}</td><td>${btnFn(item.mapping)}</td></tr>${TABLE_CLOSE}</div>`);
       } else if (item.type === "separator") {
-        pushBlock(`<div style="border-top:2px solid #333;margin:2px 0"></div>`);
+        pushBlock(`<div class="sep-block"></div>`);
       } else if (item.type === "pagebreak") {
         pushPage();
       }
@@ -1829,10 +1862,11 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
 
     /* ===== 基本スタイル / Base styles ===== */
     body {
-      font-family: メイリオ, Arial, sans-serif;
+      font-family: メイリオ, 'Segoe UI', Arial, sans-serif;
       font-size: ${fs}pt;
-      line-height: 1;
+      line-height: 1.2;
       background: #fff;
+      color: #1a1a1a;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
@@ -1840,27 +1874,29 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
     /* ===== カラムレイアウト / Column layout ===== */
     .container {
       column-count: ${cols};
-      column-gap: 3px;
+      column-gap: 4px;
     }
 
     /* ===== カテゴリセクション / Category section ===== */
     .cat-section {
       background: #fff;
-      border: 1px solid #e0e0e0;
+      border: 1px solid ${T.sectionBorder};
+      border-left: 3px solid ${T.sectionAccent};
       margin-bottom: 3px;
       break-inside: avoid;
-      padding: 2px;
+      padding: 0;
       border-radius: 2px;
+      overflow: hidden;
     }
 
     /* ===== カテゴリヘッダー / Category header ===== */
     .cat-header {
       font-weight: bold;
-      background: #1c1c1c;
-      color: #fff;
-      padding: 2px;
+      background: ${T.headerBg};
+      color: ${T.headerColor};
+      padding: 3px 5px;
       text-align: left;
-      margin-bottom: 2px;
+      letter-spacing: 0.02em;
     }
 
     /* ===== テーブル / Table ===== */
@@ -1868,27 +1904,57 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource) {
       width: 100%;
       table-layout: fixed;
       border-collapse: collapse;
-      margin-bottom: 2px;
+    }
+    tr:nth-child(even) td {
+      background: ${T.zebraRow};
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     td {
-      padding: 0 1px;
-      border: 1px solid #d0d0d0;
+      padding: 1px 2px;
+      border-bottom: 1px solid ${T.rowBorder};
+      border-left: none;
+      border-right: none;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    tr:last-child td { border-bottom: none; }
     /* 左列: アクション名 / Left column: action name */
     td:nth-child(1) {
-      font-size: ${fs-2}pt;
+      font-size: ${fs-1}pt;
+      color: ${T.nameColor};
       text-align: right;
-      padding-right: 3px;
+      padding-right: 4px;
+      border-right: 1px solid ${T.colDivider};
     }
     /* 右列: マッピング / Right column: mapping */
     td:nth-child(2) {
       font-size: ${fs}pt;
       text-align: left;
-      padding-left: 2px;
+      padding-left: 3px;
     }
+
+    /* ===== サブカテゴリ行 / Sub-category row ===== */
+    tr td[colspan="2"] {
+      background: ${T.subCatBg};
+      color: ${T.subCatColor};
+      font-weight: bold;
+      text-align: center;
+      padding: 1px 3px;
+      font-size: ${fs-1}pt;
+    }
+
+    /* ===== セパレーター / Separator ===== */
+    tr td[colspan="2"] > div {
+      border-top: 1px solid ${T.sepColor};
+      margin: 3px 0;
+    }
+    .sep-block {
+      border-top: 1px solid ${T.sepColor};
+      margin: 4px 2px;
+    }
+
     ${badgeCSS}
     ${pfColorCSS}
   </style>
@@ -1907,8 +1973,8 @@ function showExportModal() {
 function closeExportModal() { document.getElementById("exportModal").classList.remove("show"); }
 
 function updateExportPreview() {
-  const {cols, fs, mode, fontSource} = getExportSettings();
-  const html = generateCheatsheetHTML(cols, fs, mode, fontSource);
+  const {cols, fs, mode, fontSource, theme} = getExportSettings();
+  const html = generateCheatsheetHTML(cols, fs, mode, fontSource, theme);
   document.getElementById("exportPreview").srcdoc = html;
   // Toggle font source row visibility
   document.getElementById("fontSourceRow").style.display = mode === "promptfont" ? "flex" : "none";
@@ -1924,8 +1990,8 @@ function updateExportPreview() {
 }
 
 function getExportHTML() {
-  const {cols, fs, mode, fontSource} = getExportSettings();
-  return generateCheatsheetHTML(cols, fs, mode, fontSource);
+  const {cols, fs, mode, fontSource, theme} = getExportSettings();
+  return generateCheatsheetHTML(cols, fs, mode, fontSource, theme);
 }
 
 function downloadHTML() {

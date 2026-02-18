@@ -304,6 +304,13 @@
           <option value="badge" data-i18n="exp.badge">テキストバッジ（CSS）</option>
         </select>
       </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px">
+        <span data-i18n="exp.theme">スタイル:</span>
+        <select id="exportTheme" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+          <option value="mono" data-i18n="exp.themeMono">モノクロ</option>
+          <option value="color" data-i18n="exp.themeColor">カラー</option>
+        </select>
+      </label>
     </div>
     <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
