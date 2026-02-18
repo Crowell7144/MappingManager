@@ -3,7 +3,7 @@ id,parentId,type,name,mapping,exclude
 67,66,mapping,Game Version,v2026.2.11.3592,1
 69,66,mapping,Cheatsheet version,1.0.0,1
 68,66,mapping,Edited By,Crowell,1
-56,,category,Vehicle Controll,,0
+56,,category,Vehicle Control,,0
 57,56,category,Rotation,,0
 1,57,mapping,Forward,{W},0
 2,57,mapping,Backward,{S},0
@@ -19,13 +19,13 @@ id,parentId,type,name,mapping,exclude
 10,58,mapping,Translate Right,{L},0
 11,58,mapping,Translate Up,{K},0
 12,58,mapping,Translate Down,{I},0
-65,56,category,Power Controll,,0
+65,56,category,Power Control,,0
 46,65,mapping,Main Engine Startup,{Z},0
 47,65,mapping,Main Engine Shutdown,{X},0
 48,65,mapping,Main Engine Throttle Up,{Up},0
 49,65,mapping,Main Engine Throttle Down,{Down},0
 34,65,mapping,Toggle Manual Thrust Mode,{F},0
-59,,category,Camera Controll,,0
+59,,category,Camera Control,,0
 13,59,mapping,Camera Up,{Space},0
 14,59,mapping,Camera Down,{LCtrl},0
 15,59,mapping,Sprint,{LShift},0
@@ -33,7 +33,7 @@ id,parentId,type,name,mapping,exclude
 21,59,mapping,Field Of View Increase,{PgUp},0
 22,59,mapping,Field Of View Decrease,{PgDn},0
 27,59,mapping,Camera Reference Frame,{C},0
-60,,category,UI Controll,,0
+60,,category,UI Control,,0
 16,60,mapping,Toggle UI,{F2},0
 24,60,mapping,Toggle Console,{\},0
 25,60,mapping,Toggle Map,{M},0
@@ -45,17 +45,17 @@ id,parentId,type,name,mapping,exclude
 51,60,mapping,Toggle Resources,{F6},0
 52,60,mapping,Toggle Save Menu,{F7},0
 54,60,mapping,Toggle Staging Window,{F8},0
-61,,category,System Controll,,0
+61,,category,System Control,,0
 18,61,mapping,Sim Speed Increase,{.},0
 19,61,mapping,Sim Speed Decrease,"{,}",0
 20,61,mapping,Sim Speed Default,{/},0
 23,61,mapping,Cancel,{Esc},0
-62,,category,Follow Controll,,0
+62,,category,Follow Control,,0
 28,62,mapping,Vessel Next,{]},0
 29,62,mapping,Vessel Previous,{[},0
 30,62,mapping,Celestial Next,{;},0
 31,62,mapping,Celestial Previous,{'},0
-63,,category,Map Controll,,0
+63,,category,Map Control,,0
 37,63,mapping,Map Up,{W},0
 38,63,mapping,Map Down,{S},0
 39,63,mapping,Map Left,{A},0
@@ -63,8 +63,8 @@ id,parentId,type,name,mapping,exclude
 41,63,mapping,Map Forward,{Q},0
 42,63,mapping,Map Backward,{Z},0
 43,63,mapping,Map Center,{C},0
-44,63,mapping,Map Controll Vehicle Toggle,{Tab},0
-64,,category,Editor Controll,,0
+44,63,mapping,Map Control Vehicle Toggle,{Tab},0
+64,,category,Editor Control,,0
 50,64,mapping,Toggle Editor,{Shift}{E},0
 55,64,mapping,Toggle Editor Part Window,{F9},0
 53,64,mapping,Editor Camera Focus,{F},0
