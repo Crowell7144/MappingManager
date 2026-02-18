@@ -87,6 +87,48 @@ id,parentId,type,name,mapping,exclude
 
 ---
 
+## Converting MSFS 2024 Controller XML to CSV
+
+The included `msfs_xml2csv.py` script converts controller mapping XML files exported from Microsoft Flight Simulator 2024 into CSV files compatible with Mapping Manager.
+
+### Requirements
+
+- Python 3.8+
+- No additional packages required (standard library only)
+
+### Usage
+
+```bash
+python msfs_xml2csv.py <xml_file> [xml_file2 ...] [options]
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `-o FILE` | Output CSV filename (default: first XML filename with `.csv` extension) |
+| `--all` | Include unassigned actions in the output |
+
+### Examples
+
+```bash
+# Convert a single file
+python msfs_xml2csv.py Gamepad_2024_Planes.xml
+
+# Merge multiple XML files into one CSV
+python msfs_xml2csv.py Gamepad_2024_Planes.xml Gamepad_2024_Transversal.xml
+
+# Specify output filename
+python msfs_xml2csv.py Gamepad_2024_Planes.xml -o my_mappings.csv
+
+# Include unassigned actions
+python msfs_xml2csv.py Gamepad_2024_Planes.xml --all
+```
+
+The generated CSV can be loaded directly via the **Open CSV** button in Mapping Manager.
+
+---
+
 ## License
 
 MIT License — see [LICENSE](LICENSE)
@@ -183,6 +225,48 @@ id,parentId,type,name,mapping,exclude
 | `name` | 表示名 |
 | `mapping` | `[ボタン名]` または `{キー名}` の組み合わせ |
 | `exclude` | `1` で出力から除外 |
+
+---
+
+## MSFS 2024 コントローラーXMLをCSVに変換する
+
+同梱の `msfs_xml2csv.py` スクリプトを使うと、Microsoft Flight Simulator 2024 からエクスポートしたコントローラーマッピングのXMLファイルを、Mapping Manager で読み込めるCSV形式に変換できます。
+
+### 必要な環境
+
+- Python 3.8 以上
+- 追加パッケージ不要（標準ライブラリのみ）
+
+### 使い方
+
+```bash
+python msfs_xml2csv.py <XMLファイル> [XMLファイル2 ...] [オプション]
+```
+
+**オプション:**
+
+| オプション | 説明 |
+|-----------|------|
+| `-o FILE` | 出力CSVファイル名（省略時: 最初のXMLファイル名 + `.csv`）|
+| `--all` | 未割り当てのアクションも出力に含める |
+
+### 実行例
+
+```bash
+# 単一ファイルを変換
+python msfs_xml2csv.py Gamepad_2024_Planes.xml
+
+# 複数のXMLを1つのCSVにまとめる
+python msfs_xml2csv.py Gamepad_2024_Planes.xml Gamepad_2024_Transversal.xml
+
+# 出力ファイル名を指定する
+python msfs_xml2csv.py Gamepad_2024_Planes.xml -o my_mappings.csv
+
+# 未割り当てのアクションも含める
+python msfs_xml2csv.py Gamepad_2024_Planes.xml --all
+```
+
+生成されたCSVは、Mapping Manager の **CSV読込** ボタンから直接読み込めます。
 
 ---
 

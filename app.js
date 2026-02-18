@@ -31,6 +31,7 @@ const I18N = {
     "gp.currentMapping": "現在のマッピング:",
     "gp.none": "なし",
     "gp.instruction": "コントローラーのボタンを押してください。同時押しに対応しています。",
+    "gp.stickButtons": "スティック方向指定:",
     "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。',
     "gp.newInput": "新しい入力:",
     "gp.noInput": "入力なし",
@@ -133,6 +134,7 @@ const I18N = {
     "gp.currentMapping": "Current mapping:",
     "gp.none": "None",
     "gp.instruction": "Press buttons on your controller. Simultaneous presses are supported.",
+    "gp.stickButtons": "Stick direction:",
     "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code style="color:#aaa">[LP1]</code> etc. directly in the mapping field.',
     "gp.newInput": "New input:",
     "gp.noInput": "No input",
@@ -279,6 +281,8 @@ let gamepadPressedButtons = [];
 let gamepadIsIdle = true;
 let gamepadPrevPressed = new Set();
 let gamepadRAF = null;
+// 軸の符号履歴: ls0/ls1=LS X/Y軸, rs0/rs1=RS X/Y軸
+// pos=正方向を検出済み, neg=負方向を検出済み
 
 // ── Controller definitions ──
 const CONTROLLER_NAMES = { xbox:'Xbox', ps4:'PS4 DualShock4', ps5:'PS5 DualSense', switch:'Nintendo Switch' };
@@ -354,9 +358,17 @@ const BUTTON_STYLES = {
   "LS:X": { bg:"#C23B22", text:"#fff", label:"LS↔" },
   "LS:Y": { bg:"#C23B22", text:"#fff", label:"LS↕" },
   "LS:XY": { bg:"#C23B22", text:"#fff", label:"LS✦" },
+  "LS:Right": { bg:"#C23B22", text:"#fff", label:"LS→" },
+  "LS:Left":  { bg:"#C23B22", text:"#fff", label:"LS←" },
+  "LS:Up":    { bg:"#C23B22", text:"#fff", label:"LS↑" },
+  "LS:Down":  { bg:"#C23B22", text:"#fff", label:"LS↓" },
   "RS:X": { bg:"#2E8B57", text:"#fff", label:"RS↔" },
   "RS:Y": { bg:"#2E8B57", text:"#fff", label:"RS↕" },
   "RS:XY": { bg:"#2E8B57", text:"#fff", label:"RS✦" },
+  "RS:Right": { bg:"#2E8B57", text:"#fff", label:"RS→" },
+  "RS:Left":  { bg:"#2E8B57", text:"#fff", label:"RS←" },
+  "RS:Up":    { bg:"#2E8B57", text:"#fff", label:"RS↑" },
+  "RS:Down":  { bg:"#2E8B57", text:"#fff", label:"RS↓" },
   Start: { bg:"#333", text:"#fff", label:"≡" },
   Back: { bg:"#333", text:"#fff", label:"⧉" },
   "▲": { bg:"#222", text:"#fff", label:"▲" },
@@ -398,8 +410,8 @@ const GAMEPAD_BUTTON_MAP = {
   8:"Back", 9:"Start", 10:"LS", 11:"RS", 12:"▲", 13:"▼", 14:"◀", 15:"▶",
 };
 const AXIS_THRESHOLD = 0.5;
-const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY"]);
-const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY"]);
+const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY","LS:Right","LS:Left","LS:Up","LS:Down"]);
+const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY","RS:Right","RS:Left","RS:Up","RS:Down"]);
 
 function getTypeLabels() { return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak") }; }
 const TYPE_COLORS = { category:"#f59e0b", mapping:"#60a5fa", separator:"#888", pagebreak:"#c084fc" };
@@ -1159,9 +1171,14 @@ function showContextMenu(e, id) {
     <div class="ctx-sep"></div>
     <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
   `;
+  // いったん表示してサイズを取得し、画面端にはみ出さないよう位置を補正する
   menu.style.left = e.clientX + "px";
   menu.style.top = e.clientY + "px";
   menu.classList.add("show");
+  const rect = menu.getBoundingClientRect();
+  const margin = 4;
+  if (rect.right > window.innerWidth - margin)  menu.style.left = (e.clientX - rect.width)  + "px";
+  if (rect.bottom > window.innerHeight - margin) menu.style.top  = (e.clientY - rect.height) + "px";
 }
 function hideContextMenu() { document.getElementById("ctx-menu").classList.remove("show"); }
 document.addEventListener("mousedown", e => {
@@ -1248,7 +1265,7 @@ let samplesIndex = [];
 
 async function loadSamplesIndex() {
   try {
-    const res = await fetch(`samples/${currentLang}/samples_index.json`);
+    const res = await fetch(`samples/samples_index.json`);
     if (!res.ok) return;
     const data = await res.json();
     samplesIndex = data.samples || [];
@@ -1264,9 +1281,24 @@ function buildSampleDropdown() {
   // Keep the placeholder option
   while (sel.options.length > 1) sel.remove(1);
   for (const s of samplesIndex) {
+    // langs指定がある場合は現在の言語が含まれているか確認（省略時は両言語で表示）
+    if (s.langs && !s.langs.includes(currentLang)) continue;
+
+    // nameがオブジェクトの場合は現在の言語を優先して取得、文字列の場合はそのまま使用
+    const name = typeof s.name === 'object'
+      ? (s.name[currentLang] || s.name.ja || s.name.en || '')
+      : s.name;
+
+    // fileがオブジェクトの場合は現在の言語のパスを取得、文字列の場合はそのまま使用
+    const file = typeof s.file === 'object'
+      ? (s.file[currentLang] || s.file.ja || s.file.en || '')
+      : s.file;
+
+    if (!file) continue;
+
     const opt = document.createElement('option');
-    opt.value = s.file;
-    opt.textContent = s.name;
+    opt.value = file;
+    opt.textContent = name;
     sel.appendChild(opt);
   }
 }
@@ -1373,6 +1405,13 @@ function gamepadApplyNext() {
   closeGamepadModal();
 }
 
+function gamepadAddButton(btn) {
+  if (!gamepadPressedButtons.includes(btn)) {
+    gamepadPressedButtons.push(btn);
+    renderGamepadDisplay();
+  }
+}
+
 function renderGamepadDisplay() {
   const el = document.getElementById("gamepadDisplay");
   if (gamepadPressedButtons.length === 0) {
@@ -1384,6 +1423,7 @@ function renderGamepadDisplay() {
   }
 }
 
+// X軸・Y軸の履歴からスティックトークンを1つに決定する
 function mergeStick(prevBtns, currentX, currentY, stickSet, prefix) {
   const prevEntry = prevBtns.find(b => stickSet.has(b));
   const hadX = prevEntry === `${prefix}:X` || prevEntry === `${prefix}:XY`;
@@ -1565,8 +1605,13 @@ const PF_CLASSES = {
   LT:{cls:"pf-xbox-left-trigger",color:"pf-color-red-gradient"},RT:{cls:"pf-xbox-right-trigger",color:"pf-color-green-gradient"},
   LS:{cls:"pf-analog-l-click",color:"pf-color-analog-l"},RS:{cls:"pf-analog-r-click",color:"pf-color-analog-r"},
   "LS:X":{cls:"pf-analog-l-left-right",color:"pf-color-analog-l"},"LS:Y":{cls:"pf-analog-l-up-down",color:"pf-color-analog-l"},
-  "LS:XY":{cls:"pf-analog-l-any",color:"pf-color-analog-l"},"RS:X":{cls:"pf-analog-r-left-right",color:"pf-color-analog-r"},
+  "LS:XY":{cls:"pf-analog-l-any",color:"pf-color-analog-l"},
+  "LS:Right":{cls:"pf-analog-l-right",color:"pf-color-analog-l"},"LS:Left":{cls:"pf-analog-l-left",color:"pf-color-analog-l"},
+  "LS:Up":{cls:"pf-analog-l-up",color:"pf-color-analog-l"},"LS:Down":{cls:"pf-analog-l-down",color:"pf-color-analog-l"},
+  "RS:X":{cls:"pf-analog-r-left-right",color:"pf-color-analog-r"},
   "RS:Y":{cls:"pf-analog-r-up-down",color:"pf-color-analog-r"},"RS:XY":{cls:"pf-analog-r-any",color:"pf-color-analog-r"},
+  "RS:Right":{cls:"pf-analog-r-right",color:"pf-color-analog-r"},"RS:Left":{cls:"pf-analog-r-left",color:"pf-color-analog-r"},
+  "RS:Up":{cls:"pf-analog-r-up",color:"pf-color-analog-r"},"RS:Down":{cls:"pf-analog-r-down",color:"pf-color-analog-r"},
   Start:{cls:"pf-xbox-menu",color:"pf-color-black"},Back:{cls:"pf-xbox-view",color:"pf-color-black"},
   "▲":{cls:"pf-dpad-up",color:"pf-color-black"},"▼":{cls:"pf-dpad-down",color:"pf-color-black"},
   "▶":{cls:"pf-dpad-right",color:"pf-color-black"},"◀":{cls:"pf-dpad-left",color:"pf-color-black"},

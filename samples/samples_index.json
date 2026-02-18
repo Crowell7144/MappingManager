@@ -1,0 +1,31 @@
+{
+  "samples": [
+    {
+      "id": "tutorial",
+      "name": {
+        "ja": "チュートリアル（機能紹介）",
+        "en": "Tutorial (Feature Overview)"
+      },
+      "file": {
+        "ja": "samples/tutorial_ja.csv",
+        "en": "samples/tutorial_en.csv"
+      }
+    },
+    {
+      "id": "msfs2024-default",
+      "name": {
+        "ja": "MSFS 2024 デフォルト設定 サンプル",
+        "en": "MSFS 2024 Default Settings Sample"
+      },
+      "file": "samples/msfs2024_default.csv"
+    },
+    {
+      "id": "msfs2024-crowell",
+      "name": {
+        "ja": "MSFS 2024 Crowellカスタム サンプル",
+        "en": "MSFS 2024 Crowell Custom Sample"
+      },
+      "file": "samples/msfs2024_crowell.csv"
+    }
+  ]
+}
