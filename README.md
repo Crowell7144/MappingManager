@@ -113,16 +113,16 @@ python msfs_xml2csv.py <xml_file> [xml_file2 ...] [options]
 
 ```bash
 # Convert a single file
-python msfs_xml2csv.py Gamepad_2024_Planes.xml
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml"
 
 # Merge multiple XML files into one CSV
-python msfs_xml2csv.py Gamepad_2024_Planes.xml Gamepad_2024_Transversal.xml
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" "Gamepad 2024 Transversal.xml"
 
 # Specify output filename
-python msfs_xml2csv.py Gamepad_2024_Planes.xml -o my_mappings.csv
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" -o my_mappings.csv
 
 # Include unassigned actions
-python msfs_xml2csv.py Gamepad_2024_Planes.xml --all
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
 The generated CSV can be loaded directly via the **Open CSV** button in Mapping Manager.
@@ -254,16 +254,16 @@ python msfs_xml2csv.py <XMLファイル> [XMLファイル2 ...] [オプション
 
 ```bash
 # 単一ファイルを変換
-python msfs_xml2csv.py Gamepad_2024_Planes.xml
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml"
 
 # 複数のXMLを1つのCSVにまとめる
-python msfs_xml2csv.py Gamepad_2024_Planes.xml Gamepad_2024_Transversal.xml
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" "Gamepad 2024 Transversal.xml"
 
 # 出力ファイル名を指定する
-python msfs_xml2csv.py Gamepad_2024_Planes.xml -o my_mappings.csv
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" -o my_mappings.csv
 
 # 未割り当てのアクションも含める
-python msfs_xml2csv.py Gamepad_2024_Planes.xml --all
+python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
 生成されたCSVは、Mapping Manager の **CSV読込** ボタンから直接読み込めます。
