@@ -14,7 +14,7 @@
 - CSV形式での保存・読込
 - チートシートHTMLエクスポート（印刷対応）
 - 編集内容のLocalStorage自動保存
-- 日本語 / English 対応
+- 日本語 / English 対応（言語設定に応じたチュートリアルを初回表示）
 
 ---
 
@@ -58,7 +58,8 @@ npx serve .
 ├── promptfont.ttf        # PromptFont フォントファイル
 ├── samples/
 │   ├── samples_index.json  # サンプル一覧
-│   ├── tutorial.csv        # チュートリアル（初回表示）
+│   ├── tutorial_ja.csv     # チュートリアル・日本語版（初回表示）
+│   ├── tutorial_en.csv     # チュートリアル・英語版（初回表示）
 │   └── msfs2024.csv        # MSFS 2024 サンプル
 └── README.md
 ```
@@ -97,7 +98,7 @@ id,parentId,type,name,mapping,exclude
 |-----------|------|
 | `id` | 一意の整数ID |
 | `parentId` | 親カテゴリのID（ルートは空） |
-| `type` | `category` / `mapping` / `separator` / `pagebreak` / `colbreak` |
+| `type` | `category` / `mapping` / `separator` / `pagebreak` |
 | `name` | 表示名 |
 | `mapping` | `[ボタン名]` または `{キー名}` の組み合わせ |
 | `exclude` | `1` で出力から除外 |
