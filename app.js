@@ -32,6 +32,11 @@ const I18N = {
     "gp.none": "なし",
     "gp.instruction": "コントローラーのボタンを押してください。同時押しに対応しています。",
     "gp.stickButtons": "スティック方向指定:",
+    "gp.clear":  "クリア",
+    "gp.group.face":     "フェイス",
+    "gp.group.shoulder": "ショルダー",
+    "gp.group.system":   "システム",
+    "gp.group.dpad":     "十字キー",
     "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。',
     "gp.newInput": "新しい入力:",
     "gp.noInput": "入力なし",
@@ -97,6 +102,7 @@ const I18N = {
     "kb.noInput": "入力なし",
     "kb.cancel": "キャンセル",
     "kb.clear": "クリア",
+    "kb.skip": "次へ",
     "kb.apply": "適用",
     "kb.applyNext": "適用して次へ",
     "kb.nameEmpty": "（名前未設定）",
@@ -136,6 +142,11 @@ const I18N = {
     "gp.none": "None",
     "gp.instruction": "Press buttons on your controller. Simultaneous presses are supported.",
     "gp.stickButtons": "Stick direction:",
+    "gp.clear":  "Clear",
+    "gp.group.face":     "Face",
+    "gp.group.shoulder": "Shoulder",
+    "gp.group.system":   "System",
+    "gp.group.dpad":     "D-Pad",
     "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code style="color:#aaa">[LP1]</code> etc. directly in the mapping field.',
     "gp.newInput": "New input:",
     "gp.noInput": "No input",
@@ -197,6 +208,7 @@ const I18N = {
     "kb.noInput": "No input",
     "kb.cancel": "Cancel",
     "kb.clear": "Clear",
+    "kb.skip": "Skip",
     "kb.apply": "Apply",
     "kb.applyNext": "Apply & Next",
     "kb.nameEmpty": "(unnamed)",
@@ -1374,6 +1386,69 @@ function gamepadModalKeyHandler(e) {
   else if (e.key === " ") { e.preventDefault(); gamepadApplyNext(); }
   else if (e.key === "Tab") { e.preventDefault(); gamepadSkipNext(); }
 }
+function renderGamepadButtonGrid() {
+  const el = document.getElementById("gamepadButtonGrid");
+  if (!el) return;
+
+  const ctrlMap = CONTROLLER_BUTTON_MAP[currentController] || {};
+
+  function ctrlLabel(canonical) {
+    return ctrlMap[canonical] ?? canonical;
+  }
+
+  function gpBtn(value, display) {
+    const d = esc(display ?? value);
+    const safeVal = value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return `<button class="gamepad-btn" `
+         + `style="min-width:30px;height:26px;font-size:10px;font-weight:700;padding:0 5px" `
+         + `onclick="gamepadAddButton('${safeVal}')" title="${esc(value)}">${d}</button>`;
+  }
+
+  function grpRow(label, btnsHtml) {
+    return `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">`
+         + `<div style="font-size:9px;color:#777;min-width:58px;text-align:right;`
+         + `padding-right:5px;white-space:nowrap;flex-shrink:0">${esc(label)}</div>`
+         + `<div style="display:flex;gap:3px;flex-wrap:wrap">${btnsHtml}</div>`
+         + `</div>`;
+  }
+
+  const sep = '<span style="width:4px;display:inline-block;border-left:1px solid #333;height:20px;align-self:center;margin:0 1px"></span>';
+
+  const html = [
+    grpRow(t('gp.group.face'),
+      ['A','B','X','Y'].map(c => gpBtn(ctrlLabel(c))).join('')
+    ),
+    grpRow(t('gp.group.shoulder'),
+      ['LB','RB','LT','RT'].map(c => gpBtn(ctrlLabel(c))).join('')
+    ),
+    grpRow(t('gp.group.system'),
+      gpBtn('LS') + gpBtn('RS') + sep + gpBtn(ctrlLabel('Back')) + gpBtn(ctrlLabel('Start'))
+    ),
+    grpRow(t('gp.group.dpad'),
+      gpBtn('▲') + gpBtn('▼') + gpBtn('◀') + gpBtn('▶')
+    ),
+    grpRow('LS',
+      gpBtn('LS:Left','LS←') + gpBtn('LS:Right','LS→') + gpBtn('LS:Up','LS↑') + gpBtn('LS:Down','LS↓')
+      + sep
+      + gpBtn('LS:X','LS:X') + gpBtn('LS:Y','LS:Y') + gpBtn('LS:XY','LS:XY')
+    ),
+    grpRow('RS',
+      gpBtn('RS:Left','RS←') + gpBtn('RS:Right','RS→') + gpBtn('RS:Up','RS↑') + gpBtn('RS:Down','RS↓')
+      + sep
+      + gpBtn('RS:X','RS:X') + gpBtn('RS:Y','RS:Y') + gpBtn('RS:XY','RS:XY')
+    ),
+  ].join('');
+
+  el.innerHTML = html;
+}
+
+function gamepadClear() {
+  gamepadPressedButtons = [];
+  gamepadIsIdle = true;
+  gamepadPrevPressed = new Set();
+  renderGamepadDisplay();
+}
+
 function openGamepadModal(id) {
   gamepadTargetId = id;
   gamepadPressedButtons = [];
@@ -1383,6 +1458,7 @@ function openGamepadModal(id) {
   document.addEventListener("keydown", gamepadModalKeyHandler);
   updateGamepadItemName();
   renderGamepadDisplay();
+  renderGamepadButtonGrid();
   pollGamepad();
 }
 function closeGamepadModal() {
@@ -1538,6 +1614,7 @@ function kbModalKeyHandler(e) {
   if (e.key === "Escape") { e.preventDefault(); kbCancel(); }
   else if (e.key === "Enter") { e.preventDefault(); kbApply(); }
   else if (e.key === " ")    { e.preventDefault(); kbApplyNext(); }
+  else if (e.key === "Tab")  { e.preventDefault(); kbSkipNext(); }
 }
 
 function switchKbTab(tab) {
@@ -1561,6 +1638,18 @@ function closeKeyboardModal() {
   document.getElementById("keyboardModal").classList.remove("show");
   document.removeEventListener("keydown", kbModalKeyHandler);
   kbTargetId = null;
+}
+
+function kbSkipNext() {
+  const next = kbTargetId !== null ? getNextMappingItem(kbTargetId) : null;
+  if (next) {
+    kbTargetId = next;
+    kbCapturedKeys = [];
+    updateKbItemInfo();
+    renderKbDisplay();
+  } else {
+    closeKeyboardModal();
+  }
 }
 
 function kbCancel() {

@@ -94,30 +94,11 @@
     <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
       <span style="color:#777;font-size:13px" data-i18n="gp.noInput">入力なし</span>
     </div>
-    <div style="font-size:10px;color:#888;margin-bottom:4px" data-i18n="gp.stickButtons">スティック方向指定:</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <div style="font-size:9px;color:#C23B22;font-weight:700;text-align:center">LS</div>
-        <div style="display:flex;gap:3px">
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('LS:Left')"  title="LS:Left">LS←</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('LS:Right')" title="LS:Right">LS→</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('LS:Up')"    title="LS:Up">LS↑</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('LS:Down')"  title="LS:Down">LS↓</button>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:3px">
-        <div style="font-size:9px;color:#2E8B57;font-weight:700;text-align:center">RS</div>
-        <div style="display:flex;gap:3px">
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('RS:Left')"  title="RS:Left">RS←</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('RS:Right')" title="RS:Right">RS→</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('RS:Up')"    title="RS:Up">RS↑</button>
-          <button class="gamepad-btn" style="width:34px;height:28px;font-size:11px;font-weight:700" onclick="gamepadAddButton('RS:Down')"  title="RS:Down">RS↓</button>
-        </div>
-      </div>
-    </div>
+    <div id="gamepadButtonGrid" style="margin-bottom:14px"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
       <button class="modal-btn" style="background:#5a5a6a" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
-      <button class="modal-btn" style="background:#6b7280" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
+      <button class="modal-btn" style="background:#6b7280" onclick="gamepadClear()"><span data-i18n="gp.clear">クリア</span></button>
+      <button class="modal-btn" style="background:#4b5563" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
       <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()"><span data-i18n="gp.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
       <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()"><span data-i18n="gp.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
@@ -296,6 +277,7 @@
     <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
       <button class="modal-btn" style="background:#5a5a6a" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
       <button class="modal-btn" style="background:#6b7280" onclick="kbClear()"><span data-i18n="kb.clear">クリア</span></button>
+      <button class="modal-btn" style="background:#4b5563" onclick="kbSkipNext()"><span data-i18n="kb.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
       <button class="modal-btn" style="background:#2563eb" onclick="kbApply()"><span data-i18n="kb.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
       <button class="modal-btn" style="background:#16a34a" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
