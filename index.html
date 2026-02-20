@@ -27,13 +27,12 @@
     </svg>
   </a>
   <span class="filename" id="filenameDisplay" data-i18n-title="filename.tooltip" onclick="startFileNameEdit()" style="cursor:pointer">new_mapping.csv</span>
-  <input type="text" id="filenameEdit" class="filename" style="display:none;cursor:text;outline:1px solid #5a5aff;width:220px"
+  <input type="text" id="filenameEdit" class="filename" style="display:none"
     onblur="finishFileNameEdit()" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value=fileName;this.blur();}">
   <span class="toolbar-spacer"></span>
   <button class="toolbar-btn" onclick="handleNew()" data-i18n="btn.new">📄 新規</button>
   <button class="toolbar-btn" onclick="openCSV()" data-i18n="btn.openCsv">📂 CSV読込</button>
-  <select id="sampleSelect" onchange="loadSampleFile(this.value)"
-    style="background:#1e1e2e;color:#9a9a9a;border:1px solid #333;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer;max-width:180px">
+  <select id="sampleSelect" onchange="loadSampleFile(this.value)">
     <option value="" data-i18n="sample.placeholder">📂 サンプルを開く</option>
   </select>
   <a id="saveCsvBtn" class="toolbar-btn accent" href="#" data-i18n="btn.saveCsv"
@@ -45,15 +44,14 @@
   <span class="toolbar-sep"></span>
   <button class="toolbar-btn" id="undoBtn" onclick="undo()" disabled data-i18n="btn.undo">↩ 元に戻す</button>
   <span class="toolbar-sep"></span>
-  <select id="controllerSelect" onchange="switchController(this.value)"
-    style="background:#1e1e2e;color:#e0e0e0;border:1px solid #444;border-radius:6px;padding:5px 8px;font-size:12px;font-weight:600;cursor:pointer">
+  <select id="controllerSelect" onchange="switchController(this.value)">
     <option value="xbox">🎮 Xbox</option>
     <option value="ps4">🎮 PS4</option>
     <option value="ps5">🎮 PS5</option>
     <option value="switch">🎮 Switch</option>
   </select>
   <span class="toolbar-sep"></span>
-  <button class="toolbar-btn" onclick="setLang(currentLang==='ja'?'en':'ja')" id="langBtn" style="font-size:13px">🌐 EN</button>
+  <button class="toolbar-btn" onclick="setLang(currentLang==='ja'?'en':'ja')" id="langBtn">🌐 EN</button>
   <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleOpenCSV(event)">
 </div>
 
@@ -70,10 +68,10 @@
 
 <!-- Add Buttons -->
 <div id="add-bar">
-  <button class="add-btn" style="color:#60a5fa;border-color:#60a5fa" onclick="addItem('mapping')" data-i18n="add.mapping">+ マッピング</button>
-  <button class="add-btn" style="color:#f59e0b;border-color:#f59e0b" onclick="addItem('category')" data-i18n="add.category">+ カテゴリ</button>
-  <button class="add-btn" style="color:#888;border-color:#888" onclick="addItem('separator')" data-i18n="add.separator">+ セパレーター</button>
-  <button class="add-btn" style="color:#c084fc;border-color:#c084fc" onclick="addItem('pagebreak')" data-i18n="add.pagebreak">+ 改ページ</button>
+  <button class="add-btn add-btn-mapping"   onclick="addItem('mapping')"   data-i18n="add.mapping">+ マッピング</button>
+  <button class="add-btn add-btn-category"  onclick="addItem('category')"  data-i18n="add.category">+ カテゴリ</button>
+  <button class="add-btn add-btn-separator" onclick="addItem('separator')" data-i18n="add.separator">+ セパレーター</button>
+  <button class="add-btn add-btn-pagebreak" onclick="addItem('pagebreak')" data-i18n="add.pagebreak">+ 改ページ</button>
 </div>
 
 <!-- Context Menu -->
@@ -83,24 +81,24 @@
 <div class="modal-overlay" id="gamepadModal">
   <div class="modal-box" style="min-width:420px;max-width:500px">
     <div class="modal-title" data-i18n="gp.title">🎮 コントローラ入力待機中</div>
-    <div id="gamepadItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="gp.currentMapping">現在のマッピング:</div>
-    <div id="gamepadCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:12px">
-      <span style="color:#777;font-size:12px" data-i18n="gp.none">なし</span>
+    <div id="gamepadItemName" class="modal-item-name"></div>
+    <div class="modal-hint-text" data-i18n="gp.currentMapping">現在のマッピング:</div>
+    <div id="gamepadCurrentMapping" class="modal-current-mapping">
+      <span class="empty-mapping-hint" data-i18n="gp.none">なし</span>
     </div>
     <div class="modal-subtitle" data-i18n="gp.instruction">コントローラーのボタンを押してください。同時押しに対応しています。</div>
-    <div style="font-size:10px;color:#886;background:#1a1a10;border:1px solid #333;border-radius:4px;padding:4px 8px;margin-bottom:8px" data-i18n-html="gp.paddleHint"></div>
-    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="gp.newInput">新しい入力:</div>
-    <div id="gamepadDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:16px;min-height:50px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:20px">
-      <span style="color:#777;font-size:13px" data-i18n="gp.noInput">入力なし</span>
+    <div class="modal-paddle-hint" data-i18n-html="gp.paddleHint"></div>
+    <div class="modal-hint-text" data-i18n="gp.newInput">新しい入力:</div>
+    <div id="gamepadDisplay" class="modal-input-display">
+      <span class="empty-state-text" data-i18n="gp.noInput">入力なし</span>
     </div>
-    <div id="gamepadButtonGrid" style="margin-bottom:14px"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
-      <button class="modal-btn" style="background:#5a5a6a" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
-      <button class="modal-btn" style="background:#6b7280" onclick="gamepadClear()"><span data-i18n="gp.clear">クリア</span></button>
-      <button class="modal-btn" style="background:#4b5563" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
-      <button class="modal-btn" style="background:#2563eb" onclick="gamepadApply()"><span data-i18n="gp.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
-      <button class="modal-btn" style="background:#16a34a" onclick="gamepadApplyNext()"><span data-i18n="gp.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
+    <div id="gamepadButtonGrid"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="gamepadCancel()"><span data-i18n="gp.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
+      <button class="modal-btn modal-btn-neutral" onclick="gamepadClear()"><span data-i18n="gp.clear">クリア</span></button>
+      <button class="modal-btn modal-btn-skip" onclick="gamepadSkipNext()"><span data-i18n="gp.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
+      <button class="modal-btn modal-btn-primary" onclick="gamepadApply()"><span data-i18n="gp.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
+      <button class="modal-btn modal-btn-apply-next" onclick="gamepadApplyNext()"><span data-i18n="gp.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
   </div>
 </div>
@@ -109,15 +107,15 @@
 <div class="modal-overlay" id="keyboardModal">
   <div class="modal-box" style="min-width:520px;max-width:600px">
     <div class="modal-title" data-i18n="kb.title">⌨️ キーボード入力</div>
-    <div id="kbItemName" style="font-size:13px;color:#78f0c0;background:#12121f;border:1px solid #333;border-radius:6px;padding:6px 10px;margin-bottom:8px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
-    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="kb.currentMapping">現在のマッピング:</div>
-    <div id="kbCurrentMapping" style="background:#1a1a28;border:1px solid #2a2a3a;border-radius:6px;padding:6px 10px;min-height:28px;display:flex;align-items:center;flex-wrap:wrap;gap:2px;margin-bottom:8px">
-      <span style="color:#777;font-size:12px" data-i18n="kb.none">なし</span>
+    <div id="kbItemName" class="modal-item-name-kb"></div>
+    <div class="modal-hint-text" data-i18n="kb.currentMapping">現在のマッピング:</div>
+    <div id="kbCurrentMapping" class="modal-current-mapping-kb">
+      <span class="empty-mapping-hint" data-i18n="kb.none">なし</span>
     </div>
     <!-- New Input Display -->
-    <div style="font-size:11px;color:#888;margin-bottom:4px" data-i18n="kb.newInput">新しい入力:</div>
-    <div id="kbDisplay" style="background:#12121f;border:1px solid #333;border-radius:8px;padding:10px;min-height:40px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:10px">
-      <span style="color:#777;font-size:13px" data-i18n="kb.noInput">入力なし</span>
+    <div class="modal-hint-text" data-i18n="kb.newInput">新しい入力:</div>
+    <div id="kbDisplay" class="modal-input-display-kb">
+      <span class="empty-state-text" data-i18n="kb.noInput">入力なし</span>
     </div>
     <!-- Tab switch -->
     <div class="kb-tabs">
@@ -182,7 +180,7 @@
         <button class="kb-key" onclick="kbAddKey('B')">B</button>
         <button class="kb-key" onclick="kbAddKey('N')">N</button>
         <button class="kb-key" onclick="kbAddKey('M')">M</button>
-        <button class="kb-key" onclick="kbRemoveLast()" style="color:#f87171;font-size:11px" title="Remove last">✕</button>
+        <button class="kb-key kb-key-remove" onclick="kbRemoveLast()" style="font-size:11px" title="Remove last">✕</button>
       </div>
       <!-- Row: LCtrl, Ctrl, RCtrl, LAlt, Alt, RAlt, Space, Win, Fn -->
       <div class="kb-row">
@@ -239,7 +237,7 @@
         <button class="kb-key" onclick="kbAddKey('^')">^</button>
         <button class="kb-key" onclick="kbAddKey('&amp;')">&amp;</button>
         <button class="kb-key" onclick="kbAddKey('*')">*</button>
-        <button class="kb-key" onclick="kbAddKey('(')"> (</button>
+        <button class="kb-key" onclick="kbAddKey('(')">(</button>
         <button class="kb-key" onclick="kbAddKey(')')">)</button>
         <button class="kb-key" onclick="kbAddKey('-')">-</button>
         <button class="kb-key" onclick="kbAddKey('_')">_</button>
@@ -254,7 +252,7 @@
         <button class="kb-key" onclick="kbAddKey('}')">}</button>
         <button class="kb-key" onclick="kbAddKey('&lt;')">&lt;</button>
         <button class="kb-key" onclick="kbAddKey('&gt;')">&gt;</button>
-        <button class="kb-key" onclick="kbAddKey('\\')">\</button>
+        <button class="kb-key" onclick="kbAddKey('\\')">\ </button>
         <button class="kb-key" onclick="kbAddKey('|')">|</button>
         <button class="kb-key" onclick="kbAddKey('/')">/ </button>
         <button class="kb-key" onclick="kbAddKey('~')">~</button>
@@ -266,20 +264,20 @@
         <button class="kb-key" onclick="kbAddKey(':')">:</button>
         <button class="kb-key" onclick="kbAddKey(&quot;'&quot;)">'</button>
         <button class="kb-key" onclick='kbAddKey("&quot;')">"</button>
-        <button class="kb-key" onclick="kbAddKey(',')">,</button>
+        <button class="kb-key" onclick="kbAddKey(',')"> ,</button>
         <button class="kb-key" onclick="kbAddKey('.')">.</button>
         <button class="kb-key" onclick="kbAddKey('?')">?</button>
         <span style="flex:3"></span>
-        <button class="kb-key" onclick="kbRemoveLast()" style="color:#f87171;font-size:11px" title="Remove last">✕</button>
+        <button class="kb-key kb-key-remove" onclick="kbRemoveLast()" style="font-size:11px" title="Remove last">✕</button>
       </div>
     </div>
     <!-- Action buttons -->
-    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
-      <button class="modal-btn" style="background:#5a5a6a" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
-      <button class="modal-btn" style="background:#6b7280" onclick="kbClear()"><span data-i18n="kb.clear">クリア</span></button>
-      <button class="modal-btn" style="background:#4b5563" onclick="kbSkipNext()"><span data-i18n="kb.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
-      <button class="modal-btn" style="background:#2563eb" onclick="kbApply()"><span data-i18n="kb.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
-      <button class="modal-btn" style="background:#16a34a" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-cancel" onclick="kbCancel()"><span data-i18n="kb.cancel">キャンセル</span> <kbd class="kbd-hint">Esc</kbd></button>
+      <button class="modal-btn modal-btn-neutral" onclick="kbClear()"><span data-i18n="kb.clear">クリア</span></button>
+      <button class="modal-btn modal-btn-skip" onclick="kbSkipNext()"><span data-i18n="kb.skip">次へ</span> <kbd class="kbd-hint">Tab</kbd></button>
+      <button class="modal-btn modal-btn-primary" onclick="kbApply()"><span data-i18n="kb.apply">適用</span> <kbd class="kbd-hint">Enter</kbd></button>
+      <button class="modal-btn modal-btn-apply-next" onclick="kbApplyNext()"><span data-i18n="kb.applyNext">適用して次へ</span> <kbd class="kbd-hint">Space</kbd></button>
     </div>
   </div>
 </div>
@@ -291,25 +289,25 @@
     <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.columns">カラム数:</span>
-        <select id="exportCols" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+        <select id="exportCols" onchange="updateExportPreview()" class="export-control">
           <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
         </select>
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.fontSize">フォントサイズ:</span>
         <input type="number" id="exportFontSize" value="12" min="4" max="20" step="0.5" onchange="updateExportPreview()"
-          style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px;width:60px"> pt
+          class="export-control number-input"> pt
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.buttonStyle">ボタン表示:</span>
-        <select id="exportRenderMode" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+        <select id="exportRenderMode" onchange="updateExportPreview()" class="export-control">
           <option value="promptfont" data-i18n="exp.promptfont">PromptFont（グリフ）</option>
           <option value="badge" data-i18n="exp.badge">テキストバッジ（CSS）</option>
         </select>
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.theme">スタイル:</span>
-        <select id="exportTheme" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+        <select id="exportTheme" onchange="updateExportPreview()" class="export-control">
           <option value="mono" data-i18n="exp.themeMono">モノクロ</option>
           <option value="color" data-i18n="exp.themeColor">カラー</option>
         </select>
@@ -318,28 +316,28 @@
     <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.fontSource">フォント参照先:</span>
-        <select id="exportFontSource" onchange="updateExportPreview()" style="background:#12121f;color:#ddd;border:1px solid #444;border-radius:4px;padding:4px 8px">
+        <select id="exportFontSource" onchange="updateExportPreview()" class="export-control">
           <option value="local" data-i18n="exp.fontLocal">ローカル（同フォルダ）</option>
           <option value="ghpages" data-i18n="exp.fontGhpages">GitHub Pages（URL参照）</option>
         </select>
       </label>
     </div>
-    <div id="exportFilenameHint" style="font-size:11px;color:#888;margin-bottom:8px"></div>
+    <div id="exportFilenameHint" class="modal-hint-text" style="margin-bottom:8px"></div>
     <div style="flex:1;overflow:auto;background:#fff;border-radius:6px;margin-bottom:12px;min-height:200px">
       <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="modal-btn" style="background:#5a5a6a" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
-      <button class="modal-btn" style="background:#6b7280" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
-      <button class="modal-btn" style="background:#7c3aed" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>
-      <button class="modal-btn" style="background:#2563eb" onclick="downloadHTML()" data-i18n="exp.saveHtml">💾 HTMLを保存</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
+      <button class="modal-btn modal-btn-neutral" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
+      <button class="modal-btn modal-btn-export" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>
+      <button class="modal-btn modal-btn-primary" onclick="downloadHTML()" data-i18n="exp.saveHtml">💾 HTMLを保存</button>
     </div>
   </div>
 </div>
 
 <!-- Status Bar -->
 <div id="status-bar">
-  <span class="status-dot" id="gpDot" style="background:#666"></span>
+  <span class="status-dot" id="gpDot" style="background:var(--text-disabled)"></span>
   <span id="gpStatus" data-i18n="status.noController">コントローラー未接続</span>
   <span class="toolbar-spacer"></span>
   <span data-i18n="status.shortcuts">Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>

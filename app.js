@@ -37,7 +37,7 @@ const I18N = {
     "gp.group.shoulder": "ショルダー",
     "gp.group.system":   "システム",
     "gp.group.dpad":     "十字キー",
-    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code style="color:#aaa">[LP1]</code>等と直接入力してください。',
+    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2（パドル）等はGamepad APIで取得できないため、マッピング欄に<code>[LP1]</code>等と直接入力してください。',
     "gp.newInput": "新しい入力:",
     "gp.noInput": "入力なし",
     "gp.cancel": "キャンセル",
@@ -147,7 +147,7 @@ const I18N = {
     "gp.group.shoulder": "Shoulder",
     "gp.group.system":   "System",
     "gp.group.dpad":     "D-Pad",
-    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code style="color:#aaa">[LP1]</code> etc. directly in the mapping field.',
+    "gp.paddleHint": '💡 LP1/LP2/RP1/RP2 (paddles) cannot be captured via Gamepad API. Type <code>[LP1]</code> etc. directly in the mapping field.',
     "gp.newInput": "New input:",
     "gp.noInput": "No input",
     "gp.cancel": "Cancel",
@@ -272,9 +272,9 @@ function translatePage() {
 function updateGamepadStatusText() {
   const gps = navigator.getGamepads ? navigator.getGamepads() : [];
   const gp = gps[0]||gps[1]||gps[2]||gps[3];
-  document.getElementById("gpDot").style.background = gp ? "#22c55e" : "#666";
+  document.getElementById("gpDot").style.background = gp ? "var(--status-connected)" : "var(--text-disabled)";
   document.getElementById("gpStatus").textContent = gp ? "🎮 " + (gp.id||"").substring(0,50) : t("status.noController");
-  document.getElementById("gpStatus").style.color = gp ? "#22c55e" : "#888";
+  document.getElementById("gpStatus").style.color = gp ? "var(--status-connected)" : "var(--text-dim)";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -428,7 +428,7 @@ const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY","LS:Right","LS:Left","LS:Up","L
 const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY","RS:Right","RS:Left","RS:Up","RS:Down"]);
 
 function getTypeLabels() { return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak") }; }
-const TYPE_COLORS = { category:"#f59e0b", mapping:"#60a5fa", separator:"#888", pagebreak:"#c084fc" };
+const TYPE_COLORS = { category:"var(--accent-yellow)", mapping:"var(--accent-blue)", separator:"var(--text-dim)", pagebreak:"var(--accent-violet)" };
 
 // ═══════════════════════════════════════════════════════════════════════════
 // UTILITY
@@ -632,7 +632,7 @@ function render() {
 
   let html = "";
   if (ordered.length === 0) {
-    html = `<div style="text-align:center;padding:40px;color:#777;font-size:13px">${t("list.empty")}</div>`;
+    html = `<div class="list-empty-msg">${t("list.empty")}</div>`;
   }
 
   for (const item of ordered) {
@@ -666,10 +666,10 @@ function render() {
       ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
       title="${t("drag.tooltip")}">⠿</div>`;
     // Type selector
-    html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'#aaa'}"
+    html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'var(--text-subtle)'}"
       onchange="updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
     for (const [k,v] of Object.entries(getTypeLabels())) {
-      html += `<option value="${k}" ${k===item.type?"selected":""} style="background:#252536;color:${TYPE_COLORS[k]}">${v}</option>`;
+      html += `<option value="${k}" ${k===item.type?"selected":""} style="background:var(--bg-ctx-menu);color:${TYPE_COLORS[k]}">${v}</option>`;
     }
     html += `</select></div>`;
 
@@ -686,9 +686,9 @@ function render() {
         if (hasKids) {
           html += `<span class="collapse-toggle${isCollapsed?' collapsed':''}" onclick="toggleCollapse(${item.id}, event)">${isCollapsed ? '▶' : '▼'}</span>`;
         } else {
-          html += `<span style="display:inline-block;width:16px;margin-right:2px;flex-shrink:0"></span>`;
+          html += `<span class="col-name-spacer"></span>`;
         }
-        html += `<span style="color:#f59e0b;margin-right:4px;font-size:12px;flex-shrink:0">📁</span>`;
+        html += `<span class="cat-folder-icon">📁</span>`;
       }
       html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
         placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
@@ -1024,9 +1024,9 @@ function onDragOver(e, targetId) {
   clearDropIndicators();
   const row = e.currentTarget;
   if (zone === "above") {
-    row.style.borderTop = "2px solid #60a5fa";
+    row.style.borderTop = "2px solid var(--accent-blue)";
   } else if (zone === "below") {
-    row.style.borderBottom = "2px solid #60a5fa";
+    row.style.borderBottom = "2px solid var(--accent-blue)";
   } else {
     row.classList.add("drop-child");
   }
@@ -1370,7 +1370,7 @@ function updateGamepadItemName() {
   if (item && item.mapping) {
     mapEl.innerHTML = mappingDisplayHTML(item.mapping);
   } else {
-    mapEl.innerHTML = `<span style="color:#777;font-size:12px">${t("gp.none")}</span>`;
+    mapEl.innerHTML = `<span class="empty-mapping-hint">${t("gp.none")}</span>`;
   }
 }
 function gamepadSkipNext() {
@@ -1405,14 +1405,13 @@ function renderGamepadButtonGrid() {
   }
 
   function grpRow(label, btnsHtml) {
-    return `<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">`
-         + `<div style="font-size:9px;color:#777;min-width:58px;text-align:right;`
-         + `padding-right:5px;white-space:nowrap;flex-shrink:0">${esc(label)}</div>`
-         + `<div style="display:flex;gap:3px;flex-wrap:wrap">${btnsHtml}</div>`
+    return `<div class="gp-btn-group-row">`
+         + `<div class="gp-group-label">${esc(label)}</div>`
+         + `<div class="gp-btn-group-buttons">${btnsHtml}</div>`
          + `</div>`;
   }
 
-  const sep = '<span style="width:4px;display:inline-block;border-left:1px solid #333;height:20px;align-self:center;margin:0 1px"></span>';
+  const sep = '<span class="gp-btn-sep"></span>';
 
   const html = [
     grpRow(t('gp.group.face'),
@@ -1493,10 +1492,10 @@ function gamepadAddButton(btn) {
 function renderGamepadDisplay() {
   const el = document.getElementById("gamepadDisplay");
   if (gamepadPressedButtons.length === 0) {
-    el.innerHTML = `<span style="color:#777;font-size:13px">${t("gp.noInput")}</span>`;
+    el.innerHTML = `<span class="empty-state-text">${t("gp.noInput")}</span>`;
   } else {
     el.innerHTML = gamepadPressedButtons.map((b,i) =>
-      (i > 0 ? '<span style="color:#888;margin:0 4px;font-size:14px">+</span>' : '') + buttonBadgeHTML(b)
+      (i > 0 ? '<span class="btn-combo-plus">+</span>' : '') + buttonBadgeHTML(b)
     ).join('');
   }
 }
@@ -1588,7 +1587,7 @@ function kbRemoveLast() {
 function renderKbDisplay() {
   const el = document.getElementById("kbDisplay");
   if (kbCapturedKeys.length === 0) {
-    el.innerHTML = `<span style="color:#777;font-size:13px">${t("kb.noInput")}</span>`;
+    el.innerHTML = `<span class="empty-state-text">${t("kb.noInput")}</span>`;
   } else {
     el.innerHTML = kbCapturedKeys.map(k => keyBadgeHTML(k)).join('');
   }
@@ -1606,7 +1605,7 @@ function updateKbItemInfo() {
   if (item && item.mapping) {
     mapEl.innerHTML = mappingDisplayHTML(item.mapping);
   } else {
-    mapEl.innerHTML = `<span style="color:#777;font-size:12px">${t("kb.none")}</span>`;
+    mapEl.innerHTML = `<span class="empty-mapping-hint">${t("kb.none")}</span>`;
   }
 }
 
