@@ -62,10 +62,12 @@
     --row-selected-bg: rgba(96,165,250,0.28);
     --row-drop-bg: rgba(96,165,250,0.35);
     --row-category-bg: rgba(245,158,11,0.06);  /* category row tint */
+    --row-category-hover-bg: rgba(245,158,11,0.12); /* category row hover */
 
     /* Accent / action buttons */
     --btn-accent: #2563eb;
     --btn-accent-hover: #1d4ed8;
+    --btn-accent-text: #fff;
     --btn-accent2: #7c3aed;
     --btn-accent2-hover: #6d28d9;
 
@@ -74,12 +76,22 @@
     --modal-btn-neutral: #6b7280;
     --modal-btn-skip: #4b5563;
     --modal-btn-apply-next: #16a34a;
+    --modal-btn-text: #fff;
 
     /* Status */
     --status-connected: #22c55e;
 
     /* Decorative */
     --deco-sep-color: #666;
+
+    /* Overlay */
+    --bg-overlay: rgba(0,0,0,0.6);
+
+    /* Misc interactive */
+    --collapse-hover-bg: rgba(255,255,255,0.08);
+    --btn-badge-border: rgba(255,255,255,0.15);
+    --kbd-hint-bg: rgba(255,255,255,0.12);
+    --kbd-hint-border: rgba(255,255,255,0.2);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -155,11 +167,12 @@
   }
   .toolbar-btn:hover { background: var(--bg-btn); }
   .toolbar-btn:disabled { opacity: 0.4; cursor: default; }
-  .toolbar-btn.accent { background: var(--btn-accent); border: none; }
+  .toolbar-btn.accent { background: var(--btn-accent); border: none; color: var(--btn-accent-text); }
   .toolbar-btn.accent:hover { background: var(--btn-accent-hover); }
   a.toolbar-btn { text-decoration: none; }
   a.toolbar-btn:visited { color: var(--text-primary); }
-  .toolbar-btn.accent2 { background: var(--btn-accent2); border: none; }
+  a.toolbar-btn.accent:visited { color: var(--btn-accent-text); }
+  .toolbar-btn.accent2 { background: var(--btn-accent2); border: none; color: var(--btn-accent-text); }
   .toolbar-btn.accent2:hover { background: var(--btn-accent2-hover); }
 
   /* ── Column Headers ── */
@@ -183,7 +196,7 @@
   }
   .item-row:hover { background: var(--row-hover-bg); }
   .item-row.is-category { background: var(--row-category-bg); }
-  .item-row.is-category:hover { background: rgba(245,158,11,0.12); }
+  .item-row.is-category:hover { background: var(--row-category-hover-bg); }
   .item-row.selected { background: var(--row-selected-bg); border-left-color: var(--accent-blue); }
   .drag-handle {
     width: 18px; flex-shrink: 0; cursor: grab; color: var(--text-faint);
@@ -251,7 +264,7 @@
     border-radius: 3px; line-height: 18px; vertical-align: middle;
     transition: color 0.15s;
   }
-  .collapse-toggle:hover { color: var(--text-primary); background: rgba(255,255,255,0.08); }
+  .collapse-toggle:hover { color: var(--text-primary); background: var(--collapse-hover-bg); }
 
   /* Tree connectors */
   .tree-guide {
@@ -299,7 +312,7 @@
     display: inline-flex; align-items: center; justify-content: center;
     padding: 1px 5px; border-radius: 4px; font-size: 11px; font-weight: 700;
     margin-right: 1px; min-width: 20px; line-height: 18px; font-family: monospace;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3); border: 1px solid var(--btn-badge-border);
   }
   .btn-plus { color: var(--text-dim); margin: 0 2px; font-size: 10px; }
   .key-badge {
@@ -386,7 +399,7 @@
 
   /* ── Modals ── */
   .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    display: none; position: fixed; inset: 0; background: var(--bg-overlay);
     align-items: center; justify-content: center; z-index: 1000;
   }
   .modal-overlay.show { display: flex; }
@@ -398,7 +411,7 @@
   .modal-subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
   .modal-btn {
     border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px;
-    font-weight: 600; cursor: pointer; color: #fff;
+    font-weight: 600; cursor: pointer; color: var(--modal-btn-text);
   }
   /* Modal button color variants */
   .modal-btn-cancel     { background: var(--modal-btn-cancel); }
@@ -514,7 +527,116 @@
     width: 8px; height: 8px; border-radius: 50%; display: inline-block;
   }
   .kbd-hint {
-    display: inline-block; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    display: inline-block; background: var(--kbd-hint-bg); border: 1px solid var(--kbd-hint-border);
     border-radius: 3px; padding: 0 4px; font-size: 10px; font-family: inherit;
     margin-left: 4px; line-height: 16px; vertical-align: middle; opacity: 0.7;
+  }
+
+  /* ── Light Theme ── */
+  [data-theme="light"] {
+    /* Base palette */
+    --bg-primary: #f7f7f8;
+    --bg-secondary: #efefef;
+    --bg-tertiary: #e8e8ec;
+    --bg-input: #ffffff;
+    --border: #d0d0d8;
+    --text-primary: #1a1a2e;
+    --text-secondary: #555570;
+    --text-muted: #888899;
+    --accent-blue: #2563eb;
+    --accent-purple: #7c3aed;
+    --accent-yellow: #d97706;
+    --accent-green: #059669;
+    --accent-violet: #7c3aed;
+
+    /* Text */
+    --text-highlight: #0369a1;
+    --text-dim: #666680;
+    --text-faint: #9999b8;
+    --text-subtle: #555568;
+    --text-disabled: #aaaaaa;
+
+    /* Borders */
+    --border-ui: #c4c4d4;
+    --border-ui-strong: #b4b4c8;
+    --border-raised: #c0c0d4;
+    --border-key: #a0a0b8;
+
+    /* Backgrounds */
+    --bg-ctx-menu: #ffffff;
+    --bg-paddle-hint: #fffbeb;
+    --bg-btn: #e2e2ee;
+    --bg-btn-hover: #d2d2e2;
+    --bg-key-hover: #c2c2d8;
+    --bg-key-active: #b2b2c8;
+
+    /* Shadows */
+    --shadow-key: #b0b0c4;
+
+    /* Tree connectors */
+    --tree-connector: #9090b8;
+
+    /* Row states */
+    --row-hover-bg: rgba(0,0,0,0.04);
+    --row-divider: rgba(0,0,0,0.07);
+    --row-selected-bg: rgba(37,99,235,0.14);
+    --row-drop-bg: rgba(37,99,235,0.22);
+    --row-category-bg: rgba(217,119,6,0.08);
+    --row-category-hover-bg: rgba(217,119,6,0.15);
+
+    /* Misc interactive */
+    --collapse-hover-bg: rgba(0,0,0,0.06);
+    --btn-badge-border: rgba(0,0,0,0.15);
+    --kbd-hint-bg: rgba(0,0,0,0.08);
+    --kbd-hint-border: rgba(0,0,0,0.15);
+
+    /* These remain white in light theme too — accent/modal btn backgrounds stay dark */
+    --btn-accent-text: #fff;
+    --modal-btn-text: #fff;
+
+    /* Overlay scrim — slightly lighter in light theme */
+    --bg-overlay: rgba(0,0,0,0.45);
+  }
+
+  /* ── Settings Modal ── */
+  .settings-section {
+    margin-bottom: 20px;
+  }
+  .settings-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .segment-control {
+    display: flex;
+    background: var(--bg-input);
+    border: 1px solid var(--border-ui);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+  .segment-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .segment-btn:hover {
+    color: var(--text-primary);
+    background: var(--row-hover-bg);
+  }
+  .segment-btn.active {
+    background: var(--bg-btn);
+    color: var(--text-primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }

@@ -51,7 +51,7 @@
     <option value="switch">🎮 Switch</option>
   </select>
   <span class="toolbar-sep"></span>
-  <button class="toolbar-btn" onclick="setLang(currentLang==='ja'?'en':'ja')" id="langBtn">🌐 EN</button>
+  <button class="toolbar-btn" id="settingsBtn" onclick="openSettingsModal()" aria-label="設定">⚙</button>
   <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="handleOpenCSV(event)">
 </div>
 
@@ -331,6 +331,30 @@
       <button class="modal-btn modal-btn-neutral" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
       <button class="modal-btn modal-btn-export" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>
       <button class="modal-btn modal-btn-primary" onclick="downloadHTML()" data-i18n="exp.saveHtml">💾 HTMLを保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal" onclick="handleSettingsOverlayClick(event)">
+  <div class="modal-box" style="min-width:300px;max-width:340px">
+    <div class="modal-title" data-i18n="settings.title">⚙ 設定</div>
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="settings.theme">テーマ</div>
+      <div class="segment-control" id="themeSegment">
+        <button class="segment-btn" data-value="dark" onclick="applyThemeAndSave('dark')" data-i18n="settings.theme.dark">🌙 ダーク</button>
+        <button class="segment-btn" data-value="light" onclick="applyThemeAndSave('light')" data-i18n="settings.theme.light">☀️ ライト</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label" data-i18n="settings.lang">言語 / Language</div>
+      <div class="segment-control" id="langSegment">
+        <button class="segment-btn" data-value="ja" onclick="setLang('ja')">日本語</button>
+        <button class="segment-btn" data-value="en" onclick="setLang('en')">English</button>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:4px">
+      <button class="modal-btn modal-btn-cancel" onclick="closeSettingsModal()" data-i18n="settings.close">閉じる</button>
     </div>
   </div>
 </div>

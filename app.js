@@ -117,6 +117,13 @@ const I18N = {
     "sample.placeholder": "📂 サンプルを開く",
     // Language
     "lang.label": "🌐",
+    // Settings Modal
+    "settings.title": "⚙ 設定",
+    "settings.theme": "テーマ",
+    "settings.theme.dark": "🌙 ダーク",
+    "settings.theme.light": "☀️ ライト",
+    "settings.lang": "言語 / Language",
+    "settings.close": "閉じる",
   },
   en: {
     "filename.tooltip": "Click to rename",
@@ -222,6 +229,13 @@ const I18N = {
     "confirm.loadSample": "Discard current data and load sample?",
     "sample.placeholder": "📂 Open Sample",
     "lang.label": "🌐",
+    // Settings Modal
+    "settings.title": "⚙ Settings",
+    "settings.theme": "Theme",
+    "settings.theme.dark": "🌙 Dark",
+    "settings.theme.light": "☀️ Light",
+    "settings.lang": "Language",
+    "settings.close": "Close",
   }
 };
 
@@ -247,7 +261,7 @@ function setLang(lang) {
   document.documentElement.lang = lang;
   translatePage();
   loadSamplesIndex(); // reload index for the new language
-  if (typeof updateLangButton === "function") updateLangButton();
+  updateLangSegment();
   render();
 }
 
@@ -2242,11 +2256,72 @@ render = function() {
   saveToLocalStorage();
 };
 
+// ── Theme ──────────────────────────────────────────────────────────────────
+
+let currentTheme = 'dark';
+
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+function applyThemeAndSave(theme) {
+  applyTheme(theme);
+  localStorage.setItem('mm_theme', theme);
+  updateThemeSegment();
+}
+
+// ── Settings Modal ─────────────────────────────────────────────────────────
+
+function openSettingsModal() {
+  updateThemeSegment();
+  updateLangSegment();
+  document.getElementById('settingsModal').classList.add('show');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+
+function handleSettingsOverlayClick(e) {
+  if (e.target === document.getElementById('settingsModal')) closeSettingsModal();
+}
+
+function updateThemeSegment() {
+  const seg = document.getElementById('themeSegment');
+  if (!seg) return;
+  seg.querySelectorAll('.segment-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.value === currentTheme);
+  });
+}
+
+function updateLangSegment() {
+  const seg = document.getElementById('langSegment');
+  if (!seg) return;
+  seg.querySelectorAll('.segment-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.value === currentLang);
+  });
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+
 currentLang = detectLang();
 document.documentElement.lang = currentLang;
 currentController = detectController();
+
+// Theme initialization: LocalStorage → OS prefers-color-scheme
+(function() {
+  const saved = localStorage.getItem('mm_theme');
+  if (saved === 'dark' || saved === 'light') {
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  }
+})();
+
 translatePage();
-updateLangButton();
+// Legacy: langBtn removed; segment is updated via openSettingsModal
 document.getElementById('controllerSelect').value = currentController;
 
 // Restore saved data or load tutorial
@@ -2267,7 +2342,3 @@ document.getElementById('controllerSelect').value = currentController;
   }
 })();
 
-function updateLangButton() {
-  const btn = document.getElementById("langBtn");
-  if (btn) btn.textContent = currentLang === "ja" ? "🌐 EN" : "🌐 日本語";
-}
