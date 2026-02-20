@@ -642,7 +642,7 @@ function render() {
     const isDeco = item.type === "separator" || item.type === "pagebreak";
     const treeHTML = getTreeConnectors(item, ordered);
 
-    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}" data-id="${item.id}" style="padding-left:8px"
+    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}${isCat ? ' is-category' : ''}" data-id="${item.id}" style="padding-left:8px"
       onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
       ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
       ondragleave="onDragLeave(event, ${item.id})">`;
