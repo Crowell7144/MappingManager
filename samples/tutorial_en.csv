@@ -38,9 +38,9 @@ id,parentId,type,name,mapping,exclude
 37,35,mapping,Modifier + key,{Ctrl}{C},0
 38,35,mapping,Arrow keys,{Up},0
 39,35,mapping,Function key,{F5},0
-40,,category,👁 Exclude from Output,,0
+40,,category,☑ Exclude from Output,,0
 41,40,mapping,This item is included,,0
-42,40,mapping,Click 👁 to exclude,,1
+42,40,mapping,Uncheck the checkbox to exclude from output,,1
 43,40,category,Whole category can be excluded,,1
 44,43,mapping,Children follow parent exclusion,,0
 70,,category,📄 Layout Elements,,0

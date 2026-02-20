@@ -63,6 +63,7 @@
     --row-drop-bg: rgba(96,165,250,0.35);
     --row-category-bg: rgba(245,158,11,0.06);  /* category row tint */
     --row-category-hover-bg: rgba(245,158,11,0.12); /* category row hover */
+    --row-excluded-bg: rgba(251,191,36,0.08);   /* ③ excluded row tint */
 
     /* Accent / action buttons */
     --btn-accent: #2563eb;
@@ -193,27 +194,61 @@
     display: flex; align-items: center; padding: 3px 8px;
     border-left: 2px solid transparent; border-bottom: 1px solid var(--row-divider);
     transition: background 0.1s; cursor: default;
+    position: relative; /* ② ドラッグハンドル絶対配置のため */
   }
   .item-row:hover { background: var(--row-hover-bg); }
   .item-row.is-category { background: var(--row-category-bg); }
   .item-row.is-category:hover { background: var(--row-category-hover-bg); }
-  .item-row.selected { background: var(--row-selected-bg); border-left-color: var(--accent-blue); }
+
+  /* ③ 除外行スタイル */
+  .item-row.is-excluded,
+  .item-row.is-excluded:hover {
+    background: var(--row-excluded-bg);
+  }
+  .item-row.is-inherited-exclude,
+  .item-row.is-inherited-exclude:hover {
+    background: var(--row-excluded-bg);
+  }
+  .item-row.is-excluded > .col-name,
+  .item-row.is-excluded > .col-mapping,
+  .item-row.is-excluded > .col-type {
+    opacity: 0.65;
+  }
+  .item-row.is-inherited-exclude > .col-name,
+  .item-row.is-inherited-exclude > .col-mapping,
+  .item-row.is-inherited-exclude > .col-type {
+    opacity: 0.45;
+  }
+
+  /* 選択状態は除外状態より優先（同一specificity → ソース順で後勝ち、複合クラスは明示指定） */
+  .item-row.selected,
+  .item-row.is-excluded.selected,
+  .item-row.is-inherited-exclude.selected {
+    background: var(--row-selected-bg);
+    border-left-color: var(--accent-blue);
+  }
+
+  /* ② ドラッグハンドル: 絶対左端固定 */
   .drag-handle {
-    width: 18px; flex-shrink: 0; cursor: grab; color: var(--text-faint);
+    position: absolute; left: 2px; top: 50%; transform: translateY(-50%);
+    width: 18px; cursor: grab; color: var(--text-faint);
     font-size: 14px; text-align: center; user-select: none;
-    line-height: 24px; margin-right: 2px; border-radius: 3px;
+    line-height: 18px; border-radius: 3px; flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
   }
   .drag-handle:hover { color: var(--text-subtle); background: var(--row-hover-bg); }
   .drag-handle:active { cursor: grabbing; }
+
+  /* ① 削除ボタン: 常時表示 (opacity:0 廃止) */
   .row-delete-btn {
     width: 22px; height: 22px; flex-shrink: 0; margin-left: 4px;
     background: transparent; border: none; border-radius: 4px;
-    color: var(--text-faint); font-size: 15px; line-height: 20px; cursor: pointer;
+    color: var(--text-muted); font-size: 15px; line-height: 20px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    opacity: 0; transition: opacity 0.15s, color 0.15s, background 0.15s;
+    transition: color 0.15s, background 0.15s;
   }
-  .item-row:hover .row-delete-btn { opacity: 1; }
   .row-delete-btn:hover { color: var(--danger-text); background: var(--danger-bg); }
+
   .item-row.drop-child {
     background: var(--row-drop-bg) !important;
     outline: 1px dashed var(--accent-blue);
@@ -222,24 +257,45 @@
   .item-row .col-type { width: 80px; flex-shrink: 0; margin-right: 6px; }
   .item-row .col-name { flex: 1; min-width: 0; margin-right: 8px; display: flex; align-items: center; }
   .item-row .col-mapping { width: 280px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; }
-  .item-row .col-output { width: 32px; flex-shrink: 0; text-align: center; }
+  .item-row .col-output { width: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
 
-  /* Output toggle */
-  .output-toggle {
-    background: transparent; border: 1px solid var(--text-faint); cursor: pointer;
-    width: 24px; height: 24px; border-radius: 4px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 14px; line-height: 1; padding: 0;
-    color: var(--accent-green);
-    transition: all 0.15s;
+  /* ③ 出力チェックボックス (output-toggle ボタン → カスタムチェックボックス) */
+  .output-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px; height: 16px; flex-shrink: 0;
+    border: 1.5px solid var(--text-faint);
+    border-radius: 3px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, background 0.15s;
+    vertical-align: middle;
   }
-  .output-toggle:hover { border-color: var(--text-dim); background: var(--row-hover-bg); }
-  .output-toggle.excluded {
-    color: var(--text-faint); border-color: var(--border-ui);
+  .output-checkbox:checked {
+    background: var(--accent-green);
+    border-color: var(--accent-green);
   }
-  .output-toggle.excluded:hover { border-color: var(--text-disabled); }
-  .output-toggle.inherited-exclude {
-    color: var(--border); border-color: var(--bg-btn); cursor: default;
+  .output-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 1px;
+    width: 4px; height: 8px;
+    border: 2px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+  }
+  .output-checkbox:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .output-checkbox:not(:disabled):hover {
+    border-color: var(--text-subtle);
+  }
+  .output-checkbox:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
   }
 
   .type-select {
@@ -359,6 +415,7 @@
   /* Decorative rows */
   .deco-line { flex: 1; height: 1px; background: var(--deco-sep-color); margin: 4px 0; }
   .item-row.is-separator { padding-top: 5px; padding-bottom: 5px; }
+  .deco-pagebreak { flex: 1; position: relative; height: 1px; background: var(--accent-violet); margin: 4px 0; opacity: 0.4; }
   .deco-pagebreak span {
     position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
     background: var(--bg-primary); padding: 0 6px; color: var(--accent-violet); font-size: 10px;
@@ -583,6 +640,7 @@
     --row-drop-bg: rgba(37,99,235,0.22);
     --row-category-bg: rgba(217,119,6,0.08);
     --row-category-hover-bg: rgba(217,119,6,0.15);
+    --row-excluded-bg: rgba(251,191,36,0.15); /* ③ ライトテーマの除外行 */
 
     /* Misc interactive */
     --collapse-hover-bg: rgba(0,0,0,0.06);

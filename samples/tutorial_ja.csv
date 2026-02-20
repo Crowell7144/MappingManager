@@ -38,9 +38,9 @@ id,parentId,type,name,mapping,exclude
 37,35,mapping,修飾キー＋キー,{Ctrl}{C},0
 38,35,mapping,方向キー,{Up},0
 39,35,mapping,ファンクションキー,{F5},0
-40,,category,👁 出力除外,,0
+40,,category,☑ 出力除外,,0
 41,40,mapping,このアイテムは出力されます,,0
-42,40,mapping,👁アイコンをクリックで除外,,1
+42,40,mapping,チェックボックスをOFFにすると出力から除外されます,,1
 43,40,category,カテゴリごと除外も可,,1
 44,43,mapping,親が除外されると子も除外,,0
 70,,category,📄 レイアウト要素,,0

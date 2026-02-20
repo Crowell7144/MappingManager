@@ -16,6 +16,7 @@ const I18N = {
     "col.name": "名前",
     "col.mapping": "マッピング",
     "col.parent": "親",
+    "col.output": "☑",
     // Add Buttons
     "add.mapping": "+ マッピング",
     "add.category": "+ カテゴリ",
@@ -136,6 +137,7 @@ const I18N = {
     "col.name": "Name",
     "col.mapping": "Mapping",
     "col.parent": "Parent",
+    "col.output": "☑",
     "add.mapping": "+ Mapping",
     "add.category": "+ Category",
     "add.separator": "+ Separator",
@@ -656,32 +658,41 @@ function render() {
     const isDeco = item.type === "separator" || item.type === "pagebreak";
     const treeHTML = getTreeConnectors(item, ordered);
 
-    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}${isCat ? ' is-category' : ''}" data-id="${item.id}" style="padding-left:8px"
+    // ③ 除外状態のクラスを計算
+    const isExcluded = !!item.exclude;
+    const ancestorExcluded = isAncestorExcluded(item.id);
+    const excludeClass = ancestorExcluded ? " is-inherited-exclude" : (isExcluded ? " is-excluded" : "");
+
+    // ② padding-left:24px でドラッグハンドル（absolute left:2px）の領域を確保
+    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}${isCat ? ' is-category' : ''}${excludeClass}" data-id="${item.id}" style="padding-left:24px"
       onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
       ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
       ondragleave="onDragLeave(event, ${item.id})">`;
 
-    // Output toggle (first column)
-    const isExcluded = !!item.exclude;
-    const ancestorExcluded = isAncestorExcluded(item.id);
-    const toggleClass = ancestorExcluded ? 'inherited-exclude' : (isExcluded ? 'excluded' : '');
+    // ② ドラッグハンドル: position:absolute で絶対左端固定
+    html += `<div class="drag-handle" draggable="true"
+      ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
+      title="${t("drag.tooltip")}">⠿</div>`;
+
+    // ③ 出力チェックボックス (output-toggle ボタン → カスタムチェックボックス)
+    const checkboxChecked = (!isExcluded && !ancestorExcluded) ? 'checked' : '';
+    const checkboxDisabled = ancestorExcluded ? 'disabled' : '';
     const toggleTitle = ancestorExcluded ? t('output.inheritedOff') : (isExcluded ? t('output.off') : t('output.on'));
-    if (ancestorExcluded) {
-      html += `<div class="col-output"><button class="output-toggle ${toggleClass}" title="${toggleTitle}" onclick="event.stopPropagation()">👁</button></div>`;
-    } else {
-      html += `<div class="col-output"><button class="output-toggle ${toggleClass}" title="${toggleTitle}" onclick="toggleExclude(${item.id}); event.stopPropagation()">👁</button></div>`;
-    }
+    const checkboxOnclick = ancestorExcluded
+      ? `onclick="event.stopPropagation()"`
+      : `onclick="toggleExclude(${item.id}); event.stopPropagation()"`;
+    html += `<div class="col-output"><input type="checkbox" class="output-checkbox"
+      ${checkboxChecked} ${checkboxDisabled}
+      aria-label="${esc(toggleTitle)}" title="${esc(toggleTitle)}"
+      ${checkboxOnclick}></div>`;
 
     // Tree connectors
     html += treeHTML;
 
-    // Drag handle
-    html += `<div class="drag-handle" draggable="true"
-      ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
-      title="${t("drag.tooltip")}">⠿</div>`;
     // Type selector
+    // ④ type-select: onchange で selectedId を更新してから updateItem
     html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'var(--text-subtle)'}"
-      onchange="updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
+      onchange="selectedId=${item.id}; updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
     for (const [k,v] of Object.entries(getTypeLabels())) {
       html += `<option value="${k}" ${k===item.type?"selected":""} style="background:var(--bg-ctx-menu);color:${TYPE_COLORS[k]}">${v}</option>`;
     }
@@ -704,9 +715,11 @@ function render() {
         }
         html += `<span class="cat-folder-icon">📁</span>`;
       }
+      // ④ name-input: onclick で selectItemNoRender を呼び出し（renderせずに選択状態を即反映）
       html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
         placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
-        onchange="updateItem(${item.id}, 'name', this.value)" onclick="event.stopPropagation()"
+        onchange="updateItem(${item.id}, 'name', this.value)"
+        onclick="selectItemNoRender(${item.id}); event.stopPropagation()"
         onkeydown="handleNameInputKeydown(event, ${item.id})">`;
       html += `</div>`;
 
@@ -714,12 +727,14 @@ function render() {
       if (isMap) {
         const badges = mappingDisplayHTML(item.mapping);
         html += `<div class="col-mapping">`;
+        // ④ mapping-box: onclick で selectItemNoRender を呼び出し（renderせずに選択状態を即反映）
         html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
-          onclick="startMappingEdit(${item.id}); event.stopPropagation()">`;
+          onclick="selectItemNoRender(${item.id}); startMappingEdit(${item.id}); event.stopPropagation()">`;
         html += badges || t('mapping.clickToEdit');
         html += `</div>`;
-        html += `<button class="gamepad-btn" onclick="openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
-        html += `<button class="gamepad-btn" onclick="openKeyboardModal(${item.id}); event.stopPropagation()" title="${t('keyboard.tooltip')}">⌨️</button>`;
+        // ④ gamepad/keyboard ボタン: selectItemNoRender で選択状態を即反映
+        html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
+        html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openKeyboardModal(${item.id}); event.stopPropagation()" title="${t('keyboard.tooltip')}">⌨️</button>`;
         html += `</div>`;
       } else {
         html += `<div class="col-mapping"></div>`;
@@ -728,7 +743,7 @@ function render() {
       // Parent select removed — use drag-and-drop for re-parenting
     }
 
-    // Delete button
+    // ① 削除ボタン: 常時表示（opacity:0 廃止済み）
     html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="${t('delete.tooltip')}">×</button>`;
 
     html += `</div>`;
@@ -764,6 +779,21 @@ function updateItem(id, field, value) {
   if (item) { item[field] = value; render(); }
 }
 function selectItem(id) { selectedId = id; render(); }
+
+// ④ フォーカスを失わずに選択状態をDOM上で即反映する軽量版 select
+// render() を呼ばないため、テキスト入力中・インライン編集中でも安全に使用できる
+function selectItemNoRender(id) {
+  if (selectedId === id) return;
+  // 前の選択行から selected クラスを取り除く
+  if (selectedId !== null) {
+    const prevRow = document.querySelector(`.item-row[data-id="${selectedId}"]`);
+    if (prevRow) prevRow.classList.remove('selected');
+  }
+  selectedId = id;
+  // 新しい選択行に selected クラスを付与
+  const newRow = document.querySelector(`.item-row[data-id="${id}"]`);
+  if (newRow) newRow.classList.add('selected');
+}
 
 function scrollSelectedIntoView() {
   requestAnimationFrame(() => {
@@ -1182,7 +1212,8 @@ function finishMappingEdit(id, value) {
 
 function showContextMenu(e, id) {
   e.preventDefault(); e.stopPropagation();
-  selectedId = id;
+  // ④ コンテキストメニューを開いた際も選択ハイライトを即時反映
+  selectItemNoRender(id);
   const menu = document.getElementById("ctx-menu");
   const hasClip = !!clipboard;
   menu.innerHTML = `
@@ -2202,7 +2233,7 @@ setInterval(() => {
 document.addEventListener("keydown", e => {
   if (e.ctrlKey && e.key === "z") { e.preventDefault(); undo(); }
   if (e.ctrlKey && e.key === "s") { e.preventDefault(); saveCSV(); }
-  if (e.key === "Delete" && selectedId && (e.target === document.body || e.target.tagName === "DIV")) { deleteItem(selectedId); }
+  // ④ Deleteキーによる削除は廃止（削除は削除ボタンのみ）
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2341,4 +2372,3 @@ document.getElementById('controllerSelect').value = currentController;
     render();
   }
 })();
-
