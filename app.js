@@ -129,7 +129,7 @@ const I18N = {
     "exp.themeNavy": "ネイビー",
     "exp.themeRecommended": "推奨設定",
     // Meta block
-    "meta.saveRecommended": "推奨設定を保存する",
+    "meta.saveRecommended": "推奨設定に保存する",
     "meta.useRecommended": "推奨値を使用",
     "meta.recommendedPrefix": "📌 推奨値",
     "meta.userSample": "自由にコメントを書くことが出来ます",
@@ -250,7 +250,7 @@ const I18N = {
     "exp.themeNavy": "Navy",
     "exp.themeRecommended": "Recommended",
     // Meta block
-    "meta.saveRecommended": "Save Recommended Settings",
+    "meta.saveRecommended": "Save to Recommended Settings",
     "meta.useRecommended": "Use Recommended Settings",
     "meta.recommendedPrefix": "📌 Recommended",
     "meta.userSample": "You can write free-form comments here",
@@ -2416,6 +2416,15 @@ function showExportModal() {
   const hasMeta = hasMetaSettings();
   const recRow = document.getElementById("exportRecommendedRow");
   if (recRow) recRow.style.display = hasMeta ? "flex" : "none";
+
+  // exportTheme の「推奨設定」オプションをメタ設定の有無で制御
+  const themeSelect = document.getElementById("exportTheme");
+  const recOpt = themeSelect ? themeSelect.querySelector('option[value="recommended"]') : null;
+  if (recOpt) {
+    recOpt.style.display = hasMeta ? "" : "none";
+    // 推奨設定がない状態で "recommended" が選択されていたら "mono" に戻す
+    if (!hasMeta && themeSelect.value === "recommended") themeSelect.value = "mono";
+  }
 
   // 「推奨値を使用」チェックボックスの状態を復元（推奨設定がある場合のみ）
   const cb = document.getElementById("exportUseRecommended");
