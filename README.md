@@ -1,6 +1,6 @@
 # Mapping Manager
 
-![](docs/screenshot.png)
+![Mapping Manager](docs/ogp.png)
 
 [日本語はこちら / Japanese](#mapping-manager-ja)
 
@@ -130,6 +130,21 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
 The generated CSV can be loaded directly via the **📂 Open** menu in Mapping Manager.
+
+---
+
+## Sharing Cheat Sheets via Gist
+
+You can share your cheat sheet as a permanent URL — the recipient needs no GitHub account to view it.
+
+**Demo:** https://crowell7144.github.io/MappingManager/?gist=702366383f76a86798859d560e3b2f28&export=1
+
+1. Click **📋 Copy CSV** to copy your current data to the clipboard
+2. Go to [gist.github.com](https://gist.github.com), paste the CSV, and click **Create Gist** (a GitHub account is required to create a Gist)
+3. In Mapping Manager, click **📂 Open → Load from Gist** and enter the Gist URL
+4. A shareable URL will appear in the success dialog — send it to anyone
+
+The recipient opens the URL and sees the cheat sheet in full-screen view. They can also click the **🎮 Edit in Mapping Manager** link at the top to return to the editor.
 
 ---
 
@@ -273,6 +288,21 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
 生成されたCSVは、Mapping Manager の **📂 開く** メニューから直接読み込めます。
+
+---
+
+## Gistでチートシートを共有する
+
+作成したチートシートを、永続的なURLで共有できます。受け取る側はGitHubアカウント不要です。
+
+**デモ:** https://crowell7144.github.io/MappingManager/?gist=702366383f76a86798859d560e3b2f28&export=1
+
+1. **📋 CSVコピー** ボタンで現在のデータをクリップボードにコピー
+2. [gist.github.com](https://gist.github.com) でCSVを貼り付け、**Create Gist** で保存（Gist作成にはGitHubアカウントが必要）
+3. Mapping Manager で **📂 開く → Gistから読み込む** を選択し、GistのURLを入力
+4. 完了ダイアログに共有URLが表示されるので、相手に送る
+
+受け取った側はURLを開くとチートシートが全画面表示されます。上部の **🎮 Mapping Manager で編集** リンクから編集画面に戻ることもできます。
 
 ---
 
