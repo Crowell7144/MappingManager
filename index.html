@@ -31,10 +31,16 @@
     onblur="finishFileNameEdit()" onkeydown="if(event.key==='Enter')this.blur();if(event.key==='Escape'){this.value=fileName;this.blur();}">
   <span class="toolbar-spacer"></span>
   <button class="toolbar-btn" onclick="handleNew()" data-i18n="btn.new">📄 新規</button>
-  <button class="toolbar-btn" onclick="openCSV()" data-i18n="btn.openCsv">📂 CSV読込</button>
-  <select id="sampleSelect" onchange="loadSampleFile(this.value)">
-    <option value="" data-i18n="sample.placeholder">📂 サンプルを開く</option>
-  </select>
+  <div class="open-menu-wrap" id="openMenuWrap">
+    <button class="toolbar-btn open-menu-trigger" id="openMenuBtn" onclick="toggleOpenMenu()" data-i18n="btn.open">📂 開く ▾</button>
+    <div class="open-menu-dropdown" id="openMenuDropdown">
+      <button class="open-menu-item" onclick="openMenuAction('csv')" data-i18n="btn.openCsv">📂 CSVファイルを開く</button>
+      <button class="open-menu-item" onclick="openMenuAction('gist')" data-i18n="btn.gistLoad">🔗 Gistから読み込む</button>
+      <div class="open-menu-sep"></div>
+      <div id="openMenuSamples"><!-- dynamically built --></div>
+    </div>
+  </div>
+  <button class="toolbar-btn" id="csvCopyBtn" onclick="copyCsvToClipboard('csvCopyBtn')" data-i18n="btn.copyCsv">📋 CSVコピー</button>
   <a id="saveCsvBtn" class="toolbar-btn accent" href="#" data-i18n="btn.saveCsv"
     onclick="handleSaveCSVClick(event)"
     onmouseenter="refreshSaveCsvHref()"
@@ -375,6 +381,45 @@
   <span id="gpStatus" data-i18n="status.noController">コントローラー未接続</span>
   <span class="toolbar-spacer"></span>
   <span data-i18n="status.shortcuts">Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー</span>
+</div>
+
+<!-- Gist Load Dialog -->
+<div class="modal-overlay" id="gistModal">
+  <div class="modal-box" style="min-width:480px;max-width:560px">
+    <div class="modal-title" data-i18n="gist.title">🔗 Gist読込</div>
+    <input type="text" id="gistUrlInput" class="gist-url-input" data-i18n-placeholder="gist.placeholder">
+    <div id="gistDialogError" class="gist-error" style="display:none"></div>
+    <div id="gistDialogLoading" class="gist-loading" style="display:none" data-i18n="gist.loading">読み込み中...</div>
+    <div class="modal-actions" style="margin-top:10px;margin-bottom:16px">
+      <button class="modal-btn modal-btn-cancel" onclick="closeGistDialog()" data-i18n="gist.cancel">キャンセル</button>
+      <button class="modal-btn modal-btn-primary" onclick="handleGistLoad()" data-i18n="gist.load">読み込む</button>
+    </div>
+    <div class="gist-share-section">
+      <div class="gist-share-section-title" data-i18n="gist.shareTitle">📤 現在のデータをGistで共有するには</div>
+      <ol class="gist-steps">
+        <li data-i18n="gist.step1">「📋 CSVコピー」ボタンでデータをコピー</li>
+        <li><a href="https://gist.github.com" target="_blank" rel="noopener" data-i18n="gist.step2link">gist.github.com</a><span data-i18n="gist.step2rest"> でCSVを貼り付けてCreate Gistで保存</span></li>
+        <li data-i18n="gist.step3">GistのURLをコピーして上の入力欄に貼り付けて読み込む</li>
+        <li data-i18n="gist.step4">完了画面に表示される共有URLを相手に送る</li>
+      </ol>
+      <button class="toolbar-btn" id="gistDialogCopyBtn" onclick="copyCsvToClipboard('gistDialogCopyBtn')" data-i18n="btn.copyCsv">📋 CSVコピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Gist Success Modal -->
+<div class="modal-overlay" id="gistSuccessModal">
+  <div class="modal-box" style="min-width:420px;max-width:540px">
+    <div class="modal-title" data-i18n="gist.successTitle">✅ 読み込み完了</div>
+    <p class="gist-success-msg" data-i18n="gist.successMsg">データを読み込みました。以下のURLで共有できます：</p>
+    <div class="gist-share-url-box">
+      <span id="gistShareUrlText" class="gist-share-url-text"></span>
+    </div>
+    <div class="modal-actions" style="margin-top:14px">
+      <button class="modal-btn modal-btn-neutral" id="gistShareCopyBtn" onclick="copyGistShareUrl()" data-i18n="gist.copyUrl">📋 URLをコピー</button>
+      <button class="modal-btn modal-btn-primary" onclick="closeGistSuccessModal()" data-i18n="gist.close">閉じる</button>
+    </div>
+  </div>
 </div>
 
 <script src="app.js"></script>

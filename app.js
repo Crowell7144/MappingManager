@@ -7,7 +7,9 @@ const I18N = {
     // Header / Toolbar
     "filename.tooltip": "クリックしてファイル名を変更",
     "btn.new": "📄 新規",
-    "btn.openCsv": "📂 CSV読込",
+    "btn.open": "📂 開く ▾",
+    "btn.openCsv": "📂 CSVファイルを開く",
+    "btn.openSamples": "サンプル",
     "btn.saveCsv": "💾 CSV保存",
     "btn.export": "📄 チートシート出力",
     "btn.undo": "↩ 元に戻す",
@@ -133,11 +135,40 @@ const I18N = {
     "meta.useRecommended": "推奨値を使用",
     "meta.recommendedPrefix": "📌 推奨値",
     "meta.userSample": "自由にコメントを書くことが出来ます",
+    // Gist feature
+    "btn.copyCsv":        "📋 CSVコピー",
+    "btn.copyCsvDone":    "✅ コピー済",
+    "btn.gistLoad":       "🔗 Gist読込",
+    "gist.title":         "🔗 Gist読込",
+    "gist.step1":         "「📋 CSVコピー」ボタンでデータをコピー",
+    "gist.step2link":     "gist.github.com",
+    "gist.step2rest":     " でCSVを貼り付けてCreate Gistで保存",
+    "gist.step3":         "GistのURLをコピーして上の入力欄に貼り付けて読み込む",
+    "gist.step4":         "完了画面に表示される共有URLを相手に送る",
+    "gist.shareTitle":    "📤 現在のデータをGistで共有するには",
+    "gist.placeholder":   "https://gist.github.com/username/abc123def456 または abc123def456",
+    "gist.loading":       "読み込み中...",
+    "gist.cancel":        "キャンセル",
+    "gist.load":          "読み込む",
+    "gist.successTitle":  "✅ 読み込み完了",
+    "gist.successMsg":    "データを読み込みました。以下のURLで共有できます：",
+    "gist.copyUrl":       "📋 URLをコピー",
+    "gist.copyUrlDone":   "✅ コピー済",
+    "gist.close":         "閉じる",
+    "gist.err.empty":     "URLまたはGist IDを入力してください。",
+    "gist.err.invalid":   "有効なGist IDが見つかりませんでした。",
+    "gist.err.tooBig":    "データが大きすぎます（上限500KB）。",
+    "gist.err.noFile":    "GistにCSVファイルが見つかりませんでした。",
+    "gist.err.badDomain": "取得先URLのドメインが不正です。",
+    "gist.err.fetch":     "データの取得に失敗しました。Gistが公開設定か確認してください。",
+    "gist.confirm":       "現在のデータを破棄してGistのデータを読み込みますか？",
   },
   en: {
     "filename.tooltip": "Click to rename",
     "btn.new": "📄 New",
-    "btn.openCsv": "📂 Open CSV",
+    "btn.open": "📂 Open ▾",
+    "btn.openCsv": "📂 Open CSV file",
+    "btn.openSamples": "Samples",
     "btn.saveCsv": "💾 Save CSV",
     "btn.export": "📄 Export Cheatsheet",
     "btn.undo": "↩ Undo",
@@ -254,6 +285,33 @@ const I18N = {
     "meta.useRecommended": "Use Recommended Settings",
     "meta.recommendedPrefix": "📌 Recommended",
     "meta.userSample": "You can write free-form comments here",
+    // Gist feature
+    "btn.copyCsv":        "📋 Copy CSV",
+    "btn.copyCsvDone":    "✅ Copied",
+    "btn.gistLoad":       "🔗 Load Gist",
+    "gist.title":         "🔗 Load from Gist",
+    "gist.step1":         "Click \"📋 Copy CSV\" to copy your data",
+    "gist.step2link":     "gist.github.com",
+    "gist.step2rest":     " — paste the CSV and click Create Gist",
+    "gist.step3":         "Paste the Gist URL into the field above and click Load",
+    "gist.step4":         "Send the share URL shown on the completion screen",
+    "gist.shareTitle":    "📤 Share your data via Gist",
+    "gist.placeholder":   "https://gist.github.com/username/abc123def456 or abc123def456",
+    "gist.loading":       "Loading...",
+    "gist.cancel":        "Cancel",
+    "gist.load":          "Load",
+    "gist.successTitle":  "✅ Loaded",
+    "gist.successMsg":    "Data loaded successfully. Share with this URL:",
+    "gist.copyUrl":       "📋 Copy URL",
+    "gist.copyUrlDone":   "✅ Copied",
+    "gist.close":         "Close",
+    "gist.err.empty":     "Please enter a URL or Gist ID.",
+    "gist.err.invalid":   "Could not find a valid Gist ID.",
+    "gist.err.tooBig":    "Data is too large (limit: 500KB).",
+    "gist.err.noFile":    "No CSV file found in this Gist.",
+    "gist.err.badDomain": "Unexpected domain in the response URL.",
+    "gist.err.fetch":     "Failed to fetch data. Make sure the Gist is public or secret.",
+    "gist.confirm":       "Discard current data and load from Gist?",
   }
 };
 
@@ -577,10 +635,24 @@ function csvParseLine(line) {
   result.push(current);
   return result;
 }
+function getAllItemsOrdered() {
+  // 折り畳み状態を無視して全アイテムを深さ優先順で返す（CSV保存用）
+  const result = [], inResult = new Set();
+  function add(item) {
+    result.push(item);
+    inResult.add(item.id);
+    items.filter(it => it.parentId === item.id).forEach(child => add(child));
+  }
+  items.filter(it => !it.parentId).forEach(item => add(item));
+  // 孤立アイテム（親が存在しない）を末尾に追加
+  items.forEach(it => { if (!inResult.has(it.id)) result.push(it); });
+  return result;
+}
+
 function itemsToCSV() {
   const header = "id,parentId,type,name,mapping,exclude";
-  // 表示順（深さ優先）でIDを1から振り直す（メモリ上のデータは変更しない）
-  const ordered = getOrderedItems();
+  // 折り畳み状態を無視した表示順（深さ優先）でIDを1から振り直す（メモリ上のデータは変更しない）
+  const ordered = getAllItemsOrdered();
   const idMap = new Map(); // 旧ID → 新ID
   ordered.forEach((it, i) => idMap.set(it.id, i + 1));
   // idMapに含まれない孤立アイテムも元のIDのまま末尾に出力
@@ -1566,6 +1638,213 @@ function saveCSV() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// GIST LOAD & CSV COPY
+// ═══════════════════════════════════════════════════════════════════════════
+
+const GIST_SIZE_LIMIT = 500 * 1024; // 500KB
+
+/** クリップボードに現在のCSVをコピーし、ボタンを一時的に「コピー済」にする */
+function copyCsvToClipboard(btnId) {
+  const csv = itemsToCSV();
+  navigator.clipboard.writeText(csv).then(() => {
+    // 全「CSVコピー」ボタンのラベルを一時変更
+    const ids = btnId ? [btnId] : ['csvCopyBtn', 'gistDialogCopyBtn'];
+    const targets = ids.map(id => document.getElementById(id)).filter(Boolean);
+    targets.forEach(btn => { btn.textContent = t('btn.copyCsvDone'); });
+    setTimeout(() => {
+      targets.forEach(btn => { btn.textContent = t('btn.copyCsv'); });
+    }, 1800);
+  }).catch(() => {
+    // クリップボードAPIが使えない場合のフォールバック
+    const ta = document.createElement('textarea');
+    ta.value = csv; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+/** 入力文字列からGist IDを抽出する */
+function extractGistId(input) {
+  if (!input) return null;
+  input = input.trim();
+  // Pure Gist ID (hex string, 20-40 chars)
+  if (/^[0-9a-f]{10,40}$/i.test(input)) return input;
+  // gist.github.com/username/ID or gist.github.com/ID
+  let m = input.match(/gist\.github(?:usercontent)?\.com\/(?:[^/]+\/)?([0-9a-f]{10,40})/i);
+  if (m) return m[1];
+  // raw URL pattern
+  m = input.match(/\/([0-9a-f]{10,40})(?:\/raw|\/blob|$)/i);
+  if (m) return m[1];
+  return null;
+}
+
+/** Gist IDからデータを読み込んでアプリに反映する（共通処理） */
+async function loadFromGistId(gistId) {
+  // 1. GitHub API でメタデータ取得
+  const apiUrl = `https://api.github.com/gists/${gistId}`;
+  let apiRes;
+  try {
+    apiRes = await fetch(apiUrl);
+  } catch(e) {
+    throw new Error(t('gist.err.fetch'));
+  }
+  if (!apiRes.ok) throw new Error(t('gist.err.fetch'));
+
+  let gistData;
+  try { gistData = await apiRes.json(); } catch(e) { throw new Error(t('gist.err.fetch')); }
+
+  // 2. CSVファイルを探す（最初に見つかったファイルを使用）
+  const files = gistData.files || {};
+  const csvEntry = Object.values(files).find(f =>
+    f.filename && f.filename.toLowerCase().endsWith('.csv')
+  ) || Object.values(files)[0];
+  if (!csvEntry) throw new Error(t('gist.err.noFile'));
+
+  // 3. raw_url のドメイン検証
+  const rawUrl = csvEntry.raw_url;
+  if (!rawUrl) throw new Error(t('gist.err.noFile'));
+  let rawHost;
+  try { rawHost = new URL(rawUrl).hostname; } catch(e) { throw new Error(t('gist.err.badDomain')); }
+  if (rawHost !== 'gist.githubusercontent.com') throw new Error(t('gist.err.badDomain'));
+
+  // 4. Rawコンテンツ取得
+  let rawRes;
+  try { rawRes = await fetch(rawUrl); } catch(e) { throw new Error(t('gist.err.fetch')); }
+  if (!rawRes.ok) throw new Error(t('gist.err.fetch'));
+
+  // 5. サイズチェック
+  const contentLength = rawRes.headers.get('content-length');
+  if (contentLength && parseInt(contentLength) > GIST_SIZE_LIMIT) throw new Error(t('gist.err.tooBig'));
+  const text = await rawRes.text();
+  if (text.length > GIST_SIZE_LIMIT) throw new Error(t('gist.err.tooBig'));
+
+  // 6. データ読み込み
+  items = csvToItems(text);
+  undoStack = [];
+  const baseName = csvEntry.filename || 'gist.csv';
+  setFileName(baseName);
+  collapseMetaRootIfExists();
+  applyRecommendedCtrlIfExists();
+  saveToLocalStorage();
+  render();
+
+  // 7. 共有URL生成
+  const shareUrl = new URL(window.location.href);
+  shareUrl.search = ''; // 既存パラメータをクリア
+  shareUrl.searchParams.set('gist', gistId);
+  return shareUrl.toString();
+}
+
+// ── Gist Dialog ────────────────────────────────────────────────────────────
+
+function openGistDialog() {
+  const inp = document.getElementById('gistUrlInput');
+  if (inp) inp.value = '';
+  setGistError('');
+  setGistLoading(false);
+  translateGistDialog();
+  document.getElementById('gistModal').classList.add('show');
+  if (inp) inp.focus();
+}
+
+function closeGistDialog() {
+  document.getElementById('gistModal').classList.remove('show');
+}
+
+function translateGistDialog() {
+  // placeholder は data-i18n-placeholder で translatePage() が処理するが、
+  // ダイアログ開閉時にも確実に反映させる
+  const inp = document.getElementById('gistUrlInput');
+  if (inp) inp.placeholder = t('gist.placeholder');
+}
+
+function setGistError(msg) {
+  const el = document.getElementById('gistDialogError');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+}
+
+function setGistLoading(on) {
+  const el = document.getElementById('gistDialogLoading');
+  if (el) el.style.display = on ? '' : 'none';
+  const btn = document.querySelector('#gistModal .modal-btn-primary');
+  if (btn) btn.disabled = on;
+}
+
+async function handleGistLoad() {
+  const input = (document.getElementById('gistUrlInput').value || '').trim();
+  if (!input) { setGistError(t('gist.err.empty')); return; }
+
+  const gistId = extractGistId(input);
+  if (!gistId) { setGistError(t('gist.err.invalid')); return; }
+
+  if (items.length > 0 && !confirm(t('gist.confirm'))) return;
+
+  setGistError('');
+  setGistLoading(true);
+  try {
+    const shareUrl = await loadFromGistId(gistId);
+    closeGistDialog();
+    showGistSuccessModal(shareUrl);
+  } catch(e) {
+    setGistError(e.message || t('gist.err.fetch'));
+  } finally {
+    setGistLoading(false);
+  }
+}
+
+// ── Gist Success Modal ─────────────────────────────────────────────────────
+
+function showGistSuccessModal(shareUrl) {
+  const el = document.getElementById('gistShareUrlText');
+  if (el) el.textContent = shareUrl;
+  // コピーボタンをリセット
+  const copyBtn = document.getElementById('gistShareCopyBtn');
+  if (copyBtn) copyBtn.textContent = t('gist.copyUrl');
+  document.getElementById('gistSuccessModal').classList.add('show');
+}
+
+function closeGistSuccessModal() {
+  document.getElementById('gistSuccessModal').classList.remove('show');
+}
+
+function copyGistShareUrl() {
+  const text = document.getElementById('gistShareUrlText').textContent;
+  navigator.clipboard.writeText(text).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+  });
+  const btn = document.getElementById('gistShareCopyBtn');
+  if (btn) {
+    btn.textContent = t('gist.copyUrlDone');
+    setTimeout(() => { btn.textContent = t('gist.copyUrl'); }, 1800);
+  }
+}
+
+// ── GETパラメータ ?gist= の自動読み込み ────────────────────────────────────
+
+async function tryAutoLoadGist() {
+  const params = new URLSearchParams(window.location.search);
+  const gistId = params.get('gist');
+  if (!gistId) return false;
+  // URLからgistパラメータを除去（履歴は汚さない）
+  const cleanUrl = new URL(window.location.href);
+  cleanUrl.searchParams.delete('gist');
+  history.replaceState(null, '', cleanUrl);
+  try {
+    const shareUrl = await loadFromGistId(gistId);
+    showGistSuccessModal(shareUrl);
+  } catch(e) {
+    alert(`Gist load error: ${e.message}`);
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // SAMPLE LOADER
 // ═══════════════════════════════════════════════════════════════════════════
 
@@ -1584,39 +1863,40 @@ async function loadSamplesIndex() {
 }
 
 function buildSampleDropdown() {
-  const sel = document.getElementById('sampleSelect');
-  if (!sel) return;
-  // Keep the placeholder option
-  while (sel.options.length > 1) sel.remove(1);
-  for (const s of samplesIndex) {
-    // langs指定がある場合は現在の言語が含まれているか確認（省略時は両言語で表示）
-    if (s.langs && !s.langs.includes(currentLang)) continue;
-
-    // nameがオブジェクトの場合は現在の言語を優先して取得、文字列の場合はそのまま使用
-    const name = typeof s.name === 'object'
-      ? (s.name[currentLang] || s.name.ja || s.name.en || '')
-      : s.name;
-
-    // fileがオブジェクトの場合は現在の言語のパスを取得、文字列の場合はそのまま使用
+  const container = document.getElementById('openMenuSamples');
+  if (!container) return;
+  container.innerHTML = '';
+  const filtered = samplesIndex.filter(s => {
+    if (s.langs && !s.langs.includes(currentLang)) return false;
     const file = typeof s.file === 'object'
       ? (s.file[currentLang] || s.file.ja || s.file.en || '')
       : s.file;
-
-    if (!file) continue;
-
-    const opt = document.createElement('option');
-    opt.value = file;
-    opt.textContent = name;
-    sel.appendChild(opt);
+    return !!file;
+  });
+  if (filtered.length === 0) return;
+  // セクションラベル
+  const label = document.createElement('div');
+  label.className = 'open-menu-section-label';
+  label.textContent = t('btn.openSamples');
+  container.appendChild(label);
+  for (const s of filtered) {
+    const name = typeof s.name === 'object'
+      ? (s.name[currentLang] || s.name.ja || s.name.en || '')
+      : s.name;
+    const file = typeof s.file === 'object'
+      ? (s.file[currentLang] || s.file.ja || s.file.en || '')
+      : s.file;
+    const btn = document.createElement('button');
+    btn.className = 'open-menu-item open-menu-item-sample';
+    btn.textContent = '📄 ' + name;
+    btn.onclick = () => { closeOpenMenu(); loadSampleFile(file); };
+    container.appendChild(btn);
   }
 }
 
 async function loadSampleFile(fileUrl) {
   if (!fileUrl) return;
-  if (items.length > 0 && !confirm(t('confirm.loadSample'))) {
-    document.getElementById('sampleSelect').value = '';
-    return;
-  }
+  if (items.length > 0 && !confirm(t('confirm.loadSample'))) return;
   try {
     const res = await fetch(fileUrl);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -1626,16 +1906,45 @@ async function loadSampleFile(fileUrl) {
     const name = fileUrl.split('/').pop() || 'sample.csv';
     setFileName(name);
     document.getElementById('undoBtn').disabled = true;
-    document.getElementById('sampleSelect').value = '';
     clearLocalStorage();
     collapseMetaRootIfExists();
     applyRecommendedCtrlIfExists();
     render();
   } catch(e) {
     alert('サンプルの読み込みに失敗しました: ' + e.message);
-    document.getElementById('sampleSelect').value = '';
   }
 }
+
+// ── Open Menu ──────────────────────────────────────────────────────────────
+
+function toggleOpenMenu() {
+  const dd = document.getElementById('openMenuDropdown');
+  if (!dd) return;
+  const isOpen = dd.classList.contains('show');
+  isOpen ? closeOpenMenu() : openOpenMenu();
+}
+
+function openOpenMenu() {
+  const dd = document.getElementById('openMenuDropdown');
+  if (dd) dd.classList.add('show');
+}
+
+function closeOpenMenu() {
+  const dd = document.getElementById('openMenuDropdown');
+  if (dd) dd.classList.remove('show');
+}
+
+function openMenuAction(action) {
+  closeOpenMenu();
+  if (action === 'csv') openCSV();
+  else if (action === 'gist') openGistDialog();
+}
+
+// 外部クリックでドロップダウンを閉じる
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('openMenuWrap');
+  if (wrap && !wrap.contains(e.target)) closeOpenMenu();
+});
 
 async function loadTutorialIfEmpty() {
   // Load language-appropriate tutorial when there is no saved data
@@ -2905,6 +3214,9 @@ document.getElementById('controllerSelect').value = currentController;
 // Restore saved data or load tutorial
 (async () => {
   await loadSamplesIndex();
+  // GETパラメータ ?gist= があれば優先して読み込む
+  const gistLoaded = await tryAutoLoadGist();
+  if (gistLoaded) return;
   if (items.length === 0) {
     const restored = loadFromLocalStorage();
     if (restored) {

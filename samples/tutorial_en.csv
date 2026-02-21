@@ -44,19 +44,31 @@ id,parentId,type,name,mapping,exclude
 43,42,mapping,Categories group items together,,0
 44,42,mapping,Categories can be nested multiple levels,,0
 45,42,category,Sub-section,,0
-46,45,mapping,When 3 or more nesting levels exist outer categories become headings (H2, H3...) then Section and Sub-section from the outside in,0
+46,45,mapping,When 3 or more nesting levels exist outer categories become headings (H2 H3...) then Section and Sub-section from the outside in,,0
 47,45,mapping,This tutorial has 3 levels of nesting so all root categories are treated as H2 headings,,0
 48,45,mapping,When only 2 or fewer nesting levels exist all root categories are treated as Sections,,0
 49,45,mapping,Check the badge next to each category name to see its role in the cheatsheet,,0
-50,1,category,📄 Layout Elements,,0
-51,50,mapping,Separator: draws a horizontal line between items,,0
-52,50,separator,,,0
-53,50,mapping,Page Break: ↓splits here. Next section starts on a new page,,0
-54,50,pagebreak,,,0
-55,1,category,💡 Tips,,0
-56,55,mapping,↑This category starts on a new page due to the page break above,,0
-57,55,mapping,Drag the handle on the left edge to reorder items,,0
-58,55,mapping,Right-click for context menu,,0
-59,55,mapping,Ctrl+Z to undo,,0
-60,55,mapping,Ctrl+S to save CSV,,0
-61,55,mapping,Export cheatsheet for PDF printing,,0
+50,1,category,🔗 Sharing Your Data,,0
+51,50,mapping,The 📋 Copy CSV button copies your current data to the clipboard as CSV,,0
+52,50,mapping,Share via Gist — just send a URL and the recipient gets your data (no GitHub account needed),,0
+53,50,mapping,Anyone who opens the share URL will have the data loaded automatically,,0
+54,50,category,How to Share via Gist,,0
+55,54,mapping,① Click 📋 Copy CSV to copy your data,,0
+56,54,mapping,② Go to gist.github.com paste the CSV and click Create Gist,,0
+57,54,mapping,③ In 📂 Open → Load from Gist enter the Gist URL and click Load,,0
+58,54,mapping,④ Send the share URL shown on the completion screen,,0
+59,1,category,📄 Layout Elements,,0
+60,59,mapping,Separator: draws a horizontal line between items,,0
+61,59,separator,,,0
+62,59,mapping,Page Break: ↓splits here. Next section starts on a new page,,0
+63,59,pagebreak,,,0
+64,1,category,💡 Tips,,0
+65,64,mapping,↑This category starts on a new page due to the page break above,,0
+66,64,mapping,Drag the handle on the left edge to reorder items,,0
+67,64,mapping,Right-click for context menu,,0
+68,64,mapping,Ctrl+Z to undo,,0
+69,64,mapping,Ctrl+S to save CSV,,0
+70,64,mapping,Export cheatsheet for PDF printing,,0
+71,64,mapping,The 📂 Open menu lets you open a CSV file / load from Gist / open samples in one place,,0
+72,64,mapping,Press Enter while editing an item name to move to the next item,,0
+73,64,mapping,Press Enter on the last item to add a new mapping item,,0

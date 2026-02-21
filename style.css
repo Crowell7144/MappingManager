@@ -792,3 +792,146 @@
     color: var(--text-primary);
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
+
+  /* ── Open Menu Dropdown ────────────────────────────────────────────────── */
+
+  .open-menu-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  .open-menu-trigger {
+    /* toolbar-btn のスタイルを継承、特別な追加スタイルなし */
+  }
+
+  .open-menu-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    min-width: 200px;
+    background: var(--bg-ctx-menu);
+    border: 1px solid var(--border-ui-strong);
+    border-radius: 6px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    padding: 4px 0;
+    white-space: nowrap;
+  }
+  .open-menu-dropdown.show { display: block; }
+
+  .open-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 7px 14px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .open-menu-item:hover {
+    background: var(--row-hover-bg);
+  }
+  .open-menu-item-sample {
+    padding-left: 24px;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+  .open-menu-item-sample:hover {
+    color: var(--text-primary);
+  }
+
+  .open-menu-sep {
+    height: 1px;
+    background: var(--border-ui);
+    margin: 4px 0;
+  }
+
+  .open-menu-section-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 5px 14px 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Gist Dialog / Success Modal ───────────────────────────────────────── */
+
+  .gist-steps {
+    margin: 0 0 14px 0;
+    padding-left: 22px;
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.7;
+  }
+  .gist-steps li { margin-bottom: 2px; }
+  .gist-steps a  { color: var(--accent-blue); }
+
+  .gist-url-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--bg-input);
+    border: 1px solid var(--border-ui-strong);
+    border-radius: 5px;
+    color: var(--text-primary);
+    font-size: 13px;
+    padding: 7px 10px;
+    margin-bottom: 6px;
+    outline: none;
+    font-family: monospace;
+  }
+  .gist-url-input:focus {
+    border-color: var(--border-focus);
+  }
+
+  .gist-error {
+    font-size: 12px;
+    color: var(--danger-text);
+    background: var(--danger-bg);
+    border-radius: 4px;
+    padding: 5px 9px;
+    margin-top: 4px;
+  }
+
+  .gist-loading {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+  }
+
+  .gist-share-section {
+    border-top: 1px solid var(--border-ui);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  .gist-share-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .gist-success-msg {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin: 0 0 10px 0;
+  }
+
+  .gist-share-url-box {
+    background: var(--bg-input);
+    border: 1px solid var(--border-ui-strong);
+    border-radius: 5px;
+    padding: 8px 12px;
+    word-break: break-all;
+  }
+
+  .gist-share-url-text {
+    font-family: monospace;
+    font-size: 12px;
+    color: var(--accent-blue);
+    user-select: all;
+  }
