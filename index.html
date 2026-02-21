@@ -333,17 +333,10 @@
         </select>
       </label>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap">
-      <div id="exportFilenameHint" class="modal-hint-text"></div>
-      <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;white-space:nowrap">
-        <input type="checkbox" id="exportA4Preview" onchange="updateExportPreview()">
-        <span data-i18n="exp.a4Preview">📄 A4表示</span>
-      </label>
-      <span id="exportA4ScaleLabel" class="export-a4-scale-label" style="display:none"></span>
-    </div>
+    <div id="exportFilenameHint" class="modal-hint-text" style="margin-bottom:8px"></div>
     <div id="exportPreviewWrapper" class="export-preview-wrapper">
       <div id="exportPreviewScaler" class="export-preview-scaler">
-        <iframe id="exportPreview" style="border:none;display:block;width:100%;height:100%"></iframe>
+        <iframe id="exportPreview" style="border:none;display:block;width:100%;min-height:400px"></iframe>
       </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
