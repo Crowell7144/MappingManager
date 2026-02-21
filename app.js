@@ -736,6 +736,19 @@ function hasMetaSettings() {
   return readMetaSettings() !== null;
 }
 
+const META_COLOR_GROUPS = new Set([
+  META_IDS.SYS_HEADER, META_IDS.SYS_SECTION, META_IDS.SYS_ROW,
+  META_IDS.SYS_SUBCAT, META_IDS.SYS_MISC,
+]);
+
+// 色グループカテゴリ配下の mapping アイテムか判定
+function isMetaColorItem(id) {
+  const item = items.find(it => it.id === id);
+  if (!item || item.type !== 'mapping') return false;
+  const parent = items.find(it => it.id === item.parentId);
+  return parent ? META_COLOR_GROUPS.has(parent.name) : false;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // UNDO
 // ═══════════════════════════════════════════════════════════════════════════
@@ -859,19 +872,35 @@ function render() {
       if (isMap) {
         html += `<div class="col-mapping">`;
         if (isSysLock) {
-          // SYS制限アイテムはマッピング値を読み取り専用で表示（カラーコードはスウォッチ付き）
-          const rawVal = item.mapping.trim();
-          const showSwatch = rawVal.startsWith('#');
-          let swatchHtml = '';
-          if (showSwatch) {
-            swatchHtml = isColorCode(rawVal)
-              ? `<span class="color-swatch" style="background:${rawVal}"></span>`
-              : `<span class="color-swatch color-swatch-invalid">?</span>`;
+          const isColorItem = isMetaColorItem(item.id);
+          if (isColorItem) {
+            // 色アイテムはインライン編集可能
+            const rawVal = item.mapping.trim();
+            const swatchHtml = rawVal.startsWith('#')
+              ? (isColorCode(rawVal)
+                  ? `<span class="color-swatch" style="background:${rawVal}"></span>`
+                  : `<span class="color-swatch color-swatch-invalid">?</span>`)
+              : '';
+            html += `<div class="mapping-box meta-color-edit" data-item-id="${item.id}"
+              onclick="selectItemNoRender(${item.id}); startMappingEdit(${item.id}); event.stopPropagation()">`;
+            html += item.mapping
+              ? `<span class="mapping-text">${esc(item.mapping)}</span>`
+              : `<span class="mapping-text empty">${t('mapping.clickToEdit')}</span>`;
+            html += swatchHtml;
+            html += `</div>`;
+          } else {
+            // その他SYS制限アイテムは読み取り専用
+            const rawVal = item.mapping.trim();
+            const swatchHtml = rawVal.startsWith('#')
+              ? (isColorCode(rawVal)
+                  ? `<span class="color-swatch" style="background:${rawVal}"></span>`
+                  : `<span class="color-swatch color-swatch-invalid">?</span>`)
+              : '';
+            const valDisplay = item.mapping
+              ? `<span class="mapping-text">${esc(item.mapping)}</span>`
+              : `<span class="mapping-text" style="opacity:0.4">—</span>`;
+            html += `<div class="mapping-box meta-readonly">${valDisplay}${swatchHtml}</div>`;
           }
-          const valDisplay = item.mapping
-            ? `<span class="mapping-text">${esc(item.mapping)}</span>`
-            : `<span class="mapping-text" style="opacity:0.4">—</span>`;
-          html += `<div class="mapping-box meta-readonly">${valDisplay}${swatchHtml}</div>`;
         } else {
           const badges = mappingDisplayHTML(item.mapping);
           html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
@@ -1346,6 +1375,10 @@ function handleNameInputKeydown(e, id) {
 
 function finishMappingEdit(id, value) {
   updateItem(id, "mapping", value);
+  // エクスポートモーダルが開いていればプレビューも更新
+  if (document.getElementById("exportModal").classList.contains("show")) {
+    updateExportPreview();
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2065,21 +2098,21 @@ function onUseRecommendedChange() {
 
 function getMonoColors() {
   return {
-    sectionBorder: "#bbb",   sectionAccent: "#555",
+    sectionBorder: "#bbb",   sectionAccent: "#555",   sectionBg: "#fff",
     headerBg:      "#333",   headerColor:   "#fff",
     zebraRow:      "#f2f2f2", rowBorder:    "#ccc",   nameColor: "#444",
     subCatBg:      "#666",   subCatColor:   "#fff",
-    colDivider:    "#ccc",   sepColor:      "#aaa",
+    colDivider:    "#ccc",   sepColor:      "#aaa",   pageBg:    "#fff",
   };
 }
 
 function getNavyColors() {
   return {
-    sectionBorder: "#94a3b8", sectionAccent: "#1e293b",
+    sectionBorder: "#94a3b8", sectionAccent: "#1e293b", sectionBg: "#fff",
     headerBg:      "#1e293b", headerColor:   "#f1f5f9",
     zebraRow:      "#f8f9fa", rowBorder:     "#e2e8f0", nameColor: "#475569",
     subCatBg:      "#475569", subCatColor:   "#fff",
-    colDivider:    "#e2e8f0", sepColor:      "#cbd5e1",
+    colDivider:    "#e2e8f0", sepColor:      "#cbd5e1", pageBg:    "#fff",
   };
 }
 
@@ -2088,9 +2121,9 @@ function resolveExportColors(theme) {
     const meta = readMetaSettings();
     if (meta) {
       const fallback = getMonoColors();
-      const keys = ['headerBg','headerColor','sectionBorder','sectionAccent',
+      const keys = ['headerBg','headerColor','sectionBorder','sectionAccent','sectionBg',
                     'zebraRow','rowBorder','nameColor','subCatBg','subCatColor',
-                    'colDivider','sepColor'];
+                    'colDivider','sepColor','pageBg'];
       const result = {};
       for (const k of keys) {
         const v = meta[k];
@@ -2263,7 +2296,7 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
       font-family: メイリオ, 'Segoe UI', Arial, sans-serif;
       font-size: ${fs}pt;
       line-height: 1.2;
-      background: #fff;
+      background: ${T.pageBg};
       color: #1a1a1a;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
@@ -2277,7 +2310,7 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
 
     /* ===== カテゴリセクション / Category section ===== */
     .cat-section {
-      background: #fff;
+      background: ${T.sectionBg};
       border: 1px solid ${T.sectionBorder};
       border-left: 3px solid ${T.sectionAccent};
       margin-bottom: 3px;
@@ -2426,6 +2459,7 @@ function buildSysItems(rootId, settings) {
   const secId = mkCat(META_IDS.SYS_SECTION, sysId);
   mkMap('sectionBorder', settings.colors.sectionBorder, secId);
   mkMap('sectionAccent', settings.colors.sectionAccent, secId);
+  mkMap('sectionBg',     settings.colors.sectionBg,     secId);
 
   const rowId = mkCat(META_IDS.SYS_ROW,     sysId);
   mkMap('zebraRow',     settings.colors.zebraRow,  rowId);
@@ -2439,6 +2473,7 @@ function buildSysItems(rootId, settings) {
   const miscId = mkCat(META_IDS.SYS_MISC,   sysId);
   mkMap('colDivider',   settings.colors.colDivider, miscId);
   mkMap('sepColor',     settings.colors.sepColor,   miscId);
+  mkMap('pageBg',       settings.colors.pageBg,     miscId);
 
   return result;
 }
