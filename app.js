@@ -69,6 +69,8 @@ const I18N = {
     "exp.hintLocal": "（promptfont.css, promptfont.ttf と同じフォルダに配置してください）",
     "exp.hintGhpages": "（フォントをGitHub Pagesから読み込み — 単体で動作します）",
     "exp.hintBadge": "（外部ファイル不要 — 単体で動作します）",
+    "exp.a4Preview": "📄 A4表示",
+    "exp.scale": "縮小率:",
 
     // Status Bar
     "status.noController": "コントローラー未接続",
@@ -225,6 +227,8 @@ const I18N = {
     "exp.hintLocal": "(place alongside promptfont.css and promptfont.ttf)",
     "exp.hintGhpages": "(loads font from GitHub Pages — works standalone)",
     "exp.hintBadge": "(no external files needed — works standalone)",
+    "exp.a4Preview": "📄 A4 Preview",
+    "exp.scale": "Scale:",
 
     "status.noController": "No controller connected",
     "status.shortcuts": "Ctrl+S: Save | Ctrl+Z: Undo | Right-click: Menu",
@@ -2531,7 +2535,7 @@ function resolveExportColors(theme) {
   return getMonoColors();
 }
 
-function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gistId = null) {
+function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gistId = null, a4Preview = false) {
   function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function isEffectivelyExcluded(item) {
     if (item.exclude) return true;
@@ -2674,7 +2678,10 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gist
     const editBanner = (pi === 0 && gistId)
       ? `  <div class="cs-edit-header"><a href="?gist=${gistId}">${t('gist.editLink')}</a></div>\n`
       : "";
-    return `${editBanner}  <div class="container"${pb}>\n${inner}\n  </div>`;
+    const pageSep = (a4Preview && pi < pages.length - 1)
+      ? `  <div class="a4-page-sep"><span>— Page ${pi + 2} —</span></div>\n`
+      : "";
+    return `${editBanner}  <div class="container"${pb}>\n${inner}\n  </div>\n${pageSep}`;
   }).join("\n");
 
   // ── CSS & font setup
@@ -2866,6 +2873,24 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gist
     }
     @media print {
       .cs-edit-header { display: none; }
+      .a4-page-sep { display: none; }
+    }
+    .a4-page-sep {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 0;
+      padding: 6px 0;
+      background: #d0d0d0;
+      color: #555;
+      font-size: 10pt;
+      font-family: sans-serif;
+      border-top: 2px dashed #aaa;
+      border-bottom: 2px dashed #aaa;
+    }
+    .a4-page-sep span {
+      letter-spacing: 0.05em;
     }
   </style>
 </head>
@@ -3075,19 +3100,86 @@ function collapseMetaRootIfExists() {
 
 function updateExportPreview() {
   const {cols, fs, mode, fontSource, theme} = getExportSettings();
-  const html = generateCheatsheetHTML(cols, fs, mode, fontSource, theme);
-  document.getElementById("exportPreview").srcdoc = html;
+  const a4 = document.getElementById('exportA4Preview')?.checked || false;
+  const html = generateCheatsheetHTML(cols, fs, mode, fontSource, theme, null, a4);
+  const iframe = document.getElementById('exportPreview');
+  const wrapper = document.getElementById('exportPreviewWrapper');
+  const scaler = document.getElementById('exportPreviewScaler');
+
   // Toggle font source row visibility
-  document.getElementById("fontSourceRow").style.display = mode === "promptfont" ? "flex" : "none";
-  const baseName = fileName.replace(/\.csv$/i,"") || "cheatsheet";
-  let hint = `${t("exp.hintFile")} ${baseName}.html`;
-  if (mode === "promptfont") {
-    if (fontSource === "ghpages") hint += ` ${t("exp.hintGhpages")}`;
-    else hint += ` ${t("exp.hintLocal")}`;
+  document.getElementById('fontSourceRow').style.display = mode === 'promptfont' ? 'flex' : 'none';
+  const baseName = fileName.replace(/\.csv$/i,'') || 'cheatsheet';
+  let hint = `${t('exp.hintFile')} ${baseName}.html`;
+  if (mode === 'promptfont') {
+    if (fontSource === 'ghpages') hint += ` ${t('exp.hintGhpages')}`;
+    else hint += ` ${t('exp.hintLocal')}`;
   } else {
-    hint += ` ${t("exp.hintBadge")}`;
+    hint += ` ${t('exp.hintBadge')}`;
   }
-  document.getElementById("exportFilenameHint").textContent = hint;
+  document.getElementById('exportFilenameHint').textContent = hint;
+
+  if (!a4) {
+    // Normal mode: set concrete pixel height from content after load
+    wrapper.classList.remove('a4-mode');
+    scaler.style.cssText = 'width:100%;';
+    iframe.style.cssText = 'border:none;display:block;width:100%;min-height:400px';
+    document.getElementById('exportA4ScaleLabel').style.display = 'none';
+    iframe.onload = function() {
+      try {
+        const contentH = iframe.contentDocument.documentElement.scrollHeight
+          || iframe.contentDocument.body.scrollHeight;
+        if (contentH > 0) {
+          iframe.style.height = contentH + 'px';
+          scaler.style.height = contentH + 'px';
+        }
+      } catch(e) { /* srcdoc should never be cross-origin */ }
+    };
+    iframe.srcdoc = html;
+    return;
+  }
+
+  // A4 preview mode
+  wrapper.classList.add('a4-mode');
+  const A4_W = 794;
+  iframe.style.cssText = `border:none;display:block;width:${A4_W}px;transform-origin:top left`;
+  scaler.style.cssText = `position:relative`;
+  iframe.srcdoc = html;
+
+  iframe.onload = function() {
+    applyA4Scale();
+  };
+}
+
+function applyA4Scale() {
+  const wrapper = document.getElementById('exportPreviewWrapper');
+  const scaler = document.getElementById('exportPreviewScaler');
+  const iframe = document.getElementById('exportPreview');
+  const scaleLabel = document.getElementById('exportA4ScaleLabel');
+  if (!wrapper || !iframe) return;
+
+  const A4_W = 794;
+  const padding = 24; // wrapper padding (12px each side)
+  const availW = wrapper.clientWidth - padding;
+  const scale = Math.min(1, availW / A4_W);
+
+  let contentH = 1200;
+  try {
+    contentH = iframe.contentDocument.documentElement.scrollHeight || iframe.contentDocument.body.scrollHeight;
+  } catch(e) { /* cross-origin guard (should not happen with srcdoc) */ }
+
+  const scaledH = Math.round(contentH * scale);
+  const scaledW = Math.round(A4_W * scale);
+
+  iframe.style.height = contentH + 'px';
+  iframe.style.transform = `scale(${scale})`;
+
+  // Make scaler div occupy the scaled visual space so the wrapper scrolls correctly
+  scaler.style.width = scaledW + 'px';
+  scaler.style.height = scaledH + 'px';
+  scaler.style.overflow = 'hidden';
+
+  scaleLabel.textContent = `${t('exp.scale')} ${Math.round(scale * 100)}%`;
+  scaleLabel.style.display = 'inline-block';
 }
 
 function getExportHTML() {

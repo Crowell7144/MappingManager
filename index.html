@@ -291,7 +291,7 @@
 
 <!-- Export Modal -->
 <div class="modal-overlay" id="exportModal">
-  <div class="modal-box" style="width:660px;max-height:85vh;display:flex;flex-direction:column">
+  <div class="modal-box" style="width:min(900px,92vw);max-height:90vh;display:flex;flex-direction:column">
     <div class="modal-title" data-i18n="exp.title">📄 チートシート出力</div>
     <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
@@ -333,9 +333,18 @@
         </select>
       </label>
     </div>
-    <div id="exportFilenameHint" class="modal-hint-text" style="margin-bottom:8px"></div>
-    <div style="flex:1;overflow:auto;background:#fff;border-radius:6px;margin-bottom:12px;min-height:200px">
-      <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+      <div id="exportFilenameHint" class="modal-hint-text"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;margin-left:auto;white-space:nowrap">
+        <input type="checkbox" id="exportA4Preview" onchange="updateExportPreview()">
+        <span data-i18n="exp.a4Preview">📄 A4表示</span>
+      </label>
+      <span id="exportA4ScaleLabel" class="export-a4-scale-label" style="display:none"></span>
+    </div>
+    <div id="exportPreviewWrapper" class="export-preview-wrapper">
+      <div id="exportPreviewScaler" class="export-preview-scaler">
+        <iframe id="exportPreview" style="border:none;display:block;width:100%;height:100%"></iframe>
+      </div>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
       <button class="modal-btn modal-btn-save-meta" onclick="saveRecommendedSettings()" data-i18n="meta.saveRecommended">推奨設定を保存する</button>

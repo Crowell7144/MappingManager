@@ -93,6 +93,7 @@
 
     /* Overlay */
     --bg-overlay: rgba(0,0,0,0.6);
+    --bg-a4-backdrop: #252535;   /* A4 preview background (document viewer) */
 
     /* Misc interactive */
     --collapse-hover-bg: rgba(255,255,255,0.08);
@@ -646,6 +647,31 @@
   }
   .export-control.number-input { width: 60px; }
 
+  /* ── Export Preview Wrapper ── */
+  .export-preview-wrapper {
+    flex: 1;
+    overflow: auto;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    min-height: 200px;
+    background: var(--bg-secondary);
+    position: relative;
+  }
+  .export-preview-scaler {
+    width: 100%;
+    height: 100%;
+  }
+  .export-preview-wrapper.a4-mode {
+    background: var(--bg-a4-backdrop);
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  .export-a4-scale-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
   /* ── Status Bar ── */
   #status-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
@@ -695,6 +721,7 @@
     /* Backgrounds */
     --bg-ctx-menu: #ffffff;
     --bg-paddle-hint: #fffbeb;
+    --bg-a4-backdrop: #b0b0c0;   /* A4 preview background for light theme */
     --bg-btn: #e2e2ee;
     --bg-btn-hover: #d2d2e2;
     --bg-key-hover: #c2c2d8;
