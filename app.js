@@ -1731,10 +1731,10 @@ async function loadFromGistId(gistId) {
   saveToLocalStorage();
   render();
 
-  // 7. 共有URL生成
-  const shareUrl = new URL(window.location.href);
-  shareUrl.search = ''; // 既存パラメータをクリア
+  // 7. 共有URL生成（gist と export のみ、他パラメータは含めない）
+  const shareUrl = new URL(window.location.origin + window.location.pathname);
   shareUrl.searchParams.set('gist', gistId);
+  shareUrl.searchParams.set('export', '1');
   return shareUrl.toString();
 }
 
@@ -1869,6 +1869,11 @@ async function tryAutoLoadGist() {
   try {
     const shareUrl = await loadFromGistId(gistId);
     if (isExport) {
+      // applyRecommendedCtrlIfExists等が付加したパラメータを除去し、gistとexportのみに戻す
+      const cleanExportUrl = new URL(window.location.origin + window.location.pathname);
+      cleanExportUrl.searchParams.set('gist', gistId);
+      cleanExportUrl.searchParams.set('export', '1');
+      history.replaceState(null, '', cleanExportUrl);
       showAutoExportPage(gistId);
     }
     // ?gist= 直接アクセスはサイレントロード（モーダルなし）
