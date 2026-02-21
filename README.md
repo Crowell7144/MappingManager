@@ -16,6 +16,8 @@ A web app for managing game controller mappings and exporting cheat sheets.
 - Button display for Xbox / PS4 / PS5 / Nintendo Switch
 - Assign mappings via controller input or keyboard input modal
 - Save and load data in CSV format
+- Copy current data to clipboard as CSV with one click
+- Share mappings via GitHub Gist URL (no account required to receive)
 - Export cheat sheet as HTML (print-ready — use the browser's "Print → Save as PDF" to generate a PDF)
 - Auto-save to LocalStorage
 - Japanese / English UI (language-appropriate tutorial shown on first launch)
@@ -127,7 +129,7 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" -o my_mappings.csv
 python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
-The generated CSV can be loaded directly via the **Open CSV** button in Mapping Manager.
+The generated CSV can be loaded directly via the **📂 Open** menu in Mapping Manager.
 
 ---
 
@@ -157,6 +159,8 @@ PromptFont by Yukari "Shinmera" Hafner — [SIL Open Font License 1.1](PromptFon
 - Xbox / PS4 / PS5 / Nintendo Switch ボタン表示切替
 - コントローラー入力 / キーボード入力による割り当て
 - CSV形式での保存・読込
+- 現在のデータをワンクリックでCSVとしてクリップボードにコピー
+- GitHub Gist URLでのマッピング共有（受け取る側はアカウント不要）
 - チートシートHTMLエクスポート（印刷対応 / ブラウザの印刷ダイアログから「PDFに保存」を選ぶとPDF化も可能）
 - 編集内容のLocalStorage自動保存
 - 日本語 / English 対応（言語設定に応じたチュートリアルを初回表示）
@@ -268,7 +272,7 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" -o my_mappings.csv
 python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
-生成されたCSVは、Mapping Manager の **CSV読込** ボタンから直接読み込めます。
+生成されたCSVは、Mapping Manager の **📂 開く** メニューから直接読み込めます。
 
 ---
 
