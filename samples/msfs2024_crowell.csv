@@ -34,155 +34,155 @@ id,parentId,type,name,mapping,exclude
 33,31,mapping,Elevator Axis,[LS:Y],0
 34,31,mapping,Rudder Axis Left,[LT],0
 35,31,mapping,Rudder Axis Right,[RT],0
-36,31,mapping,Decrease Flaps,[B]+[▲],0
-37,31,mapping,Increase Flaps,[B]+[▼],0
-38,31,mapping,Toggle Spoilers,[B]+[▶],0
-39,31,mapping,Toggle Arm Spoilers,[B]+[Y]+[▶],0
+36,31,mapping,Decrease Flaps,[B][▲],0
+37,31,mapping,Increase Flaps,[B][▼],0
+38,31,mapping,Toggle Spoilers,[B][▶],0
+39,31,mapping,Toggle Arm Spoilers,[B][Y][▶],0
 40,31,mapping,Elevator Trim Down,[Y],0
 41,31,mapping,Elevator Trim Up,[X],0
-42,31,mapping,Aileron Trim,[B]+[LS:X],0
-43,31,mapping,Set Aileron Trim (0),[B]+[LS:Y],0
-44,31,mapping,Rudder Trim,[B]+[Y]+[LS:X],0
-45,31,mapping,Rudder Trim Reset,[B]+[Y]+[LS:Y],0
+42,31,mapping,Aileron Trim,[B][LS:X],0
+43,31,mapping,Set Aileron Trim (0),[B][LS:Y],0
+44,31,mapping,Rudder Trim,[B][Y][LS:X],0
+45,31,mapping,Rudder Trim Reset,[B][Y][LS:Y],0
 46,30,category,Power Management,,0
 47,46,category,Throttle,,0
 48,47,mapping,Decrease Throttle,[LB],0
 49,47,mapping,Increase Throttle,[RB],0
-50,47,mapping,Throttle Next Detent,[B]+[RB],0
-51,47,mapping,Throttle Prev Detent,[B]+[LB],0
-52,47,mapping,Arm Autothrottle,[LB]+[RB],0
-53,47,mapping,Autothrottle TOGA,[B]+[LB]+[RB],0
-54,47,mapping,Toggle Reverse Thrust,[B]+[◀],0
+50,47,mapping,Throttle Next Detent,[B][RB],0
+51,47,mapping,Throttle Prev Detent,[B][LB],0
+52,47,mapping,Arm Autothrottle,[LB][RB],0
+53,47,mapping,Autothrottle TOGA,[B][LB][RB],0
+54,47,mapping,Toggle Reverse Thrust,[B][◀],0
 55,46,category,Mixture,,0
-56,55,mapping,Decrease Mixture,[B]+[Y]+[LB],0
-57,55,mapping,Increase Mixture,[B]+[Y]+[RB],0
-58,55,mapping,Set Best Mixture,[B]+[Y]+[LB]+[RB],0
+56,55,mapping,Decrease Mixture,[B][Y][LB],0
+57,55,mapping,Increase Mixture,[B][Y][RB],0
+58,55,mapping,Set Best Mixture,[B][Y][LB][RB],0
 59,46,category,Propeller,,0
-60,59,mapping,Decrease Propeller Pitch,[A]+[◀],0
-61,59,mapping,Increase Propeller Pitch,[A]+[▶],0
+60,59,mapping,Decrease Propeller Pitch,[A][◀],0
+61,59,mapping,Increase Propeller Pitch,[A][▶],0
 62,30,category,Instruments And Systems,,0
 63,62,category,Cockpit Interaction,,0
-64,63,mapping,Interaction Toggle,[A]+[LS],0
-65,63,mapping,Cursor Toggle,[B]+[LS],0
+64,63,mapping,Interaction Toggle,[A][LS],0
+65,63,mapping,Cursor Toggle,[B][LS],0
 66,63,mapping,Primary Action,[A],0
 67,63,mapping,Secondary Action,[X],0
 68,63,mapping,Tertiary Action,[Y],0
 69,62,category,Flight Instruments,,0
-70,69,mapping,Decrease Altimeter,[A]+[▲],0
-71,69,mapping,Increase Altimeter,[A]+[▼],0
-72,69,mapping,Decrease Heading BUG,[B]+[LT],0
-73,69,mapping,Increase Heading BUG,[B]+[RT],0
-74,69,mapping,Set AP Current HDG,[B]+[LT]+[RT],0
+70,69,mapping,Decrease Altimeter,[A][▲],0
+71,69,mapping,Increase Altimeter,[A][▼],0
+72,69,mapping,Decrease Heading BUG,[B][LT],0
+73,69,mapping,Increase Heading BUG,[B][RT],0
+74,69,mapping,Set AP Current HDG,[B][LT][RT],0
 75,62,category,Brakes And Landing Gears,,0
 76,75,mapping,Brakes,[A],0
-77,75,mapping,Toggle Parking Brakes,[B]+[A],0
+77,75,mapping,Toggle Parking Brakes,[B][A],0
 78,75,mapping,Toggle Landing Gear,[LS],0
-79,75,mapping,Toggle Water Rudder,[B]+[◀],0
+79,75,mapping,Toggle Water Rudder,[B][◀],0
 80,62,category,Interior Lights,,0
-81,80,mapping,Toggle Flashlight,[B]+[Y]+[LS],0
+81,80,mapping,Toggle Flashlight,[B][Y][LS],0
 82,62,category,Gimmics,,0
-83,82,mapping,Auto Start Engine,[A]+[RB]+[▲],0
-84,82,mapping,Stop Engine,[A]+[RB]+[▼],0
-85,82,mapping,Smoke/TailHook/Spray,[B]+[Y]+[▼],0
+83,82,mapping,Auto Start Engine,[A][RB][▲],0
+84,82,mapping,Stop Engine,[A][RB][▼],0
+85,82,mapping,Smoke/TailHook/Spray,[B][Y][▼],0
 86,30,category,Player Character,,0
-87,86,mapping,Take Controll Character,[◀▼]+[RS],0
+87,86,mapping,Take Controll Character,[◀▼][RS],0
 88,86,mapping,Chara Cursor Mode,[LS],0
 89,86,mapping,Interact,[A],0
 90,86,mapping,Toggle Crouch,[X],0
 91,86,mapping,Set Run,[RT],0
 92,30,category,Autopilot,,0
-93,92,mapping,Toggle Flight Director,[A]+[X]+[Start],0
-94,92,mapping,Toggle Yaw Damper,[A]+[X]+[Back],0
-95,92,mapping,Toggle AP Master,[A]+[X]+[LS],0
-96,92,mapping,Toggle AP Heading Hold,[A]+[X]+[LT]+[RT],0
-97,92,mapping,AP NAV1 Hold,[A]+[X]+[▶],0
-98,92,mapping,Toggle AP Approach Hold,[A]+[X]+[◀],0
-99,92,mapping,Decrease AP Ref Altitude,[A]+[X]+[▲],0
-100,92,mapping,Increase AP Ref Altitude,[A]+[X]+[▼],0
-101,92,mapping,Toggle AP VS Hold,[A]+[LB]+[RB],0
-102,92,mapping,Toggle AP FLC,[A]+[X]+[LB]+[RB],0
-103,92,mapping,Dec AP Ref AirSpeed,[A]+[X]+[LB],0
-104,92,mapping,Inc AP Ref AirSpeed,[A]+[X]+[RB],0
-105,92,mapping,Decrease AP Ref VS,[A]+[X]+[LB],0
-106,92,mapping,Increase AP Ref VS,[A]+[X]+[RB],0
+93,92,mapping,Toggle Flight Director,[A][X][Start],0
+94,92,mapping,Toggle Yaw Damper,[A][X][Back],0
+95,92,mapping,Toggle AP Master,[A][X][LS],0
+96,92,mapping,Toggle AP Heading Hold,[A][X][LT][RT],0
+97,92,mapping,AP NAV1 Hold,[A][X][▶],0
+98,92,mapping,Toggle AP Approach Hold,[A][X][◀],0
+99,92,mapping,Decrease AP Ref Altitude,[A][X][▲],0
+100,92,mapping,Increase AP Ref Altitude,[A][X][▼],0
+101,92,mapping,Toggle AP VS Hold,[A][LB][RB],0
+102,92,mapping,Toggle AP FLC,[A][X][LB][RB],0
+103,92,mapping,Dec AP Ref AirSpeed,[A][X][LB],0
+104,92,mapping,Inc AP Ref AirSpeed,[A][X][RB],0
+105,92,mapping,Decrease AP Ref VS,[A][X][LB],0
+106,92,mapping,Increase AP Ref VS,[A][X][RB],0
 107,30,category,Communication,,0
-108,107,mapping,TogglePushback,[RP1]+[RT],0
-109,107,mapping,Open Comm Panel,[RP1]+[LB],0
-110,107,mapping,Quick Reply,[RP1]+[RB],0
-111,107,mapping,ATC Panel Choice1,[RP1]+[Y],0
-112,107,mapping,ATC Panel Choice2,[RP1]+[B],0
-113,107,mapping,ATC Panel Choice3,[RP1]+[A],0
-114,107,mapping,ATC Panel Choice4,[RP1]+[X],0
-115,107,mapping,ATC Panel Choice5,[RP1]+[▲],0
-116,107,mapping,ATC Panel Choice6,[RP1]+[▶],0
-117,107,mapping,ATC Panel Choice7,[RP1]+[▼],0
-118,107,mapping,ATC Panel Choice8,[RP1]+[◀],0
-119,107,mapping,ATC Panel Choice9,[RP1]+[Start],0
-120,107,mapping,ATC Panel Choice0,[RP1]+[Back],0
+108,107,mapping,TogglePushback,[RP1][RT],0
+109,107,mapping,Open Comm Panel,[RP1][LB],0
+110,107,mapping,Quick Reply,[RP1][RB],0
+111,107,mapping,ATC Panel Choice1,[RP1][Y],0
+112,107,mapping,ATC Panel Choice2,[RP1][B],0
+113,107,mapping,ATC Panel Choice3,[RP1][A],0
+114,107,mapping,ATC Panel Choice4,[RP1][X],0
+115,107,mapping,ATC Panel Choice5,[RP1][▲],0
+116,107,mapping,ATC Panel Choice6,[RP1][▶],0
+117,107,mapping,ATC Panel Choice7,[RP1][▼],0
+118,107,mapping,ATC Panel Choice8,[RP1][◀],0
+119,107,mapping,ATC Panel Choice9,[RP1][Start],0
+120,107,mapping,ATC Panel Choice0,[RP1][Back],0
 121,30,category,Menu,,0
 122,121,mapping,Toggle Active Pause,[Start],0
-123,121,mapping,Toggle Pause,[B]+[Start],0
-124,121,mapping,Toggle EFB,[A]+[Back],0
+123,121,mapping,Toggle Pause,[B][Start],0
+124,121,mapping,Toggle EFB,[A][Back],0
 125,30,category,Camera,,0
 126,125,mapping,Cockpit/Ext View Mode,[Back],0
-127,125,mapping,Toggle Drone,[B]+[Back],0
-128,125,mapping,Toggle Slew Mode,[B]+[Y]+[Back],0
+127,125,mapping,Toggle Drone,[B][Back],0
+128,125,mapping,Toggle Slew Mode,[B][Y][Back],0
 129,125,category,Cockpit Camera,,0
 130,129,mapping,Reset Cockpit View,[RS],0
 131,129,mapping,Prev Pilot Position,[▼],0
 132,129,mapping,Next Pilot Position,[▲],0
 133,129,mapping,Prev Instrument View,[◀],0
 134,129,mapping,Next Instrument View,[▶],0
-135,129,mapping,Zoom Cockpit View,[B]+[Y]+[RT],0
-136,129,mapping,Unzoom Cockpit View,[B]+[Y]+[LT],0
-137,129,mapping,Toggle Cockpit Freelook,[A]+[LB],0
-138,129,mapping,Toggle HUD View,[A]+[LB]+[▲],0
-139,129,mapping,Cockpit Quickview Left,[A]+[LB]+[◀],0
-140,129,mapping,Cockpit Quickview Right,[A]+[LB]+[▶],0
-141,129,mapping,Load Next Custom Cam,[A]+[LB]+[▼],0
+135,129,mapping,Zoom Cockpit View,[B][Y][RT],0
+136,129,mapping,Unzoom Cockpit View,[B][Y][LT],0
+137,129,mapping,Toggle Cockpit Freelook,[A][LB],0
+138,129,mapping,Toggle HUD View,[A][LB][▲],0
+139,129,mapping,Cockpit Quickview Left,[A][LB][◀],0
+140,129,mapping,Cockpit Quickview Right,[A][LB][▶],0
+141,129,mapping,Load Next Custom Cam,[A][LB][▼],0
 142,125,category,Smart Camera,,0
-143,142,mapping,Toggle Smart Camera,[X]+[Y],0
-144,142,mapping,Prev Smartcam Target,[X]+[Y]+[◀],0
-145,142,mapping,Next Smartcam Target,[X]+[Y]+[▶],0
-146,142,mapping,Reset Smartcam Target,[X]+[Y]+[▼],0
-147,142,mapping,Select Next POI,[X]+[Y]+[▲],0
+143,142,mapping,Toggle Smart Camera,[X][Y],0
+144,142,mapping,Prev Smartcam Target,[X][Y][◀],0
+145,142,mapping,Next Smartcam Target,[X][Y][▶],0
+146,142,mapping,Reset Smartcam Target,[X][Y][▼],0
+147,142,mapping,Select Next POI,[X][Y][▲],0
 148,125,category,Slew Mode,,0
-149,148,mapping,Slew Roll,[LB]+[RS:X],0
+149,148,mapping,Slew Roll,[LB][RS:X],0
 150,148,mapping,Slew Translate Down,[LT],0
 151,148,mapping,Slew Translate Up,[RT],0
 152,30,category,Drone,,0
-153,152,mapping,Toggle Drone,[B]+[Back],0
+153,152,mapping,Toggle Drone,[B][Back],0
 154,152,mapping,Toggle DroneFollowMode,[A],0
 155,152,mapping,Toggle Drone Lock Mode,[B],0
 156,152,mapping,Attach DroneNextTarget,[▶],0
 157,152,mapping,Attach DronePrevTarget,[◀],0
 158,152,mapping,Lock DroneNextTarget,[▲],0
 159,152,mapping,Lock DronePrevTarget,[▼],0
-160,152,mapping,Set Drone Target,[X]+[LS],0
+160,152,mapping,Set Drone Target,[X][LS],0
 161,152,mapping,Reset DroneTargetOffset,[LS],0
 162,152,mapping,Translate Drone,[LS:XY],0
 163,152,mapping,Translate Drone Down,[LT],0
 164,152,mapping,Translate Drone Up,[RT],0
-165,152,mapping,Dec Drone Rotation SPD,[Y]+[▼],0
-166,152,mapping,Inc Drone Rotation SPD,[Y]+[▲],0
-167,152,mapping,Dec Drone Trans SPD,[Y]+[◀],0
-168,152,mapping,Inc Drone Trans SPD,[Y]+[▶],0
+165,152,mapping,Dec Drone Rotation SPD,[Y][▼],0
+166,152,mapping,Inc Drone Rotation SPD,[Y][▲],0
+167,152,mapping,Dec Drone Trans SPD,[Y][◀],0
+168,152,mapping,Inc Drone Trans SPD,[Y][▶],0
 169,152,mapping,Drone Pitch Axis,[RS:Y],0
 170,152,mapping,Drone Yaw Axis,[RS:X],0
-171,152,mapping,Drone Roll Axis,[LB]+[RS:X],0
+171,152,mapping,Drone Roll Axis,[LB][RS:X],0
 172,152,mapping,Reset Drone Roll,[RS],0
-173,152,mapping,Increase Drone Zoom,[Y]+[RT],0
-174,152,mapping,Decrease Drone Zoom,[Y]+[LT],0
-175,152,mapping,Drone Top Down View,[X]+[Y],0
+173,152,mapping,Increase Drone Zoom,[Y][RT],0
+174,152,mapping,Decrease Drone Zoom,[Y][LT],0
+175,152,mapping,Drone Top Down View,[X][Y],0
 176,152,category,Camera Effect,,0
-177,176,mapping,Dec Drone Depth of Field,[LB]+[◀],0
-178,176,mapping,Inc Drone Depth of Field,[LB]+[▶],0
-179,176,mapping,Dec Drone Exposure,[LB]+[▼],0
-180,176,mapping,Inc Drone Exposure,[LB]+[▲],0
-181,176,mapping,Toggle Drone DoF,[X]+[◀],0
-182,176,mapping,Toggle Drone AE,[X]+[▲],0
-183,176,mapping,Toggle Foreground Blur,[X]+[▶],0
-184,176,mapping,Toggle Drone Auto Focus,[X]+[▼],0
+177,176,mapping,Dec Drone Depth of Field,[LB][◀],0
+178,176,mapping,Inc Drone Depth of Field,[LB][▶],0
+179,176,mapping,Dec Drone Exposure,[LB][▼],0
+180,176,mapping,Inc Drone Exposure,[LB][▲],0
+181,176,mapping,Toggle Drone DoF,[X][◀],0
+182,176,mapping,Toggle Drone AE,[X][▲],0
+183,176,mapping,Toggle Foreground Blur,[X][▶],0
+184,176,mapping,Toggle Drone Auto Focus,[X][▼],0
 185,30,category,Photo Mode,,0
 186,185,mapping,Photo Mode Toggle,[▼▶],0
 187,185,mapping,Take Picture,[A],0
@@ -190,15 +190,15 @@ id,parentId,type,name,mapping,exclude
 189,185,mapping,Translate X/Z Axis,[LS:XY],0
 190,185,mapping,Move Down,[LT],0
 191,185,mapping,Move Up,[RT],0
-192,185,mapping,Zoom In,[Y]+[RT],0
-193,185,mapping,Zoom Out,[Y]+[LT],0
+192,185,mapping,Zoom In,[Y][RT],0
+193,185,mapping,Zoom Out,[Y][LT],0
 194,185,mapping,Rotate X/Y Axis,[RS:XY],0
-195,185,mapping,Rotate Z Axis,[LB]+[RS:X],0
+195,185,mapping,Rotate Z Axis,[LB][RS:X],0
 196,185,mapping,Reset Horizon,[RS],0
 197,185,category,Camera Effect,,0
-198,197,mapping,Toggle Auto Exposure,[X]+[▲],0
-199,197,mapping,Decrease Exposure,[LB]+[▼],0
-200,197,mapping,Increase Exposure,[LB]+[▲],0
-201,197,mapping,Toggle Auto Focus,[X]+[▶],0
-202,197,mapping,Focus Decrease,[LB]+[◀],0
-203,197,mapping,Focus Increase,[LB]+[▶],0
+198,197,mapping,Toggle Auto Exposure,[X][▲],0
+199,197,mapping,Decrease Exposure,[LB][▼],0
+200,197,mapping,Increase Exposure,[LB][▲],0
+201,197,mapping,Toggle Auto Focus,[X][▶],0
+202,197,mapping,Focus Decrease,[LB][◀],0
+203,197,mapping,Focus Increase,[LB][▶],0
