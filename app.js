@@ -1605,6 +1605,7 @@ function handleOpenCSV(e) {
   reader.onload = ev => {
     items = csvToItems(ev.target.result);
     undoStack=[];
+    collapsedIds = new Set();
     setFileName(file.name);
     collapseMetaRootIfExists();
     applyRecommendedCtrlIfExists();
@@ -1724,6 +1725,7 @@ async function loadFromGistId(gistId) {
   // 6. データ読み込み
   items = csvToItems(text);
   undoStack = [];
+  collapsedIds = new Set();
   const baseName = csvEntry.filename || 'gist.csv';
   setFileName(baseName);
   collapseMetaRootIfExists();
@@ -1942,6 +1944,7 @@ async function loadSampleFile(fileUrl) {
     const text = await res.text();
     items = csvToItems(text);
     undoStack = [];
+    collapsedIds = new Set();
     const name = fileUrl.split('/').pop() || 'sample.csv';
     setFileName(name);
     document.getElementById('undoBtn').disabled = true;
@@ -1994,6 +1997,7 @@ async function loadTutorialIfEmpty() {
     if (!res.ok) return;
     const text = await res.text();
     items = csvToItems(text);
+    collapsedIds = new Set();
     setFileName('new_mapping.csv');
     collapseMetaRootIfExists();
     render();

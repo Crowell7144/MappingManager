@@ -549,6 +549,7 @@
   .modal-btn-apply-next { background: var(--modal-btn-apply-next); }
   .modal-btn-export     { background: var(--btn-accent2); }
   .modal-btn-save-meta  { background: var(--modal-btn-save-meta); color: var(--modal-btn-text); }
+  .modal-btn-apply-recommended { background: var(--btn-accent); color: var(--btn-accent-text); }
 
   /* Modal content areas */
   .modal-item-name {
