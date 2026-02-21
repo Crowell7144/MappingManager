@@ -67,7 +67,7 @@ const I18N = {
     "exp.hintLocal": "（promptfont.css, promptfont.ttf と同じフォルダに配置してください）",
     "exp.hintGhpages": "（フォントをGitHub Pagesから読み込み — 単体で動作します）",
     "exp.hintBadge": "（外部ファイル不要 — 単体で動作します）",
-    "exp.warnDeepNest": "⚠️ カテゴリが3階層以上ネストされています。チートシートでは正しく表示されない場合があります。",
+
     // Status Bar
     "status.noController": "コントローラー未接続",
     "status.shortcuts": "Ctrl+S: 保存 | Ctrl+Z: 元に戻す | 右クリック: メニュー",
@@ -192,7 +192,7 @@ const I18N = {
     "exp.hintLocal": "(place alongside promptfont.css and promptfont.ttf)",
     "exp.hintGhpages": "(loads font from GitHub Pages — works standalone)",
     "exp.hintBadge": "(no external files needed — works standalone)",
-    "exp.warnDeepNest": "⚠️ Categories are nested 3 or more levels deep. They may not display correctly in the cheat sheet.",
+
     "status.noController": "No controller connected",
     "status.shortcuts": "Ctrl+S: Save | Ctrl+Z: Undo | Right-click: Menu",
     "ctx.insertAbove": "⬆ Insert Above",
@@ -602,6 +602,36 @@ function getDepth(item) {
   while (cur.parentId) { cur = items.find(it=>it.id===cur.parentId); if(!cur) break; d++; }
   return d;
 }
+
+// カテゴリの深さ（祖先カテゴリの数）
+function getCatDepth(item) {
+  let d = 0, cur = item;
+  while (cur.parentId) {
+    cur = items.find(it => it.id === cur.parentId);
+    if (!cur) break;
+    if (cur.type === 'category') d++;
+  }
+  return d;
+}
+
+// 全非メタカテゴリの最大深さ
+function getMaxCatDepth() {
+  let max = 0;
+  for (const it of items) {
+    if (it.type !== 'category' || isInMetaBlock(it.id)) continue;
+    max = Math.max(max, getCatDepth(it));
+  }
+  return max;
+}
+
+// depth と maxCatDepth からカテゴリの役割を返す
+// 'cat' | 'subcat' | 'h2' | 'h3' | ...
+function getCatRole(depth, maxCatDepth) {
+  if (maxCatDepth <= 1) return depth === 0 ? 'cat' : 'subcat';
+  if (depth >= maxCatDepth) return 'subcat';
+  if (depth === maxCatDepth - 1) return 'cat';
+  return 'h' + (depth + 2);
+}
 function getOrderedItems() {
   const result = [], inResult = new Set();
   // Mark all descendants of a collapsed item so the orphan code below won't add them
@@ -854,6 +884,17 @@ function render() {
           html += `<span class="col-name-spacer"></span>`;
         }
         html += `<span class="cat-folder-icon">${isMeta ? '⚙' : '📁'}</span>`;
+      }
+      // カテゴリ役割バッジ（非メタカテゴリのみ、名前の左に表示）
+      if (isCat && !isMeta) {
+        const _maxD = getMaxCatDepth();
+        const _depth = getCatDepth(item);
+        const _role = getCatRole(_depth, _maxD);
+        let _badgeLabel, _badgeCls;
+        if (_role === 'cat')    { _badgeLabel = '[Cat]';    _badgeCls = 'cat-role-badge-cat'; }
+        else if (_role === 'subcat') { _badgeLabel = '[SubCat]'; _badgeCls = 'cat-role-badge-subcat'; }
+        else { _badgeLabel = `[${_role.toUpperCase()}]`; _badgeCls = 'cat-role-badge-hn'; }
+        html += `<span class="cat-role-badge ${_badgeCls}">${_badgeLabel}</span>`;
       }
       if (isSysLock) {
         // SYS制限アイテムは名前を読み取り専用で表示
@@ -1597,6 +1638,7 @@ async function loadTutorialIfEmpty() {
     const text = await res.text();
     items = csvToItems(text);
     setFileName('new_mapping.csv');
+    collapseMetaRootIfExists();
     render();
   } catch(e) {
     console.warn('Tutorial load failed:', e);
@@ -2177,6 +2219,25 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
     return "";
   }
 
+  // ── カテゴリ深さ・役割計算
+  function getExportCatDepth(item) {
+    let d = 0, cur = item;
+    while (cur.parentId) {
+      cur = items.find(it => it.id === cur.parentId);
+      if (!cur) break;
+      if (cur.type === 'category') d++;
+    }
+    return d;
+  }
+  const _exportCats = items.filter(it => it.type === 'category' && !isInMetaBlock(it.id));
+  const maxExpCatDepth = _exportCats.length > 0 ? Math.max(..._exportCats.map(getExportCatDepth)) : 0;
+  function getExportRole(depth) {
+    if (maxExpCatDepth <= 1) return depth === 0 ? 'cat' : 'subcat';
+    if (depth >= maxExpCatDepth) return 'subcat';
+    if (depth === maxExpCatDepth - 1) return 'cat';
+    return 'h' + (depth + 2);
+  }
+
   // Build a flat list of page-groups.
   // Each page-group is an array of block html strings.
   function buildPages() {
@@ -2190,17 +2251,17 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
       if (curPage.length > 0) { pages.push(curPage); curPage = []; }
     }
 
-    const topLevel = items.filter(it => !it.parentId && !isEffectivelyExcluded(it));
-    for (const item of topLevel) {
-      if (item.type === "category") {
-        const children = getChildren(item.id);
+    function renderCatBlock(catItem, depth) {
+      const role = getExportRole(depth);
+      const children = getChildren(catItem.id);
+      if (role === 'cat') {
         let rowsHtml = "";
         for (const child of children) {
           if (child.type === "pagebreak") {
             if (rowsHtml) {
-              const hdr = item.name.trim() ? `<div class="cat-header">${e(item.name)}</div>` : "";
-              const cls = item.name.trim() ? "cat-section" : "cat-section-anon";
-          pushBlock(`<div class="${cls}">${hdr}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
+              const hdr = catItem.name.trim() ? `<div class="cat-header">${e(catItem.name)}</div>` : "";
+              const cls = catItem.name.trim() ? "cat-section" : "cat-section-anon";
+              pushBlock(`<div class="${cls}">${hdr}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
               rowsHtml = "";
             }
             pushPage();
@@ -2209,13 +2270,36 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
           }
         }
         if (rowsHtml) {
-          const hdr3 = item.name.trim() ? `<div class="cat-header">${e(item.name)}</div>` : "";
-          const cls3 = item.name.trim() ? "cat-section" : "cat-section-anon";
-          pushBlock(`<div class="${cls3}">${hdr3}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
-        } else if (children.length === 0) {
-          // 子アイテムのないカテゴリ → タイトルのみのブロックとして出力
-          if (item.name.trim()) pushBlock(`<div class="cat-section"><div class="cat-header">${e(item.name)}</div></div>`);
+          const hdr = catItem.name.trim() ? `<div class="cat-header">${e(catItem.name)}</div>` : "";
+          const cls = catItem.name.trim() ? "cat-section" : "cat-section-anon";
+          pushBlock(`<div class="${cls}">${hdr}${TABLE_OPEN}${rowsHtml}${TABLE_CLOSE}</div>`);
+        } else if (children.length === 0 && catItem.name.trim()) {
+          pushBlock(`<div class="cat-section"><div class="cat-header">${e(catItem.name)}</div></div>`);
         }
+      } else {
+        // Hn 見出し
+        const hLevel = depth + 2;
+        if (catItem.name.trim()) {
+          pushBlock(`<h${hLevel} class="cs-heading cs-h${hLevel}">${e(catItem.name)}</h${hLevel}>`);
+        }
+        for (const child of children) {
+          if (child.type === "category") {
+            renderCatBlock(child, depth + 1);
+          } else if (child.type === "mapping") {
+            pushBlock(`<div class="cat-section">${TABLE_OPEN}<tr><td>${e(child.name)}</td><td>${btnFn(child.mapping)}</td></tr>${TABLE_CLOSE}</div>`);
+          } else if (child.type === "separator") {
+            pushBlock(`<div class="sep-block"></div>`);
+          } else if (child.type === "pagebreak") {
+            pushPage();
+          }
+        }
+      }
+    }
+
+    const topLevel = items.filter(it => !it.parentId && !isEffectivelyExcluded(it));
+    for (const item of topLevel) {
+      if (item.type === "category") {
+        renderCatBlock(item, 0);
       } else if (item.type === "mapping") {
         pushBlock(`<div class="cat-section">${TABLE_OPEN}<tr><td>${e(item.name)}</td><td>${btnFn(item.mapping)}</td></tr>${TABLE_CLOSE}</div>`);
       } else if (item.type === "separator") {
@@ -2393,6 +2477,29 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
 
     ${badgeCSS}
     ${pfColorCSS}
+
+    /* ===== 見出し / Headings ===== */
+    .cs-heading {
+      font-weight: bold;
+      margin: 0 0 2px 0;
+      padding: 3px 5px;
+      break-after: avoid;
+      break-inside: avoid;
+    }
+    .cs-h2 {
+      font-size: ${fs + 3}pt;
+      border-bottom: 2px solid ${T.sectionAccent};
+      color: ${T.headerBg};
+    }
+    .cs-h3 {
+      font-size: ${fs + 2}pt;
+      border-bottom: 1px solid ${T.sectionBorder};
+      color: ${T.sectionAccent};
+    }
+    .cs-h4, .cs-h5, .cs-h6 {
+      font-size: ${fs + 1}pt;
+      color: ${T.sectionAccent};
+    }
   </style>
 </head>
 <body>
@@ -2403,15 +2510,6 @@ ${pagesHtml}
 
 
 function showExportModal() {
-  const hasDeepNest = items.some(item => {
-    if (item.type !== "category") return false;
-    const parent = items.find(it => it.id === item.parentId);
-    if (!parent || parent.type !== "category") return false;
-    const grandParent = items.find(it => it.id === parent.parentId);
-    return grandParent && grandParent.type === "category";
-  });
-  if (hasDeepNest) alert(t("exp.warnDeepNest"));
-
   // 推奨設定UIの表示制御
   const hasMeta = hasMetaSettings();
   const recRow = document.getElementById("exportRecommendedRow");
@@ -2802,6 +2900,7 @@ document.getElementById('controllerSelect').value = currentController;
     const restored = loadFromLocalStorage();
     if (restored) {
       document.getElementById('filenameDisplay').textContent = fileName;
+      collapseMetaRootIfExists();
       render();
     } else {
       await loadTutorialIfEmpty();

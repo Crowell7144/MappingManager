@@ -1,12 +1,17 @@
 id,parentId,type,name,mapping,exclude
-1,,category,👋 Welcome to Mapping Manager,,0
-2,1,mapping,This tutorial explains how to use this app,,0
-3,,category,📁 Categories,,0
-4,3,mapping,Categories group items,,0
-5,3,category,Subcategory,,0
+200,,category,Heading,,0
+201,200,mapping,Categories group items together,,0
+103,200,mapping,When 3 or more levels of nesting exist outer categories become headings (H2, H3...) from the outside in,,0
+202,200,mapping,This tutorial has 3 levels of nesting so all root categories are treated as H2 headings,,0
+5,200,category,Section,,0
 6,5,mapping,Categories can be nested,,0
 7,5,mapping,Drag and drop to reorder,,0
-8,,category,🎮 Button Inputs,,0
+100,5,category,Sub-section,,0
+101,100,mapping,Check the badge next to each category name to see its role in the cheatsheet,,0
+300,,category,,,0
+1,300,category,👋 Welcome to Mapping Manager,,0
+2,1,mapping,This tutorial explains how to use this app,,0
+8,300,category,🎮 Button Inputs,,0
 9,8,mapping,Bottom button (Xbox:A / Switch:B / PS:×),[A],0
 10,8,mapping,Right button (Xbox:B / Switch:A / PS:○),[B],0
 11,8,mapping,Left button (Xbox:X / Switch:Y / PS:□),[X],0
@@ -15,40 +20,40 @@ id,parentId,type,name,mapping,exclude
 14,8,mapping,Shoulder buttons,[LB][RB],0
 15,8,mapping,Triggers,[LT][RT],0
 16,8,mapping,Start & Back,[Start][Back],0
-17,,category,🕹️ Stick Inputs,,0
+17,300,category,🕹️ Stick Inputs,,0
 18,17,mapping,Left Stick Horizontal,[LS:X],0
 19,17,mapping,Left Stick Vertical,[LS:Y],0
 20,17,mapping,Left Stick Any,[LS:XY],0
 21,17,mapping,Right Stick Any,[RS:XY],0
 22,17,mapping,Stick Click,[LS][RS],0
-23,,category,🎯 D-Pad,,0
+23,300,category,🎯 D-Pad,,0
 24,23,mapping,Up,[▲],0
 25,23,mapping,Down,[▼],0
 26,23,mapping,Left,[◀],0
 27,23,mapping,Right,[▶],0
 28,23,mapping,Diagonal,[▲▶],0
-29,,category,⌨️ Text Expressions,,0
+29,300,category,⌨️ Text Expressions,,0
 30,29,mapping,Button + Text,[A]Long Press,0
 31,29,mapping,Paddle (not in Gamepad API),[LP1],0
 32,29,mapping,Multiple paddles,[LP1][LP2],0
 33,29,mapping,Text only,Plain text works too,0
 34,29,mapping,Mixed,[LB]while holding [LS:XY],0
-35,,category,⌨️ Keyboard Inputs,,0
+35,300,category,⌨️ Keyboard Inputs,,0
 36,35,mapping,Single key,{W},0
 37,35,mapping,Modifier + key,{Ctrl}{C},0
 38,35,mapping,Arrow keys,{Up},0
 39,35,mapping,Function key,{F5},0
-40,,category,☑ Exclude from Output,,0
+40,300,category,☑ Exclude from Output,,0
 41,40,mapping,This item is included,,0
 42,40,mapping,Uncheck the checkbox to exclude from output,,1
 43,40,category,Whole category can be excluded,,1
 44,43,mapping,Children follow parent exclusion,,0
-70,,category,📄 Layout Elements,,0
+70,300,category,📄 Layout Elements,,0
 71,70,mapping,Separator: draws a horizontal line between items,,0
 72,70,separator,,,0
 51,70,mapping,Page Break: ↓splits here. Next section starts on a new page,,0
 52,70,pagebreak,,,0
-53,,category,💡 Tips,,0
+53,300,category,💡 Tips,,0
 54,53,mapping,↑This category starts on a new page due to the page break above,,0
 55,53,mapping,Right-click for context menu,,0
 56,53,mapping,Ctrl+Z to undo,,0

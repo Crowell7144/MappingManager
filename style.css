@@ -734,6 +734,22 @@
     --bg-overlay: rgba(0,0,0,0.45);
   }
 
+  /* ── Category role badges ── */
+  .cat-role-badge {
+    display: inline-block;
+    font-size: 9px; font-weight: 700;
+    padding: 1px 4px; border-radius: 3px;
+    margin-right: 5px; flex-shrink: 0;
+    font-family: monospace; line-height: 14px;
+    vertical-align: middle; opacity: 0.75;
+    border: 1px solid var(--border-raised);
+    background: var(--bg-ctx-menu);
+    cursor: default;
+  }
+  .cat-role-badge-subcat { color: var(--text-subtle); }
+  .cat-role-badge-cat    { color: var(--accent-yellow); }
+  .cat-role-badge-hn     { color: var(--accent-blue); }
+
   /* ── Settings Modal ── */
   .settings-section {
     margin-bottom: 20px;
