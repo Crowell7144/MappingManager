@@ -310,8 +310,16 @@
         <span data-i18n="exp.theme">スタイル:</span>
         <select id="exportTheme" onchange="updateExportPreview()" class="export-control">
           <option value="mono" data-i18n="exp.themeMono">モノクロ</option>
-          <option value="color" data-i18n="exp.themeColor">カラー</option>
+          <option value="navy" data-i18n="exp.themeNavy">ネイビー</option>
+          <option value="recommended" data-i18n="exp.themeRecommended">推奨設定</option>
         </select>
+      </label>
+    </div>
+    <!-- 推奨値を使用 (メタブロックがある場合のみ表示) -->
+    <div id="exportRecommendedRow" style="display:none;align-items:center;gap:10px;margin-bottom:8px;font-size:13px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="exportUseRecommended" onchange="onUseRecommendedChange()">
+        <span data-i18n="meta.useRecommended">推奨値を使用</span>
       </label>
     </div>
     <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
@@ -328,6 +336,7 @@
       <iframe id="exportPreview" style="width:100%;height:300px;border:none"></iframe>
     </div>
     <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="modal-btn modal-btn-save-meta" onclick="saveRecommendedSettings()" data-i18n="meta.saveRecommended">推奨設定を保存する</button>
       <button class="modal-btn modal-btn-cancel" onclick="closeExportModal()" data-i18n="exp.close">閉じる</button>
       <button class="modal-btn modal-btn-neutral" onclick="openInNewTab()" data-i18n="exp.newTab">🔗 別タブで開く</button>
       <button class="modal-btn modal-btn-export" onclick="printCheatsheet()" data-i18n="exp.print">🖨 印刷</button>

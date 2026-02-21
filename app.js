@@ -125,6 +125,14 @@ const I18N = {
     "settings.theme.light": "☀️ ライト",
     "settings.lang": "言語 / Language",
     "settings.close": "閉じる",
+    // Export (meta)
+    "exp.themeNavy": "ネイビー",
+    "exp.themeRecommended": "推奨設定",
+    // Meta block
+    "meta.saveRecommended": "推奨設定を保存する",
+    "meta.useRecommended": "推奨値を使用",
+    "meta.recommendedPrefix": "📌 推奨値",
+    "meta.userSample": "自由にコメントを書くことが出来ます",
   },
   en: {
     "filename.tooltip": "Click to rename",
@@ -238,6 +246,14 @@ const I18N = {
     "settings.theme.light": "☀️ Light",
     "settings.lang": "Language",
     "settings.close": "Close",
+    // Export (meta)
+    "exp.themeNavy": "Navy",
+    "exp.themeRecommended": "Recommended",
+    // Meta block
+    "meta.saveRecommended": "Save Recommended Settings",
+    "meta.useRecommended": "Use Recommended Settings",
+    "meta.recommendedPrefix": "📌 Recommended",
+    "meta.userSample": "You can write free-form comments here",
   }
 };
 
@@ -351,7 +367,30 @@ function convertMappingString(mapping, fromCtrl, toCtrl) {
 }
 
 function switchController(newCtrl) {
-  if (newCtrl === currentController) return;
+  if (newCtrl === '__recommended__') {
+    const meta = readMetaSettings();
+    if (!meta || !meta.controller || !CONTROLLER_BUTTON_MAP[meta.controller]) return;
+    const actualCtrl = meta.controller;
+    if (actualCtrl !== currentController) {
+      pushUndo();
+      items = items.map(it => ({
+        ...it,
+        mapping: convertMappingString(it.mapping, currentController, actualCtrl)
+      }));
+      currentController = actualCtrl;
+      localStorage.setItem('mappingManagerController', actualCtrl);
+      const url = new URL(window.location);
+      url.searchParams.set('ctrl', actualCtrl);
+      history.replaceState(null, '', url);
+      render();
+    }
+    document.getElementById('controllerSelect').value = '__recommended__';
+    return;
+  }
+  if (newCtrl === currentController) {
+    document.getElementById('controllerSelect').value = newCtrl;
+    return;
+  }
   pushUndo();
   items = items.map(it => ({
     ...it,
@@ -442,6 +481,19 @@ const GAMEPAD_BUTTON_MAP = {
 const AXIS_THRESHOLD = 0.5;
 const LS_INPUTS = new Set(["LS:X","LS:Y","LS:XY","LS:Right","LS:Left","LS:Up","LS:Down"]);
 const RS_INPUTS = new Set(["RS:X","RS:Y","RS:XY","RS:Right","RS:Left","RS:Up","RS:Down"]);
+
+// ── Meta block identifiers ──
+const META_IDS = {
+  ROOT:        '__MM_META__',
+  SYS:         '__MM_SYS__',
+  SYS_HEADER:  '__MM_SYS_HEADER__',
+  SYS_SECTION: '__MM_SYS_SECTION__',
+  SYS_ROW:     '__MM_SYS_ROW__',
+  SYS_SUBCAT:  '__MM_SYS_SUBCAT__',
+  SYS_MISC:    '__MM_SYS_MISC__',
+  USER:        '__MM_USER__',
+};
+const META_ID_SET = new Set(Object.values(META_IDS));
 
 function getTypeLabels() { return { category:t("type.category"), mapping:t("type.mapping"), separator:t("type.separator"), pagebreak:t("type.pagebreak") }; }
 const TYPE_COLORS = { category:"var(--accent-yellow)", mapping:"var(--accent-blue)", separator:"var(--text-dim)", pagebreak:"var(--accent-violet)" };
@@ -622,6 +674,68 @@ function getNextMappingItem(afterId) {
   return null;
 }
 
+// ─── Meta block utilities ──────────────────────────────────────────────────
+
+function isColorCode(val) {
+  return /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(String(val || '').trim());
+}
+
+function isInSubtreeOf(id, ancestorId) {
+  let cur = items.find(it => it.id === id);
+  while (cur) {
+    if (cur.id === ancestorId) return true;
+    if (!cur.parentId) return false;
+    cur = items.find(it => it.id === cur.parentId);
+  }
+  return false;
+}
+
+function findMetaRoot() {
+  return items.find(it => it.name === META_IDS.ROOT && it.parentId === null) || null;
+}
+
+function findMetaItemByName(name) {
+  return items.find(it => it.name === name) || null;
+}
+
+function isInMetaBlock(id) {
+  const root = findMetaRoot();
+  return root ? isInSubtreeOf(id, root.id) : false;
+}
+
+// Returns true if item is __MM_META__ root itself, or __MM_SYS__ / its descendants
+// (= cannot be renamed / moved / added to)
+function isMetaSysRestricted(id) {
+  const item = items.find(it => it.id === id);
+  if (!item) return false;
+  if (item.name === META_IDS.ROOT && item.parentId === null) return true;
+  const sys = findMetaItemByName(META_IDS.SYS);
+  if (!sys) return false;
+  return item.id === sys.id || isInSubtreeOf(id, sys.id);
+}
+
+function readMetaSettings() {
+  const root = findMetaRoot();
+  if (!root) return null;
+  const sys = items.find(it => it.parentId === root.id && it.name === META_IDS.SYS);
+  if (!sys) return null;
+  const result = {};
+  for (const ch of items.filter(it => it.parentId === sys.id)) {
+    if (ch.type === 'mapping') {
+      result[ch.name] = ch.mapping;
+    } else if (ch.type === 'category') {
+      for (const gc of items.filter(it => it.parentId === ch.id && it.type === 'mapping')) {
+        result[gc.name] = gc.mapping;
+      }
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+function hasMetaSettings() {
+  return readMetaSettings() !== null;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // UNDO
 // ═══════════════════════════════════════════════════════════════════════════
@@ -658,48 +772,61 @@ function render() {
     const isDeco = item.type === "separator" || item.type === "pagebreak";
     const treeHTML = getTreeConnectors(item, ordered);
 
-    // ③ 除外状態のクラスを計算
+    // メタブロック判定
+    const isMeta    = isInMetaBlock(item.id);
+    const isSysLock = isMetaSysRestricted(item.id); // 名前変更・移動・追加 不可
+    const metaClass = isMeta ? " is-meta" : "";
+
+    // 除外状態（メタ行はスタイル適用しない）
     const isExcluded = !!item.exclude;
     const ancestorExcluded = isAncestorExcluded(item.id);
-    const excludeClass = ancestorExcluded ? " is-inherited-exclude" : (isExcluded ? " is-excluded" : "");
+    const excludeClass = isMeta ? "" : (ancestorExcluded ? " is-inherited-exclude" : (isExcluded ? " is-excluded" : ""));
 
-    // ② padding-left:24px でドラッグハンドル（absolute left:2px）の領域を確保
-    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}${isCat ? ' is-category' : ''}${excludeClass}" data-id="${item.id}" style="padding-left:24px"
+    html += `<div class="item-row${sel}${item.type === 'separator' ? ' is-separator' : ''}${isCat ? ' is-category' : ''}${excludeClass}${metaClass}" data-id="${item.id}" style="padding-left:24px"
       onclick="selectItem(${item.id})" oncontextmenu="showContextMenu(event, ${item.id})"
       ondragover="onDragOver(event, ${item.id})" ondrop="onDrop(event, ${item.id})"
       ondragleave="onDragLeave(event, ${item.id})">`;
 
-    // ② ドラッグハンドル: position:absolute で絶対左端固定
-    html += `<div class="drag-handle" draggable="true"
-      ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
-      title="${t("drag.tooltip")}">⠿</div>`;
+    // ドラッグハンドル（SYS制限アイテムは無効）
+    if (isSysLock) {
+      html += `<div class="drag-handle drag-handle-disabled" title="">⠿</div>`;
+    } else {
+      html += `<div class="drag-handle" draggable="true"
+        ondragstart="onDragStart(event, ${item.id})" ondragend="onDragEnd(event)"
+        title="${t("drag.tooltip")}">⠿</div>`;
+    }
 
-    // ③ 出力チェックボックス (output-toggle ボタン → カスタムチェックボックス)
-    const checkboxChecked = (!isExcluded && !ancestorExcluded) ? 'checked' : '';
-    const checkboxDisabled = ancestorExcluded ? 'disabled' : '';
-    const toggleTitle = ancestorExcluded ? t('output.inheritedOff') : (isExcluded ? t('output.off') : t('output.on'));
-    const checkboxOnclick = ancestorExcluded
-      ? `onclick="event.stopPropagation()"`
-      : `onclick="toggleExclude(${item.id}); event.stopPropagation()"`;
-    html += `<div class="col-output"><input type="checkbox" class="output-checkbox"
-      ${checkboxChecked} ${checkboxDisabled}
-      aria-label="${esc(toggleTitle)}" title="${esc(toggleTitle)}"
-      ${checkboxOnclick}></div>`;
+    // 出力チェックボックス（メタ行は非表示）
+    if (isMeta) {
+      html += `<div class="col-output"></div>`;
+    } else {
+      const checkboxChecked = (!isExcluded && !ancestorExcluded) ? 'checked' : '';
+      const checkboxDisabled = ancestorExcluded ? 'disabled' : '';
+      const toggleTitle = ancestorExcluded ? t('output.inheritedOff') : (isExcluded ? t('output.off') : t('output.on'));
+      const checkboxOnclick = ancestorExcluded
+        ? `onclick="event.stopPropagation()"`
+        : `onclick="toggleExclude(${item.id}); event.stopPropagation()"`;
+      html += `<div class="col-output"><input type="checkbox" class="output-checkbox"
+        ${checkboxChecked} ${checkboxDisabled}
+        aria-label="${esc(toggleTitle)}" title="${esc(toggleTitle)}"
+        ${checkboxOnclick}></div>`;
+    }
 
     // Tree connectors
     html += treeHTML;
 
-    // Type selector
-    // ④ type-select: onchange で selectedId を更新してから updateItem
+    // Type selector（SYS制限アイテムは disabled）
+    const typeSelectAttrs = isSysLock
+      ? 'disabled'
+      : `onchange="selectedId=${item.id}; updateItem(${item.id}, 'type', this.value); event.stopPropagation()"`;
     html += `<div class="col-type"><select class="type-select" style="color:${TYPE_COLORS[item.type]||'var(--text-subtle)'}"
-      onchange="selectedId=${item.id}; updateItem(${item.id}, 'type', this.value); event.stopPropagation()">`;
+      ${typeSelectAttrs}>`;
     for (const [k,v] of Object.entries(getTypeLabels())) {
       html += `<option value="${k}" ${k===item.type?"selected":""} style="background:var(--bg-ctx-menu);color:${TYPE_COLORS[k]}">${v}</option>`;
     }
     html += `</select></div>`;
 
     if (isDeco) {
-      // Decorative items
       if (item.type === "separator") html += `<div class="deco-line"></div>`;
       else html += `<div class="deco-pagebreak"><span>${t("deco.pagebreak")}</span></div>`;
     } else {
@@ -713,39 +840,54 @@ function render() {
         } else {
           html += `<span class="col-name-spacer"></span>`;
         }
-        html += `<span class="cat-folder-icon">📁</span>`;
+        html += `<span class="cat-folder-icon">${isMeta ? '⚙' : '📁'}</span>`;
       }
-      // ④ name-input: onclick で selectItemNoRender を呼び出し（renderせずに選択状態を即反映）
-      html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
-        placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
-        onchange="updateItem(${item.id}, 'name', this.value)"
-        onclick="selectItemNoRender(${item.id}); event.stopPropagation()"
-        onkeydown="handleNameInputKeydown(event, ${item.id})">`;
+      if (isSysLock) {
+        // SYS制限アイテムは名前を読み取り専用で表示
+        html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}" readonly
+          onclick="selectItemNoRender(${item.id}); event.stopPropagation()">`;
+      } else {
+        html += `<input class="name-input${isCat?' is-category':''}" value="${esc(item.name)}"
+          placeholder="${isCat ? t('placeholder.category') : t('placeholder.mapping')}"
+          onchange="updateItem(${item.id}, 'name', this.value)"
+          onclick="selectItemNoRender(${item.id}); event.stopPropagation()"
+          onkeydown="handleNameInputKeydown(event, ${item.id})">`;
+      }
       html += `</div>`;
 
       // Mapping
       if (isMap) {
-        const badges = mappingDisplayHTML(item.mapping);
         html += `<div class="col-mapping">`;
-        // ④ mapping-box: onclick で selectItemNoRender を呼び出し（renderせずに選択状態を即反映）
-        html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
-          onclick="selectItemNoRender(${item.id}); startMappingEdit(${item.id}); event.stopPropagation()">`;
-        html += badges || t('mapping.clickToEdit');
-        html += `</div>`;
-        // ④ gamepad/keyboard ボタン: selectItemNoRender で選択状態を即反映
-        html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
-        html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openKeyboardModal(${item.id}); event.stopPropagation()" title="${t('keyboard.tooltip')}">⌨️</button>`;
+        if (isSysLock) {
+          // SYS制限アイテムはマッピング値を読み取り専用で表示（カラーコードはスウォッチ付き）
+          const rawVal = item.mapping.trim();
+          const showSwatch = rawVal.startsWith('#');
+          let swatchHtml = '';
+          if (showSwatch) {
+            swatchHtml = isColorCode(rawVal)
+              ? `<span class="color-swatch" style="background:${rawVal}"></span>`
+              : `<span class="color-swatch color-swatch-invalid">?</span>`;
+          }
+          const valDisplay = item.mapping
+            ? `<span class="mapping-text">${esc(item.mapping)}</span>`
+            : `<span class="mapping-text" style="opacity:0.4">—</span>`;
+          html += `<div class="mapping-box meta-readonly">${valDisplay}${swatchHtml}</div>`;
+        } else {
+          const badges = mappingDisplayHTML(item.mapping);
+          html += `<div class="mapping-box${badges?'':' empty'}" data-item-id="${item.id}"
+            onclick="selectItemNoRender(${item.id}); startMappingEdit(${item.id}); event.stopPropagation()">`;
+          html += badges || t('mapping.clickToEdit');
+          html += `</div>`;
+          html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openGamepadModal(${item.id}); event.stopPropagation()" title="${t('gamepad.tooltip')}">🎮</button>`;
+          html += `<button class="gamepad-btn" onclick="selectItemNoRender(${item.id}); openKeyboardModal(${item.id}); event.stopPropagation()" title="${t('keyboard.tooltip')}">⌨️</button>`;
+        }
         html += `</div>`;
       } else {
         html += `<div class="col-mapping"></div>`;
       }
-
-      // Parent select removed — use drag-and-drop for re-parenting
     }
 
-    // ① 削除ボタン: 常時表示（opacity:0 廃止済み）
     html += `<button class="row-delete-btn" onclick="deleteItem(${item.id}); event.stopPropagation()" title="${t('delete.tooltip')}">×</button>`;
-
     html += `</div>`;
   }
   list.innerHTML = html;
@@ -1212,25 +1354,42 @@ function finishMappingEdit(id, value) {
 
 function showContextMenu(e, id) {
   e.preventDefault(); e.stopPropagation();
-  // ④ コンテキストメニューを開いた際も選択ハイライトを即時反映
   selectItemNoRender(id);
   const menu = document.getElementById("ctx-menu");
   const hasClip = !!clipboard;
-  menu.innerHTML = `
-    <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">${t("ctx.insertAbove")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">${t("ctx.insertBelow")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">${t("ctx.moveUp")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">${t("ctx.moveDown")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">${t("ctx.copy")}</div>
-    <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">${t("ctx.cut")}</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">${t("ctx.pasteAbove")}</div>
-    <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">${t("ctx.pasteBelow")}</div>
-    <div class="ctx-sep"></div>
-    <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
-  `;
-  // いったん表示してサイズを取得し、画面端にはみ出さないよう位置を補正する
+  const sysLock = isMetaSysRestricted(id);
+
+  if (sysLock) {
+    menu.innerHTML = `
+      <div class="ctx-item disabled">${t("ctx.insertAbove")}</div>
+      <div class="ctx-item disabled">${t("ctx.insertBelow")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item disabled">${t("ctx.moveUp")}</div>
+      <div class="ctx-item disabled">${t("ctx.moveDown")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">${t("ctx.copy")}</div>
+      <div class="ctx-item disabled">${t("ctx.cut")}</div>
+      <div class="ctx-item disabled">${t("ctx.pasteAbove")}</div>
+      <div class="ctx-item disabled">${t("ctx.pasteBelow")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
+    `;
+  } else {
+    menu.innerHTML = `
+      <div class="ctx-item" onclick="hideContextMenu();insertItemBefore(${id})">${t("ctx.insertAbove")}</div>
+      <div class="ctx-item" onclick="hideContextMenu();addItem('mapping',${id})">${t("ctx.insertBelow")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideContextMenu();moveUp(${id})">${t("ctx.moveUp")}</div>
+      <div class="ctx-item" onclick="hideContextMenu();moveDown(${id})">${t("ctx.moveDown")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideContextMenu();copyItem(${id})">${t("ctx.copy")}</div>
+      <div class="ctx-item" onclick="hideContextMenu();cutItem(${id})">${t("ctx.cut")}</div>
+      <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteAbove(${id})`:''}">${t("ctx.pasteAbove")}</div>
+      <div class="ctx-item${hasClip?'':' disabled'}" onclick="${hasClip?`hideContextMenu();pasteBelow(${id})`:''}">${t("ctx.pasteBelow")}</div>
+      <div class="ctx-sep"></div>
+      <div class="ctx-item" onclick="hideContextMenu();deleteItem(${id})">${t("ctx.delete")}</div>
+    `;
+  }
   menu.style.left = e.clientX + "px";
   menu.style.top = e.clientY + "px";
   menu.classList.add("show");
@@ -1286,7 +1445,14 @@ function openCSV() { document.getElementById("csvInput").click(); }
 function handleOpenCSV(e) {
   const file = e.target.files[0]; if(!file) return;
   const reader = new FileReader();
-  reader.onload = ev => { items = csvToItems(ev.target.result); undoStack=[]; setFileName(file.name); render(); };
+  reader.onload = ev => {
+    items = csvToItems(ev.target.result);
+    undoStack=[];
+    setFileName(file.name);
+    collapseMetaRootIfExists();
+    applyRecommendedCtrlIfExists();
+    render();
+  };
   reader.readAsText(file); e.target.value = "";
 }
 let _saveCsvBlobUrl = null;
@@ -1374,12 +1540,13 @@ async function loadSampleFile(fileUrl) {
     const text = await res.text();
     items = csvToItems(text);
     undoStack = [];
-    // Extract filename from URL
     const name = fileUrl.split('/').pop() || 'sample.csv';
     setFileName(name);
     document.getElementById('undoBtn').disabled = true;
     document.getElementById('sampleSelect').value = '';
     clearLocalStorage();
+    collapseMetaRootIfExists();
+    applyRecommendedCtrlIfExists();
     render();
   } catch(e) {
     alert('サンプルの読み込みに失敗しました: ' + e.message);
@@ -1856,14 +2023,85 @@ function badgeMappingHTML(mapping, fs) {
 }
 
 function getExportSettings() {
+  const useRec = isUseRecommendedChecked();
+  if (useRec && hasMetaSettings()) {
+    const meta = readMetaSettings();
+    const mode = meta.buttonStyle || 'promptfont';
+    return {
+      cols:       parseInt(meta.columns)   || 3,
+      fs:         parseFloat(meta.fontSize) || 12,
+      mode,
+      fontSource: document.getElementById("exportFontSource").value,
+      theme:      meta.outputStyle || 'mono',
+    };
+  }
   const mode = document.getElementById("exportRenderMode").value;
   return {
-    cols: parseInt(document.getElementById("exportCols").value),
-    fs: parseFloat(document.getElementById("exportFontSize").value),
+    cols:       parseInt(document.getElementById("exportCols").value),
+    fs:         parseFloat(document.getElementById("exportFontSize").value),
     mode,
     fontSource: mode === "promptfont" ? document.getElementById("exportFontSource").value : null,
-    theme: document.getElementById("exportTheme").value,
+    theme:      document.getElementById("exportTheme").value,
   };
+}
+
+function isUseRecommendedChecked() {
+  const cb = document.getElementById("exportUseRecommended");
+  return cb ? cb.checked : false;
+}
+
+function onUseRecommendedChange() {
+  const checked = isUseRecommendedChecked();
+  localStorage.setItem('mm_useRecommendedExport', checked ? '1' : '0');
+  const controls = ['exportCols','exportFontSize','exportRenderMode','exportTheme'];
+  controls.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = checked;
+  });
+  updateExportPreview();
+}
+
+// ─── Export color helpers ─────────────────────────────────────────────────
+
+function getMonoColors() {
+  return {
+    sectionBorder: "#bbb",   sectionAccent: "#555",
+    headerBg:      "#333",   headerColor:   "#fff",
+    zebraRow:      "#f2f2f2", rowBorder:    "#ccc",   nameColor: "#444",
+    subCatBg:      "#666",   subCatColor:   "#fff",
+    colDivider:    "#ccc",   sepColor:      "#aaa",
+  };
+}
+
+function getNavyColors() {
+  return {
+    sectionBorder: "#94a3b8", sectionAccent: "#1e293b",
+    headerBg:      "#1e293b", headerColor:   "#f1f5f9",
+    zebraRow:      "#f8f9fa", rowBorder:     "#e2e8f0", nameColor: "#475569",
+    subCatBg:      "#475569", subCatColor:   "#fff",
+    colDivider:    "#e2e8f0", sepColor:      "#cbd5e1",
+  };
+}
+
+function resolveExportColors(theme) {
+  if (theme === 'recommended') {
+    const meta = readMetaSettings();
+    if (meta) {
+      const fallback = getMonoColors();
+      const keys = ['headerBg','headerColor','sectionBorder','sectionAccent',
+                    'zebraRow','rowBorder','nameColor','subCatBg','subCatColor',
+                    'colDivider','sepColor'];
+      const result = {};
+      for (const k of keys) {
+        const v = meta[k];
+        result[k] = isColorCode(v) ? v : fallback[k];
+      }
+      return result;
+    }
+    return getMonoColors();
+  }
+  if (theme === 'navy' || theme === 'color') return getNavyColors();
+  return getMonoColors();
 }
 
 function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
@@ -1883,31 +2121,7 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
   const btnFn = mode === "badge" ? (m) => badgeMappingHTML(m, fs) : (m) => pfMappingHTML(m, fs);
 
   // ── テーマカラー定義 / Theme color definitions
-  const T = theme === "color" ? {
-    sectionBorder:   "#94a3b8",
-    sectionAccent:   "#1e293b",
-    headerBg:        "#1e293b",
-    headerColor:     "#f1f5f9",
-    zebraRow:        "#f8f9fa",
-    rowBorder:       "#e2e8f0",
-    colDivider:      "#e2e8f0",
-    nameColor:       "#475569",
-    subCatBg:        "#475569",
-    subCatColor:     "#fff",
-    sepColor:        "#cbd5e1",
-  } : {
-    sectionBorder:   "#bbb",
-    sectionAccent:   "#555",
-    headerBg:        "#333",
-    headerColor:     "#fff",
-    zebraRow:        "#f2f2f2",
-    rowBorder:       "#ccc",
-    colDivider:      "#ccc",
-    nameColor:       "#444",
-    subCatBg:        "#666",
-    subCatColor:     "#fff",
-    sepColor:        "#aaa",
-  };
+  const T = resolveExportColors(theme);
   const TABLE_OPEN  = `<table><colgroup><col style="width:68%"><col style="width:32%"></colgroup>`;
   const TABLE_CLOSE = `</table>`;
 
@@ -2156,7 +2370,6 @@ ${pagesHtml}
 
 
 function showExportModal() {
-  // 3階層以上のネストがないかチェック
   const hasDeepNest = items.some(item => {
     if (item.type !== "category") return false;
     const parent = items.find(it => it.id === item.parentId);
@@ -2165,10 +2378,193 @@ function showExportModal() {
     return grandParent && grandParent.type === "category";
   });
   if (hasDeepNest) alert(t("exp.warnDeepNest"));
+
+  // 推奨設定UIの表示制御
+  const hasMeta = hasMetaSettings();
+  const recRow = document.getElementById("exportRecommendedRow");
+  if (recRow) recRow.style.display = hasMeta ? "flex" : "none";
+
+  // 「推奨値を使用」チェックボックスの状態を復元（推奨設定がある場合のみ）
+  const cb = document.getElementById("exportUseRecommended");
+  if (cb) {
+    const saved = localStorage.getItem('mm_useRecommendedExport');
+    cb.checked = hasMeta && saved !== '0'; // デフォルトON
+    onUseRecommendedChange();
+  }
+
   document.getElementById("exportModal").classList.add("show");
   updateExportPreview();
 }
+
 function closeExportModal() { document.getElementById("exportModal").classList.remove("show"); }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// META BLOCK — BUILD & SAVE
+// ═══════════════════════════════════════════════════════════════════════════
+
+function buildSysItems(rootId, settings) {
+  const result = [];
+  function mkCat(name, parentId) {
+    const it = { id: genId(), parentId, type: 'category', name, mapping: '', exclude: 1 };
+    result.push(it);
+    return it.id;
+  }
+  function mkMap(name, mapping, parentId) {
+    result.push({ id: genId(), parentId, type: 'mapping', name, mapping: String(mapping ?? ''), exclude: 1 });
+  }
+  const sysId = mkCat(META_IDS.SYS, rootId);
+  mkMap('outputStyle',  settings.theme,      sysId);
+  mkMap('controller',   settings.controller, sysId);
+  mkMap('columns',      settings.cols,       sysId);
+  mkMap('fontSize',     settings.fs,         sysId);
+  mkMap('buttonStyle',  settings.mode,       sysId);
+
+  const hdrId = mkCat(META_IDS.SYS_HEADER,  sysId);
+  mkMap('headerBg',     settings.colors.headerBg,     hdrId);
+  mkMap('headerColor',  settings.colors.headerColor,   hdrId);
+
+  const secId = mkCat(META_IDS.SYS_SECTION, sysId);
+  mkMap('sectionBorder', settings.colors.sectionBorder, secId);
+  mkMap('sectionAccent', settings.colors.sectionAccent, secId);
+
+  const rowId = mkCat(META_IDS.SYS_ROW,     sysId);
+  mkMap('zebraRow',     settings.colors.zebraRow,  rowId);
+  mkMap('rowBorder',    settings.colors.rowBorder,  rowId);
+  mkMap('nameColor',    settings.colors.nameColor,  rowId);
+
+  const subId = mkCat(META_IDS.SYS_SUBCAT,  sysId);
+  mkMap('subCatBg',     settings.colors.subCatBg,   subId);
+  mkMap('subCatColor',  settings.colors.subCatColor, subId);
+
+  const miscId = mkCat(META_IDS.SYS_MISC,   sysId);
+  mkMap('colDivider',   settings.colors.colDivider, miscId);
+  mkMap('sepColor',     settings.colors.sepColor,   miscId);
+
+  return result;
+}
+
+function saveRecommendedSettings() {
+  // ダイアログの生の設定値を読む（推奨値チェックは無視）
+  const mode  = document.getElementById("exportRenderMode").value;
+  const theme = document.getElementById("exportTheme").value;
+  const cols  = parseInt(document.getElementById("exportCols").value) || 3;
+  const fs    = parseFloat(document.getElementById("exportFontSize").value) || 12;
+  const colors = resolveExportColors(theme);
+
+  pushUndo();
+
+  // Step 1: 既存 __MM_USER__ サブツリーを先に保存
+  let savedUserSubtree = null;
+  const existingUser = findMetaItemByName(META_IDS.USER);
+  if (existingUser) {
+    savedUserSubtree = getSubtree(existingUser.id).map(it => ({...it}));
+  }
+
+  // Step 2: 既存 __MM_META__ 配下のSYS/USER以外の子を保存
+  const metaRoot = findMetaRoot();
+  let otherChildSubtrees = [];
+  if (metaRoot) {
+    const otherChildren = items.filter(it =>
+      it.parentId === metaRoot.id &&
+      it.name !== META_IDS.SYS &&
+      it.name !== META_IDS.USER
+    );
+    for (const ch of otherChildren) otherChildSubtrees.push(...getSubtree(ch.id).map(it => ({...it})));
+  }
+
+  // Step 3: META ブロック全体を items から除去
+  if (metaRoot) {
+    const allMetaIds = new Set([metaRoot.id, ...getDescendantIds(metaRoot.id)]);
+    items = items.filter(it => !allMetaIds.has(it.id));
+  }
+
+  // Step 4: 新しいルートを作成（既存IDを再利用して連続性を保つ）
+  const newRoot = metaRoot
+    ? { ...metaRoot }
+    : { id: genId(), parentId: null, type: 'category', name: META_IDS.ROOT, mapping: '', exclude: 1 };
+
+  // Step 5: SYS アイテムを構築
+  const sysItems = buildSysItems(newRoot.id, { cols, fs, mode, theme, controller: currentController, colors });
+
+  // Step 6: USER サブツリー（既存再利用 or 新規作成）
+  let userSubtree;
+  if (savedUserSubtree) {
+    userSubtree = savedUserSubtree;
+  } else {
+    const userId = genId();
+    userSubtree = [
+      { id: userId, parentId: newRoot.id, type: 'category', name: META_IDS.USER, mapping: '', exclude: 1 },
+      { id: genId(), parentId: userId, type: 'mapping', name: t('meta.userSample'), mapping: '', exclude: 1 },
+    ];
+  }
+
+  // Step 7: META ブロックを先頭に配置
+  const metaBlock = [newRoot, ...sysItems, ...otherChildSubtrees, ...userSubtree];
+  items = [...metaBlock, ...items];
+
+  collapsedIds.add(newRoot.id);
+  render();
+  updateRecommendedCtrlOption();
+  updateExportPreview();
+}
+
+// ─── Controller recommended option ────────────────────────────────────────
+
+function getRecommendedCtrlLabel(ctrlId) {
+  const name = CONTROLLER_NAMES[ctrlId] || ctrlId;
+  return `${t('meta.recommendedPrefix')} (${name})`;
+}
+
+function updateRecommendedCtrlOption() {
+  const sel = document.getElementById('controllerSelect');
+  if (!sel) return;
+  let opt = sel.querySelector('option[value="__recommended__"]');
+  const meta = readMetaSettings();
+  const recCtrl = meta ? meta.controller : null;
+
+  if (recCtrl && CONTROLLER_BUTTON_MAP[recCtrl]) {
+    if (!opt) {
+      opt = document.createElement('option');
+      opt.value = '__recommended__';
+      sel.insertBefore(opt, sel.firstChild);
+    }
+    opt.textContent = getRecommendedCtrlLabel(recCtrl);
+  } else {
+    if (opt) {
+      // 推奨設定がなくなった場合: 通常コントローラーに戻す
+      if (sel.value === '__recommended__') sel.value = currentController;
+      opt.remove();
+    }
+  }
+}
+
+function applyRecommendedCtrlIfExists() {
+  const meta = readMetaSettings();
+  if (!meta || !meta.controller || !CONTROLLER_BUTTON_MAP[meta.controller]) {
+    updateRecommendedCtrlOption();
+    return;
+  }
+  const recCtrl = meta.controller;
+  // currentController から recCtrl に変換（meta アイテム自身はテキスト値なので変換されない）
+  items = items.map(it => ({
+    ...it,
+    mapping: convertMappingString(it.mapping, currentController, recCtrl)
+  }));
+  currentController = recCtrl;
+  localStorage.setItem('mappingManagerController', recCtrl);
+  const url = new URL(window.location);
+  url.searchParams.set('ctrl', recCtrl);
+  history.replaceState(null, '', url);
+  updateRecommendedCtrlOption();
+  const sel = document.getElementById('controllerSelect');
+  if (sel) sel.value = '__recommended__';
+}
+
+// META ブロック読み込み時に折り畳む
+function collapseMetaRootIfExists() {
+  const root = findMetaRoot();
+  if (root) collapsedIds.add(root.id);
+}
 
 function updateExportPreview() {
   const {cols, fs, mode, fontSource, theme} = getExportSettings();
