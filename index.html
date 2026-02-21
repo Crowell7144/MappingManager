@@ -296,8 +296,9 @@
     <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.columns">カラム数:</span>
-        <input type="number" id="exportCols" value="3" min="1" max="6" step="1" oninput="updateExportPreview()"
-          class="export-control number-input">
+        <select id="exportCols" onchange="updateExportPreview()" class="export-control">
+          <option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option>
+        </select>
       </label>
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.fontSize">フォントサイズ:</span>
@@ -320,16 +321,19 @@
         </select>
       </label>
     </div>
-    <!-- 推奨値を適用ボタン (メタブロックがある場合のみ表示) -->
+    <!-- 推奨値を使用 (メタブロックがある場合のみ表示) -->
     <div id="exportRecommendedRow" style="display:none;align-items:center;gap:10px;margin-bottom:8px;font-size:13px">
-      <button class="modal-btn modal-btn-apply-recommended" onclick="applyRecommendedToExport()" data-i18n="meta.applyRecommended">推奨値を適用</button>
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+        <input type="checkbox" id="exportUseRecommended" onchange="onUseRecommendedChange()">
+        <span data-i18n="meta.useRecommended">推奨値を使用</span>
+      </label>
     </div>
     <div id="fontSourceRow" style="display:flex;gap:12px;margin-bottom:10px">
       <label style="display:flex;align-items:center;gap:6px;font-size:13px">
         <span data-i18n="exp.fontSource">フォント参照先:</span>
         <select id="exportFontSource" onchange="updateExportPreview()" class="export-control">
-          <option value="local" data-i18n="exp.fontLocal">ローカル（同フォルダ）</option>
           <option value="ghpages" data-i18n="exp.fontGhpages">GitHub Pages（URL参照）</option>
+          <option value="local" data-i18n="exp.fontLocal">ローカル（同フォルダ）</option>
         </select>
       </label>
     </div>
