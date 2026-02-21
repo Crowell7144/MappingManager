@@ -1,63 +1,62 @@
 id,parentId,type,name,mapping,exclude
-200,,category,ヘッダー,,0
-201,200,mapping,カテゴリはアイテムをグループ化します,,0
-103,200,mapping,3階層以上のネストがある場合 外側のカテゴリから順に見出し（H2・H3…）として扱われます,,0
-202,200,mapping,このチュートリアルには3階層のネストがあるため ルートのカテゴリはすべてH2見出しとして扱われます,,0
-5,200,category,大セクション,,0
-6,5,mapping,カテゴリの中にカテゴリを作れます,,0
-7,5,mapping,ドラッグ＆ドロップで並び替えできます,,0
-100,5,category,小セクション,,0
-101,100,mapping,カテゴリ名の横のバッジで出力時の役割を確認できます,,0
-300,,category,,,0
-1,300,category,👋 Mapping Manager へようこそ,,0
+1,,category,👋 Mapping Manager へようこそ,,0
 2,1,mapping,このアプリの使い方を説明します,,0
-8,300,category,🎮 ボタン入力,,0
-9,8,mapping,下ボタン（Xbox:A / Switch:B / PS:×）,[A],0
-10,8,mapping,右ボタン（Xbox:B / Switch:A / PS:○）,[B],0
-11,8,mapping,左ボタン（Xbox:X / Switch:Y / PS:□）,[X],0
-12,8,mapping,上ボタン（Xbox:Y / Switch:X / PS:△）,[Y],0
-13,8,mapping,同時押し,[A][B],0
-14,8,mapping,ショルダーボタン,[LB][RB],0
-15,8,mapping,トリガー,[LT][RT],0
-16,8,mapping,スタート・バック,[Start][Back],0
-17,300,category,🕹️ スティック入力,,0
-18,17,mapping,左スティック 水平,[LS:X],0
-19,17,mapping,左スティック 垂直,[LS:Y],0
-20,17,mapping,左スティック 全方向,[LS:XY],0
-21,17,mapping,右スティック 全方向,[RS:XY],0
-22,17,mapping,スティック押込み,[LS][RS],0
-23,300,category,🎯 十字キー,,0
-24,23,mapping,上,[▲],0
-25,23,mapping,下,[▼],0
-26,23,mapping,左,[◀],0
-27,23,mapping,右,[▶],0
-28,23,mapping,斜め入力,[▲▶],0
-29,300,category,⌨️ テキスト表現,,0
-30,29,mapping,ボタン＋テキスト,[A]長押し,0
-31,29,mapping,パドルボタン（Gamepad API非対応）,[LP1],0
-32,29,mapping,複数パドル,[LP1][LP2],0
-33,29,mapping,テキストのみ,説明文もそのまま表示,0
-34,29,mapping,混在,[LB]を押しながら[LS:XY],0
-35,300,category,⌨️ キーボード入力,,0
-36,35,mapping,単キー,{W},0
-37,35,mapping,修飾キー＋キー,{Ctrl}{C},0
-38,35,mapping,方向キー,{Up},0
-39,35,mapping,ファンクションキー,{F5},0
-40,300,category,☑ 出力除外,,0
-41,40,mapping,このアイテムは出力されます,,0
-42,40,mapping,チェックボックスをOFFにすると出力から除外されます,,1
-43,40,category,カテゴリごと除外も可,,1
-44,43,mapping,親が除外されると子も除外,,0
-70,300,category,📄 レイアウト要素,,0
-71,70,mapping,セパレーター: 項目間に横線を引きます,,0
-72,70,separator,,,0
-51,70,mapping,改ページ: ↓ここでページを区切ります。次のセクションは次ページから始まります,,0
-52,70,pagebreak,,,0
-53,300,category,💡 ヒント,,0
-54,53,mapping,↑改ページにより このカテゴリは次のページから始まっています,,0
-55,53,mapping,右クリックでコンテキストメニュー,,0
-56,53,mapping,Ctrl+Z で元に戻す,,0
-57,53,mapping,Ctrl+S でCSV保存,,0
-58,53,mapping,🎮ボタンでコントローラー入力,,0
-59,53,mapping,⌨️ボタンでキーボード入力,,0
-60,53,mapping,チートシート出力でPDF印刷可,,0
+3,1,category,🎮 ボタン入力,,0
+4,3,mapping,🎮ボタンでコントローラー入力。右上のコントローラー設定に従ったボタンが入力されます,,0
+5,3,mapping,下ボタン（Xbox:A / Switch:B / PS:×）,[A],0
+6,3,mapping,右ボタン（Xbox:B / Switch:A / PS:○）,[B],0
+7,3,mapping,左ボタン（Xbox:X / Switch:Y / PS:□）,[X],0
+8,3,mapping,上ボタン（Xbox:Y / Switch:X / PS:△）,[Y],0
+9,3,mapping,同時押し,[A][B],0
+10,3,mapping,ショルダーボタン,[LB][RB],0
+11,3,mapping,トリガー,[LT][RT],0
+12,3,mapping,スタート・バック,[Start][Back],0
+13,1,category,🕹️ スティック入力,,0
+14,13,mapping,左スティック 水平,[LS:X],0
+15,13,mapping,左スティック 垂直,[LS:Y],0
+16,13,mapping,左スティック 全方向,[LS:XY],0
+17,13,mapping,右スティック 全方向,[RS:XY],0
+18,13,mapping,スティック押込み,[LS][RS],0
+19,1,category,🎯 十字キー,,0
+20,19,mapping,上,[▲],0
+21,19,mapping,下,[▼],0
+22,19,mapping,左,[◀],0
+23,19,mapping,右,[▶],0
+24,19,mapping,斜め入力,[▲▶],0
+25,1,category,⌨️ テキスト表現,,0
+26,25,mapping,ボタン＋テキスト,[A]長押し,0
+27,25,mapping,パドルボタン（Gamepad API非対応）,[LP1],0
+28,25,mapping,複数パドル,[LP1][LP2],0
+29,25,mapping,テキストのみ,説明文もそのまま表示,0
+30,25,mapping,混在,[LB]を押しながら[LS:XY],0
+31,1,category,⌨️ キーボード入力,,0
+32,31,mapping,⌨️ボタンでキーボード入力,,0
+33,31,mapping,単キー,{W},0
+34,31,mapping,修飾キー＋キー,{Ctrl}{C},0
+35,31,mapping,方向キー,{Up},0
+36,31,mapping,ファンクションキー,{F5},0
+37,1,category,☑ 出力除外,,0
+38,37,mapping,左端のチェックボックスがONのアイテムは出力されます,,0
+39,37,mapping,チェックボックスをOFFにすると出力から除外されます,,1
+40,37,category,カテゴリごと除外も可,,1
+41,40,mapping,親が除外されると子も除外,,0
+42,1,category,大カテゴリ,,0
+43,42,mapping,カテゴリはアイテムをグループ化します,,0
+44,42,mapping,カテゴリは複数ネストできます,,0
+45,42,category,小カテゴリ,,0
+46,45,mapping,3階層以上のネストがある場合 外側のカテゴリから順に見出し（H2・H3…）大カテゴリ、小カテゴリとして扱われます,,0
+47,45,mapping,このチュートリアルには3階層のネストがあるため ルートのカテゴリはすべてH2見出しとして扱われます,,0
+48,45,mapping,ファイル内に2階層以下のネストしかない場合、ルートのカテゴリは全て大カテゴリとして扱われます。,,0
+49,45,mapping,カテゴリ名の横のバッジで出力時の役割を確認できます,,0
+50,1,category,📄 レイアウト要素,,0
+51,50,mapping,セパレーター: 項目間に横線を引きます,,0
+52,50,separator,,,0
+53,50,mapping,改ページ: ↓ここでページを区切ります。次のセクションは次ページから始まります,,0
+54,50,pagebreak,,,0
+55,1,category,💡 ヒント,,0
+56,55,mapping,↑改ページにより このカテゴリは次のページから始まっています,,0
+57,55,mapping,左端のハンドルをドラッグ＆ドロップで並び替えできます,,0
+58,55,mapping,右クリックでコンテキストメニュー,,0
+59,55,mapping,Ctrl+Z で元に戻す,,0
+60,55,mapping,Ctrl+S でCSV保存,,0
+61,55,mapping,チートシート出力でPDF印刷可,,0

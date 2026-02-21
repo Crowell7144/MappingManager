@@ -579,7 +579,16 @@ function csvParseLine(line) {
 }
 function itemsToCSV() {
   const header = "id,parentId,type,name,mapping,exclude";
-  const rows = items.map(it => [it.id, it.parentId??"", it.type, csvEscape(it.name), csvEscape(it.mapping), it.exclude||0].join(","));
+  // 表示順（深さ優先）でIDを1から振り直す（メモリ上のデータは変更しない）
+  const ordered = getOrderedItems();
+  const idMap = new Map(); // 旧ID → 新ID
+  ordered.forEach((it, i) => idMap.set(it.id, i + 1));
+  // idMapに含まれない孤立アイテムも元のIDのまま末尾に出力
+  const rows = ordered.map(it => {
+    const newId = idMap.get(it.id) ?? it.id;
+    const newParentId = it.parentId != null ? (idMap.get(it.parentId) ?? it.parentId) : "";
+    return [newId, newParentId, it.type, csvEscape(it.name), csvEscape(it.mapping), it.exclude||0].join(",");
+  });
   return [header, ...rows].join("\n");
 }
 function csvToItems(text) {
