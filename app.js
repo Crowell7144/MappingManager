@@ -133,6 +133,7 @@ const I18N = {
     // Meta block
     "meta.saveRecommended": "推奨設定に保存する",
     "meta.useRecommended": "推奨値を使用",
+    "meta.applyRecommended": "推奨値を適用",
     "meta.recommendedPrefix": "📌 推奨値",
     "meta.userSample": "自由にコメントを書くことが出来ます",
     // Gist feature
@@ -284,6 +285,7 @@ const I18N = {
     // Meta block
     "meta.saveRecommended": "Save to Recommended Settings",
     "meta.useRecommended": "Use Recommended Settings",
+    "meta.applyRecommended": "Apply Recommended Values",
     "meta.recommendedPrefix": "📌 Recommended",
     "meta.userSample": "You can write free-form comments here",
     // Gist feature
@@ -2459,41 +2461,30 @@ function badgeMappingHTML(mapping, fs) {
 }
 
 function getExportSettings() {
-  const useRec = isUseRecommendedChecked();
-  if (useRec && hasMetaSettings()) {
-    const meta = readMetaSettings();
-    const mode = meta.buttonStyle || 'promptfont';
-    return {
-      cols:       parseInt(meta.columns)   || 3,
-      fs:         parseFloat(meta.fontSize) || 12,
-      mode,
-      fontSource: document.getElementById("exportFontSource").value,
-      theme:      meta.outputStyle || 'mono',
-    };
-  }
   const mode = document.getElementById("exportRenderMode").value;
   return {
-    cols:       parseInt(document.getElementById("exportCols").value),
-    fs:         parseFloat(document.getElementById("exportFontSize").value),
+    cols:       parseInt(document.getElementById("exportCols").value) || 3,
+    fs:         parseFloat(document.getElementById("exportFontSize").value) || 12,
     mode,
     fontSource: mode === "promptfont" ? document.getElementById("exportFontSource").value : null,
     theme:      document.getElementById("exportTheme").value,
   };
 }
 
-function isUseRecommendedChecked() {
-  const cb = document.getElementById("exportUseRecommended");
-  return cb ? cb.checked : false;
-}
-
-function onUseRecommendedChange() {
-  const checked = isUseRecommendedChecked();
-  localStorage.setItem('mm_useRecommendedExport', checked ? '1' : '0');
-  const controls = ['exportCols','exportFontSize','exportRenderMode','exportTheme'];
-  controls.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = checked;
-  });
+function applyRecommendedToExport() {
+  const meta = readMetaSettings();
+  if (!meta) return;
+  const cols = parseInt(meta.columns);
+  if (cols >= 1 && cols <= 6) document.getElementById("exportCols").value = cols;
+  const fs = parseFloat(meta.fontSize);
+  if (fs >= 4 && fs <= 20) document.getElementById("exportFontSize").value = fs;
+  if (meta.buttonStyle) document.getElementById("exportRenderMode").value = meta.buttonStyle;
+  const themeSelect = document.getElementById("exportTheme");
+  if (meta.outputStyle) themeSelect.value = meta.outputStyle;
+  const mode = document.getElementById("exportRenderMode").value;
+  if (mode === "promptfont") {
+    document.getElementById("exportFontSource").value = meta.fontSource || "ghpages";
+  }
   updateExportPreview();
 }
 
@@ -2900,12 +2891,8 @@ function showExportModal() {
     if (!hasMeta && themeSelect.value === "recommended") themeSelect.value = "mono";
   }
 
-  // 「推奨値を使用」チェックボックスの状態を復元（推奨設定がある場合のみ）
-  const cb = document.getElementById("exportUseRecommended");
-  if (cb) {
-    const saved = localStorage.getItem('mm_useRecommendedExport');
-    cb.checked = hasMeta && saved !== '0'; // デフォルトON
-    onUseRecommendedChange();
+  if (hasMeta) {
+    applyRecommendedToExport();
   }
 
   document.getElementById("exportModal").classList.add("show");
@@ -2929,11 +2916,12 @@ function buildSysItems(rootId, settings) {
     result.push({ id: genId(), parentId, type: 'mapping', name, mapping: String(mapping ?? ''), exclude: 1 });
   }
   const sysId = mkCat(META_IDS.SYS, rootId);
-  mkMap('outputStyle',  settings.theme,      sysId);
-  mkMap('controller',   settings.controller, sysId);
-  mkMap('columns',      settings.cols,       sysId);
-  mkMap('fontSize',     settings.fs,         sysId);
-  mkMap('buttonStyle',  settings.mode,       sysId);
+  mkMap('outputStyle',  settings.theme,       sysId);
+  mkMap('controller',   settings.controller,  sysId);
+  mkMap('columns',      settings.cols,        sysId);
+  mkMap('fontSize',     settings.fs,          sysId);
+  mkMap('buttonStyle',  settings.mode,        sysId);
+  mkMap('fontSource',   settings.fontSource || 'ghpages', sysId);
 
   const hdrId = mkCat(META_IDS.SYS_HEADER,  sysId);
   mkMap('headerBg',     settings.colors.headerBg,     hdrId);
@@ -2962,11 +2950,12 @@ function buildSysItems(rootId, settings) {
 }
 
 function saveRecommendedSettings() {
-  // ダイアログの生の設定値を読む（推奨値チェックは無視）
+  // ダイアログの生の設定値を読む
   const mode  = document.getElementById("exportRenderMode").value;
   const theme = document.getElementById("exportTheme").value;
   const cols  = parseInt(document.getElementById("exportCols").value) || 3;
   const fs    = parseFloat(document.getElementById("exportFontSize").value) || 12;
+  const fontSource = mode === "promptfont" ? document.getElementById("exportFontSource").value : "ghpages";
   const colors = resolveExportColors(theme);
 
   pushUndo();
@@ -3002,7 +2991,7 @@ function saveRecommendedSettings() {
     : { id: genId(), parentId: null, type: 'category', name: META_IDS.ROOT, mapping: '', exclude: 1 };
 
   // Step 5: SYS アイテムを構築
-  const sysItems = buildSysItems(newRoot.id, { cols, fs, mode, theme, controller: currentController, colors });
+  const sysItems = buildSysItems(newRoot.id, { cols, fs, mode, fontSource, theme, controller: currentController, colors });
 
   // Step 6: USER サブツリー（既存再利用 or 新規作成）
   let userSubtree;
