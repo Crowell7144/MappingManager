@@ -324,8 +324,6 @@ let currentLang = "ja";
 function t(key) { return (I18N[currentLang] && I18N[currentLang][key]) || I18N.ja[key] || key; }
 
 function detectLang() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("lang") && I18N[params.get("lang")]) return params.get("lang");
   const stored = localStorage.getItem("mappingManagerLang");
   if (stored && I18N[stored]) return stored;
   const nav = (navigator.language || "").substring(0, 2);
@@ -335,9 +333,6 @@ function detectLang() {
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem("mappingManagerLang", lang);
-  const url = new URL(window.location);
-  url.searchParams.set("lang", lang);
-  history.replaceState(null, "", url);
   document.documentElement.lang = lang;
   translatePage();
   loadSamplesIndex(); // reload index for the new language
@@ -441,9 +436,6 @@ function switchController(newCtrl) {
       }));
       currentController = actualCtrl;
       localStorage.setItem('mappingManagerController', actualCtrl);
-      const url = new URL(window.location);
-      url.searchParams.set('ctrl', actualCtrl);
-      history.replaceState(null, '', url);
       render();
     }
     document.getElementById('controllerSelect').value = '__recommended__';
@@ -460,16 +452,11 @@ function switchController(newCtrl) {
   }));
   currentController = newCtrl;
   localStorage.setItem('mappingManagerController', newCtrl);
-  const url = new URL(window.location);
-  url.searchParams.set('ctrl', newCtrl);
-  history.replaceState(null, '', url);
   document.getElementById('controllerSelect').value = newCtrl;
   render();
 }
 
 function detectController() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('ctrl') && CONTROLLER_BUTTON_MAP[params.get('ctrl')]) return params.get('ctrl');
   const stored = localStorage.getItem('mappingManagerController');
   if (stored && CONTROLLER_BUTTON_MAP[stored]) return stored;
   return 'xbox';
@@ -3059,9 +3046,6 @@ function applyRecommendedCtrlIfExists() {
   }));
   currentController = recCtrl;
   localStorage.setItem('mappingManagerController', recCtrl);
-  const url = new URL(window.location);
-  url.searchParams.set('ctrl', recCtrl);
-  history.replaceState(null, '', url);
   updateRecommendedCtrlOption();
   const sel = document.getElementById('controllerSelect');
   if (sel) sel.value = '__recommended__';
