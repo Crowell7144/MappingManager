@@ -162,6 +162,7 @@ const I18N = {
     "gist.err.badDomain": "取得先URLのドメインが不正です。",
     "gist.err.fetch":     "データの取得に失敗しました。Gistが公開設定か確認してください。",
     "gist.confirm":       "現在のデータを破棄してGistのデータを読み込みますか？",
+    "gist.editLink":      "🎮 Mapping Manager で編集",
   },
   en: {
     "filename.tooltip": "Click to rename",
@@ -312,6 +313,7 @@ const I18N = {
     "gist.err.badDomain": "Unexpected domain in the response URL.",
     "gist.err.fetch":     "Failed to fetch data. Make sure the Gist is public or secret.",
     "gist.confirm":       "Discard current data and load from Gist?",
+    "gist.editLink":      "🎮 Edit in Mapping Manager",
   }
 };
 
@@ -1787,7 +1789,9 @@ async function handleGistLoad() {
   try {
     const shareUrl = await loadFromGistId(gistId);
     closeGistDialog();
-    showGistSuccessModal(shareUrl);
+    const exportUrl = new URL(shareUrl);
+    exportUrl.searchParams.set('export', '1');
+    showGistSuccessModal(exportUrl.toString());
   } catch(e) {
     setGistError(e.message || t('gist.err.fetch'));
   } finally {
@@ -1799,15 +1803,10 @@ async function handleGistLoad() {
 
 function showGistSuccessModal(shareUrl) {
   const el = document.getElementById('gistShareUrlText');
-  if (el) el.textContent = shareUrl;
-  // コピーボタンをリセット
+  if (el) el.textContent = shareUrl || '';
   const copyBtn = document.getElementById('gistShareCopyBtn');
   if (copyBtn) copyBtn.textContent = t('gist.copyUrl');
   document.getElementById('gistSuccessModal').classList.add('show');
-}
-
-function closeGistSuccessModal() {
-  document.getElementById('gistSuccessModal').classList.remove('show');
 }
 
 function copyGistShareUrl() {
@@ -1825,19 +1824,54 @@ function copyGistShareUrl() {
   }
 }
 
+function closeGistSuccessModal() {
+  document.getElementById('gistSuccessModal').classList.remove('show');
+}
+
+
 // ── GETパラメータ ?gist= の自動読み込み ────────────────────────────────────
+
+function getExportSettingsDefault() {
+  if (hasMetaSettings()) {
+    const meta = readMetaSettings();
+    const mode = meta.buttonStyle || 'promptfont';
+    return {
+      cols:       parseInt(meta.columns)    || 3,
+      fs:         parseFloat(meta.fontSize) || 12,
+      mode,
+      fontSource: 'ghpages',
+      theme:      meta.outputStyle || 'mono',
+    };
+  }
+  return { cols: 3, fs: 12, mode: 'promptfont', fontSource: 'ghpages', theme: 'mono' };
+}
+
+function showAutoExportPage(gistId) {
+  clearInterval(gamepadStatusInterval);
+  const {cols, fs, mode, fontSource, theme} = getExportSettingsDefault();
+  const html = generateCheatsheetHTML(cols, fs, mode, fontSource, theme, gistId);
+  document.open();
+  document.write(html);
+  document.close();
+}
 
 async function tryAutoLoadGist() {
   const params = new URLSearchParams(window.location.search);
   const gistId = params.get('gist');
   if (!gistId) return false;
-  // URLからgistパラメータを除去（履歴は汚さない）
-  const cleanUrl = new URL(window.location.href);
-  cleanUrl.searchParams.delete('gist');
-  history.replaceState(null, '', cleanUrl);
+  const isExport = params.get('export') === '1';
+  if (!isExport) {
+    // 通常の編集画面用読み込み: URLからパラメータを除去
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.delete('gist');
+    history.replaceState(null, '', cleanUrl);
+  }
   try {
     const shareUrl = await loadFromGistId(gistId);
-    showGistSuccessModal(shareUrl);
+    if (isExport) {
+      showAutoExportPage(gistId);
+    }
+    // ?gist= 直接アクセスはサイレントロード（モーダルなし）
   } catch(e) {
     alert(`Gist load error: ${e.message}`);
   }
@@ -2497,7 +2531,7 @@ function resolveExportColors(theme) {
   return getMonoColors();
 }
 
-function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
+function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gistId = null) {
   function e(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
   function isEffectivelyExcluded(item) {
     if (item.exclude) return true;
@@ -2637,7 +2671,10 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
   const pagesHtml = pages.map((blocks, pi) => {
     const pb = pi < pages.length - 1 ? ` style="page-break-after:always"` : "";
     const inner = blocks.map(b => "    " + b).join("\n");
-    return `  <div class="container"${pb}>\n${inner}\n  </div>`;
+    const editBanner = (pi === 0 && gistId)
+      ? `  <div class="cs-edit-header"><a href="?gist=${gistId}">${t('gist.editLink')}</a></div>\n`
+      : "";
+    return `${editBanner}  <div class="container"${pb}>\n${inner}\n  </div>`;
   }).join("\n");
 
   // ── CSS & font setup
@@ -2817,6 +2854,18 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono") {
     .cs-h4, .cs-h5, .cs-h6 {
       font-size: ${fs + 1}pt;
       color: ${T.sectionAccent};
+    }
+    .cs-edit-header {
+      margin-bottom: 8px;
+    }
+    .cs-edit-header a {
+      font-size: ${fs + 3}pt;
+      font-weight: 700;
+      color: #9f7aea;
+      text-decoration: none;
+    }
+    @media print {
+      .cs-edit-header { display: none; }
     }
   </style>
 </head>
@@ -3078,7 +3127,7 @@ function printCheatsheet() {
 // GAMEPAD STATUS
 // ═══════════════════════════════════════════════════════════════════════════
 
-setInterval(() => {
+const gamepadStatusInterval = setInterval(() => {
   updateGamepadStatusText();
 }, 1000);
 
