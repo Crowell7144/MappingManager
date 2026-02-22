@@ -114,7 +114,8 @@
     padding: 8px 12px; display: flex; align-items: center; gap: 8px;
     position: sticky; top: 0; z-index: 100; flex-wrap: wrap;
   }
-  #header .app-title { font-size: 15px; font-weight: 700; color: var(--accent-purple); margin-right: 4px; }
+  #header .app-title { font-size: 15px; font-weight: 700; color: var(--accent-purple); margin-right: 4px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  #header .app-icon { width: 18px; height: 18px; }
   #header .github-link {
     color: var(--text-dim); display: flex; align-items: center;
     text-decoration: none; padding: 2px 4px; border-radius: 4px;

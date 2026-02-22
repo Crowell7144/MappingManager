@@ -163,7 +163,7 @@ const I18N = {
     "gist.err.badDomain": "取得先URLのドメインが不正です。",
     "gist.err.fetch":     "データの取得に失敗しました。Gistが公開設定か確認してください。",
     "gist.confirm":       "現在のデータを破棄してGistのデータを読み込みますか？",
-    "gist.editLink":      "🎮 Mapping Manager で編集",
+    "gist.editLink":      "<img src=\"https://crowell7144.github.io/MappingManager/favicon.svg\" style=\"width:1.1em;height:1.1em;vertical-align:middle;margin-right:4px;\"> Mapping Manager で編集",
   },
   en: {
     "filename.tooltip": "Click to rename",
@@ -315,7 +315,7 @@ const I18N = {
     "gist.err.badDomain": "Unexpected domain in the response URL.",
     "gist.err.fetch":     "Failed to fetch data. Make sure the Gist is public or secret.",
     "gist.confirm":       "Discard current data and load from Gist?",
-    "gist.editLink":      "🎮 Edit in Mapping Manager",
+    "gist.editLink":      "<img src=\"https://crowell7144.github.io/MappingManager/favicon.svg\" style=\"width:1.1em;height:1.1em;vertical-align:middle;margin-right:4px;\"> Edit in Mapping Manager",
   }
 };
 
