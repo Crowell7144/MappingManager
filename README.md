@@ -55,16 +55,23 @@ npx serve .
 
 ## Adding Sample Files
 
-1. Add CSV files to `samples/ja/` and `samples/en/`
-2. Register the entry in each folder's `samples_index.json`
+1. Add CSV files to `samples/`
+2. Register the entry in `samples/samples_index.json`
+
+Use a plain string for `name` and `file` if the sample is language-agnostic, or an object with `ja`/`en` keys to provide per-language names or files:
 
 ```json
 {
   "samples": [
     {
       "id": "my_sample",
-      "name": "My Sample",
-      "file": "samples/en/my_sample.csv"
+      "name": { "ja": "マイサンプル", "en": "My Sample" },
+      "file": "samples/my_sample.csv"
+    },
+    {
+      "id": "my_sample_bilingual",
+      "name": { "ja": "バイリンガルサンプル", "en": "Bilingual Sample" },
+      "file": { "ja": "samples/my_sample_ja.csv", "en": "samples/my_sample_en.csv" }
     }
   ]
 }
@@ -213,16 +220,23 @@ npx serve .
 
 ## サンプルの追加方法
 
-1. `samples/ja/` および `samples/en/` にCSVファイルを追加
-2. 各フォルダの `samples_index.json` にエントリを追加
+1. `samples/` にCSVファイルを追加
+2. `samples/samples_index.json` にエントリを追加
+
+`name` と `file` は、言語に関わらず共通の場合は文字列、日本語・英語で分ける場合は `ja`/`en` キーを持つオブジェクトで指定します：
 
 ```json
 {
   "samples": [
     {
       "id": "my_sample",
-      "name": "マイサンプル",
-      "file": "samples/ja/my_sample.csv"
+      "name": { "ja": "マイサンプル", "en": "My Sample" },
+      "file": "samples/my_sample.csv"
+    },
+    {
+      "id": "my_sample_bilingual",
+      "name": { "ja": "バイリンガルサンプル", "en": "Bilingual Sample" },
+      "file": { "ja": "samples/my_sample_ja.csv", "en": "samples/my_sample_en.csv" }
     }
   ]
 }
