@@ -36,7 +36,7 @@ This is a **vanilla JS, no-build, single-page app**. The entire application is s
   - **GAMEPAD** — Gamepad API polling via `requestAnimationFrame`. Captures button combos for the gamepad input modal.
   - **KEYBOARD MODAL** — Virtual keyboard UI for composing `{KeyName}` tokens.
   - **EXPORT** — `buildExportHTML()` produces a self-contained cheat sheet HTML. Two render modes: `promptfont` (PromptFont glyph font) and `badge` (CSS text badges). Three themes: `mono`, `navy`, `recommended`.
-  - **GIST** — Fetches CSV from `api.github.com/gists/{id}`, constructs a shareable `?gist=…&export=1` URL.
+  - **GIST** — Fetches CSV from `api.github.com/gists/{id}`, constructs a shareable `?gist=…&share=1` URL.
   - **META BLOCK** — Hidden system rows (names starting with `__MM_`) embedded in the CSV to store per-file recommended export settings (columns, font size, controller, theme).
   - **SAMPLE LOADER** — Fetches `samples/samples_index.json` and populates the Open menu dropdown.
 - **`style.css`** — All styles. Theming via CSS custom properties under `[data-theme="dark"]` / `[data-theme="light"]`.
@@ -92,4 +92,4 @@ All CSV files live in `samples/`. A single `samples/samples_index.json` lists th
 | Parameter | Effect |
 |-----------|--------|
 | `?gist=<id>` | Auto-loads the specified Gist on startup |
-| `?export=1` | Opens in full-screen cheat sheet view (hides editor UI) |
+| `?share=1` | Opens Share View: full-screen cheat sheet (hides editor UI) |

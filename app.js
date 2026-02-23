@@ -1722,10 +1722,10 @@ async function loadFromGistId(gistId) {
   saveToLocalStorage();
   render();
 
-  // 7. 共有URL生成（gist と export のみ、他パラメータは含めない）
+  // 7. 共有URL生成（gist と share のみ、他パラメータは含めない）
   const shareUrl = new URL(window.location.origin + window.location.pathname);
   shareUrl.searchParams.set('gist', gistId);
-  shareUrl.searchParams.set('export', '1');
+  shareUrl.searchParams.set('share', '1');
   return shareUrl.toString();
 }
 
@@ -1780,9 +1780,9 @@ async function handleGistLoad() {
   try {
     const shareUrl = await loadFromGistId(gistId);
     closeGistDialog();
-    const exportUrl = new URL(shareUrl);
-    exportUrl.searchParams.set('export', '1');
-    showGistSuccessModal(exportUrl.toString());
+    const shareViewUrl = new URL(shareUrl);
+    shareViewUrl.searchParams.set('share', '1');
+    showGistSuccessModal(shareViewUrl.toString());
   } catch(e) {
     setGistError(e.message || t('gist.err.fetch'));
   } finally {
@@ -1837,7 +1837,7 @@ function getExportSettingsDefault() {
   return { cols: 3, fs: 12, mode: 'promptfont', fontSource: 'ghpages', theme: 'mono' };
 }
 
-function showAutoExportPage(gistId) {
+function showShareView(gistId) {
   clearInterval(gamepadStatusInterval);
   const {cols, fs, mode, fontSource, theme} = getExportSettingsDefault();
   const html = generateCheatsheetHTML(cols, fs, mode, fontSource, theme, gistId);
@@ -1850,8 +1850,8 @@ async function tryAutoLoadGist() {
   const params = new URLSearchParams(window.location.search);
   const gistId = params.get('gist');
   if (!gistId) return false;
-  const isExport = params.get('export') === '1';
-  if (!isExport) {
+  const isShare = params.get('share') === '1';
+  if (!isShare) {
     // 通常の編集画面用読み込み: URLからパラメータを除去
     const cleanUrl = new URL(window.location.href);
     cleanUrl.searchParams.delete('gist');
@@ -1859,13 +1859,13 @@ async function tryAutoLoadGist() {
   }
   try {
     const shareUrl = await loadFromGistId(gistId);
-    if (isExport) {
-      // applyRecommendedCtrlIfExists等が付加したパラメータを除去し、gistとexportのみに戻す
-      const cleanExportUrl = new URL(window.location.origin + window.location.pathname);
-      cleanExportUrl.searchParams.set('gist', gistId);
-      cleanExportUrl.searchParams.set('export', '1');
-      history.replaceState(null, '', cleanExportUrl);
-      showAutoExportPage(gistId);
+    if (isShare) {
+      // applyRecommendedCtrlIfExists等が付加したパラメータを除去し、gistとshareのみに戻す
+      const cleanShareUrl = new URL(window.location.origin + window.location.pathname);
+      cleanShareUrl.searchParams.set('gist', gistId);
+      cleanShareUrl.searchParams.set('share', '1');
+      history.replaceState(null, '', cleanShareUrl);
+      showShareView(gistId);
     }
     // ?gist= 直接アクセスはサイレントロード（モーダルなし）
   } catch(e) {
