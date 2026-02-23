@@ -2658,11 +2658,12 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gist
   const pagesHtml = pages.map((blocks, pi) => {
     const pb = pi < pages.length - 1 ? ` style="page-break-after:always"` : "";
     const inner = blocks.map(b => "    " + b).join("\n");
-    const editBanner = (pi === 0 && gistId)
-      ? `  <div class="cs-edit-header"><a href="?gist=${gistId}">${t('gist.editLink')}</a></div>\n`
-      : "";
-    return `${editBanner}  <div class="container"${pb}>\n${inner}\n  </div>`;
+    return `  <div class="container"${pb}>\n${inner}\n  </div>`;
   }).join("\n");
+
+  const footerHtml = gistId
+    ? `<div class="cs-footer"><a href="?gist=${gistId}">${t('gist.editLink')}</a></div>`
+    : "";
 
   // ── CSS & font setup
   let pfLink = "";
@@ -2842,22 +2843,29 @@ function generateCheatsheetHTML(cols, fs, mode, fontSource, theme = "mono", gist
       font-size: ${fs + 1}pt;
       color: ${T.sectionAccent};
     }
-    .cs-edit-header {
-      margin-bottom: 8px;
+    .cs-footer {
+      margin-top: 8px;
+      padding: 4px 8px;
+      border-top: 1px solid ${T.sepColor};
+      text-align: right;
     }
-    .cs-edit-header a {
-      font-size: ${fs + 3}pt;
-      font-weight: 700;
-      color: #9f7aea;
+    .cs-footer a {
+      font-size: ${fs - 1}pt;
+      font-weight: normal;
+      color: ${T.nameColor};
       text-decoration: none;
     }
+    .cs-footer a:hover {
+      text-decoration: underline;
+    }
     @media print {
-      .cs-edit-header { display: none; }
+      .cs-footer { display: none; }
     }
   </style>
 </head>
 <body>
 ${pagesHtml}
+${footerHtml}
 </body>
 </html>`;
 }

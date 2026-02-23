@@ -151,7 +151,7 @@ You can share your cheat sheet as a permanent URL — the recipient needs no Git
 3. In Mapping Manager, click **📂 Open → Load from Gist** and enter the Gist URL
 4. A shareable URL will appear in the success dialog — send it to anyone
 
-The recipient opens the URL and sees the cheat sheet in full-screen view. They can also click the **🎮 Edit in Mapping Manager** link at the top to return to the editor.
+The recipient opens the URL and sees the cheat sheet in full-screen view. They can also click the **🎮 Edit in Mapping Manager** link at the bottom to return to the editor.
 
 ---
 
@@ -316,7 +316,7 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 3. Mapping Manager で **📂 開く → Gistから読み込む** を選択し、GistのURLを入力
 4. 完了ダイアログに共有URLが表示されるので、相手に送る
 
-受け取った側はURLを開くとチートシートが全画面表示されます。上部の **🎮 Mapping Manager で編集** リンクから編集画面に戻ることもできます。
+受け取った側はURLを開くとチートシートが全画面表示されます。下部の **🎮 Mapping Manager で編集** リンクから編集画面に戻ることもできます。
 
 ---
 
