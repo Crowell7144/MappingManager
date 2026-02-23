@@ -140,6 +140,28 @@ The generated CSV can be loaded directly via the **📂 Open** menu in Mapping M
 
 ---
 
+## Claude Code Skill: Generate Shortcuts CSV *(experimental)*
+
+> Requires [Claude Code](https://claude.ai/code). Output is AI-generated and may contain inaccuracies — review before use.
+
+`.claude/commands/generate-shortcuts.md` provides a `/generate-shortcuts` slash command that generates Mapping Manager-compatible CSV files from keyboard shortcut data.
+
+**Usage:**
+
+```
+/generate-shortcuts vim                        # generate common vim shortcuts
+/generate-shortcuts ~/.vimrc                   # extract mappings from your vimrc
+/generate-shortcuts ~/.config/nvim/init.lua    # Neovim Lua config
+```
+
+To use outside this project, symlink to your global commands directory:
+
+```bash
+ln -s /path/to/MappingManager/.claude/commands/generate-shortcuts.md ~/.claude/commands/generate-shortcuts.md
+```
+
+---
+
 ## Sharing Cheat Sheets via Gist
 
 You can share your cheat sheet as a permanent URL — the recipient needs no GitHub account to view it.
@@ -302,6 +324,28 @@ python msfs_xml2csv.py "Gamepad 2024 Planes.xml" --all
 ```
 
 生成されたCSVは、Mapping Manager の **📂 開く** メニューから直接読み込めます。
+
+---
+
+## Claude Code スキル: ショートカットCSV生成 *(実験的)*
+
+> [Claude Code](https://claude.ai/code) が必要です。出力はAIによる生成のため、内容に誤りが含まれる場合があります。使用前に確認してください。
+
+`.claude/commands/generate-shortcuts.md` は、キーボードショートカットをMapping Manager対応のCSVとして生成する `/generate-shortcuts` スラッシュコマンドを提供します。
+
+**使い方:**
+
+```
+/generate-shortcuts vim                        # vimの一般的なショートカットを生成
+/generate-shortcuts ~/.vimrc                   # vimrcからマッピングを抽出
+/generate-shortcuts ~/.config/nvim/init.lua    # Neovim Lua設定から抽出
+```
+
+このプロジェクト外でも使用する場合は、グローバルコマンドディレクトリにシンボリックリンクを作成してください：
+
+```bash
+ln -s /path/to/MappingManager/.claude/commands/generate-shortcuts.md ~/.claude/commands/generate-shortcuts.md
+```
 
 ---
 
